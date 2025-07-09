@@ -1,17 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ChevronDown, Users, Database, Shield, Settings, Facebook, Linkedin, X } from "lucide-react"
-import { Header, AnnouncementBar, HeroSection, CompanyLogos } from "@/components/public/landing"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  ChevronDown,
+  Users,
+  Database,
+  Shield,
+  Settings,
+  Facebook,
+  Linkedin,
+  X,
+} from "lucide-react";
+import {
+  Header,
+  AnnouncementBar,
+  HeroSection,
+  CompanyLogos,
+} from "@/components/public/landing";
 
 export default function HomePage() {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
-  const [email, setEmail] = useState("")
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [email, setEmail] = useState("");
 
   const testimonials = [
     {
@@ -35,21 +49,21 @@ export default function HomePage() {
       author: "Lisa K.",
       image: "/placeholder.svg?height=120&width=120",
     },
-  ]
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [testimonials.length])
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle newsletter signup
-    console.log("Newsletter signup:", email)
-    setEmail("")
-  }
+    console.log("Newsletter signup:", email);
+    setEmail("");
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -59,27 +73,32 @@ export default function HomePage() {
       <CompanyLogos />
 
       {/* Mission Section */}
-      <section className="bg-gradient-to-br from-yellow-200 to-yellow-300 py-20">
+      <section className="bg-gradient-to-br from-emerald-100 to-indigo-100 py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8">
-              <span className="underline decoration-4 decoration-gray-900">Your</span> success is{" "}
-              <span className="underline decoration-4 decoration-gray-900">our</span> mission
+            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8 font-heading">
+              <span className="text-gradient-emerald-indigo">Your</span> success
+              is <span className="text-gradient-emerald-indigo">our</span>{" "}
+              mission
             </h2>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h3 className="text-4xl font-bold text-gray-900">You deserve better.</h3>
+              <h3 className="text-4xl font-bold text-gray-900 font-heading">
+                You deserve better.
+              </h3>
               <div className="space-y-4 text-lg text-gray-700">
                 <p>
-                  You deserve better outcomes, insights, and conversations. You deserve to work with the best proactive
-                  teams that embrace complexity, adapt to ambiguity, and flex to your needs with just 24 hours notice.
-                  You should be obsessed over, not struggling to scale or sacrificing quality for speed.
+                  You deserve better outcomes, insights, and conversations. You
+                  deserve to work with the best proactive teams that embrace
+                  complexity, adapt to ambiguity, and flex to your needs with
+                  just 24 hours notice. You should be obsessed over, not
+                  struggling to scale or sacrificing quality for speed.
                 </p>
                 <p>
-                  Whether you're a disruptive startup or an iconic brand, with B360 you get more than outsourcing - you
-                  get what you deserve.
+                  Whether you're a disruptive startup or an iconic brand, with
+                  B360 you get more than outsourcing - you get what you deserve.
                 </p>
               </div>
             </div>
@@ -89,27 +108,29 @@ export default function HomePage() {
               <div className="bg-white rounded-2xl p-8 shadow-lg">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-xs text-center">
+                    <div className="w-16 h-16 bg-gradient-emerald-indigo rounded-full flex items-center justify-center text-white font-bold text-xs text-center">
                       SELECT
                       <br />
                       TEAM
                     </div>
                   </div>
-                  <div className="flex-1 border-t-2 border-dashed border-gray-300 mx-4"></div>
+                  <div className="flex-1 border-t-2 border-dashed border-emerald-300 mx-4"></div>
                   <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold">
+                    <div className="w-16 h-16 bg-gradient-emerald-indigo rounded-full flex items-center justify-center text-white font-bold">
                       LAUNCH
                     </div>
                   </div>
-                  <div className="flex-1 border-t-2 border-dashed border-gray-300 mx-4"></div>
+                  <div className="flex-1 border-t-2 border-dashed border-emerald-300 mx-4"></div>
                   <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold">
+                    <div className="w-16 h-16 bg-gradient-emerald-indigo rounded-full flex items-center justify-center text-white font-bold">
                       ITERATE
                     </div>
                   </div>
                 </div>
                 <div className="text-center">
-                  <span className="text-2xl font-bold text-gray-900">- 2 WEEKS -</span>
+                  <span className="text-2xl font-bold text-gray-900 font-heading">
+                    - 2 WEEKS -
+                  </span>
                 </div>
               </div>
             </div>
@@ -118,16 +139,19 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-yellow-200 to-yellow-300 py-16">
+      <section className="bg-gradient-emerald-indigo py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready to transform your operations?</h3>
-              <p className="text-gray-700">
-                Let's discuss how B360 can help you build better teams and achieve better outcomes.
+              <h3 className="text-2xl font-bold text-white mb-2 font-heading">
+                Ready to transform your operations?
+              </h3>
+              <p className="text-white/90">
+                Let's discuss how B360 can help you build better teams and
+                achieve better outcomes.
               </p>
             </div>
-            <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-3">
+            <Button className="bg-white text-emerald-600 hover:bg-gray-100 rounded-full px-8 py-3 font-bold">
               Take B360 for a spin
             </Button>
           </div>
@@ -142,14 +166,17 @@ export default function HomePage() {
               <div className="relative">
                 <div className="w-32 h-32 rounded-full border-4 border-yellow-400 p-2">
                   <Image
-                    src={testimonials[currentTestimonial].image || "/placeholder.svg"}
+                    src={
+                      testimonials[currentTestimonial].image ||
+                      "/placeholder.svg"
+                    }
                     alt={testimonials[currentTestimonial].author}
                     width={120}
                     height={120}
                     className="rounded-full"
                   />
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full border-4 border-white"></div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-400 rounded-full border-4 border-white"></div>
               </div>
 
               <div className="flex-1">
@@ -161,7 +188,9 @@ export default function HomePage() {
                     "{testimonials[currentTestimonial].quote}"
                   </blockquote>
                 </div>
-                <p className="text-gray-500">{testimonials[currentTestimonial].author}</p>
+                <p className="text-gray-500">
+                  {testimonials[currentTestimonial].author}
+                </p>
               </div>
 
               <div className="text-6xl text-gray-200 font-serif">"</div>
@@ -174,7 +203,7 @@ export default function HomePage() {
                   key={i}
                   onClick={() => setCurrentTestimonial(i)}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    i === currentTestimonial ? "bg-yellow-400" : "bg-gray-300"
+                    i === currentTestimonial ? "bg-emerald-400" : "bg-gray-300"
                   }`}
                 />
               ))}
@@ -187,10 +216,12 @@ export default function HomePage() {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">+ More Growth, Less Risk</h2>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 font-heading">
+              + More Growth, Less Risk
+            </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Focus on growth, we'll take care of the many small tasks that make the difference between awesome and
-              awful.
+              Focus on growth, we'll take care of the many small tasks that make
+              the difference between awesome and awful.
             </p>
           </div>
 
@@ -201,16 +232,16 @@ export default function HomePage() {
                 description:
                   "Across time zones, languages, cultures, and channels, we'll leave your customers feeling great about your brand...even if it's a bad day.",
                 icon: <Users className="w-12 h-12" />,
-                color: "border-cyan-200 bg-cyan-50",
-                iconColor: "text-cyan-500",
+                color: "border-emerald-200 bg-emerald-50",
+                iconColor: "text-emerald-500",
               },
               {
                 title: "Data & AI",
                 description:
                   "Process and build with better, less biased, more accurate training data. You know your end product depends on it; we do too.",
                 icon: <Database className="w-12 h-12" />,
-                color: "border-red-200 bg-red-50",
-                iconColor: "text-red-500",
+                color: "border-indigo-200 bg-indigo-50",
+                iconColor: "text-indigo-500",
               },
               {
                 title: "Trust & Safety",
@@ -225,16 +256,25 @@ export default function HomePage() {
                 description:
                   "Crash costs cut friction, and boost efficiency. We'll help you scale your operations faster and more profitably... and put years back on your life.",
                 icon: <Settings className="w-12 h-12" />,
-                color: "border-green-200 bg-green-50",
-                iconColor: "text-green-500",
+                color: "border-teal-200 bg-teal-50",
+                iconColor: "text-teal-500",
               },
             ].map((service, i) => (
-              <Card key={i} className={`${service.color} border-2 hover:shadow-lg transition-all duration-300 group`}>
+              <Card
+                key={i}
+                className={`${service.color} border-2 hover:shadow-lg transition-all duration-300 group`}
+              >
                 <CardContent className="p-8 text-center space-y-6">
-                  <div className={`${service.iconColor} flex justify-center`}>{service.icon}</div>
-                  <h3 className="text-xl font-bold text-gray-900">{service.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{service.description}</p>
-                  <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6 group-hover:scale-105 transition-transform">
+                  <div className={`${service.iconColor} flex justify-center`}>
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 font-heading">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {service.description}
+                  </p>
+                  <Button className="bg-gradient-emerald-indigo text-white hover:opacity-90 rounded-full px-6 group-hover:scale-105 transition-transform font-medium">
                     Learn More
                   </Button>
                 </CardContent>
@@ -245,7 +285,7 @@ export default function HomePage() {
       </section>
 
       {/* Enhanced Footer with Animated Background */}
-      <section className="relative bg-gradient-to-br from-yellow-50 to-orange-50 py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-emerald-50 to-indigo-50 py-20 overflow-hidden">
         {/* Animated Smiley Faces Background */}
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(12)].map((_, i) => (
@@ -266,11 +306,11 @@ export default function HomePage() {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8">
+            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8 font-heading">
               Outsourcing +<br />
               built to make you better.
             </h2>
-            <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-3 text-lg">
+            <Button className="bg-gradient-emerald-indigo text-white hover:opacity-90 rounded-full px-8 py-3 text-lg font-bold">
               Get Started
             </Button>
           </div>
@@ -278,23 +318,30 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-br from-yellow-50 to-orange-50 py-16">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
           {/* Newsletter Section */}
           <div className="text-center mb-16">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">Sign up to our newsletter and stay hip.</h3>
-            <form onSubmit={handleNewsletterSubmit} className="flex justify-center items-center gap-4 max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-white mb-8 font-heading">
+              Sign up to our newsletter and stay hip.
+            </h3>
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex justify-center items-center gap-4 max-w-md mx-auto"
+            >
               <Input
                 type="email"
                 placeholder="Enter Email"
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
                 className="flex-1 bg-white border-gray-300 rounded-full px-6 py-3"
                 required
               />
               <Button
                 type="submit"
-                className="bg-cyan-400 hover:bg-cyan-500 text-black rounded-full px-8 py-3 font-semibold"
+                className="bg-gradient-emerald-indigo hover:opacity-90 text-white rounded-full px-8 py-3 font-bold"
               >
                 Sign Up
               </Button>
@@ -305,26 +352,40 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             {/* Solutions */}
             <div>
-              <h4 className="font-bold text-gray-900 mb-4">Solutions</h4>
+              <h4 className="font-bold text-white mb-4 font-heading">
+                Services
+              </h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-gray-700 hover:text-gray-900 transition-colors flex items-center">
-                    Customer Support <ChevronDown className="w-4 h-4 ml-1 rotate-[-90deg]" />
+                  <Link
+                    href="/solutions/customer-support/general"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    General Support
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-700 hover:text-gray-900 transition-colors flex items-center">
-                    Digital Operations <ChevronDown className="w-4 h-4 ml-1 rotate-[-90deg]" />
+                  <Link
+                    href="/solutions/customer-support/technical"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Technical Support
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-700 hover:text-gray-900 transition-colors flex items-center">
-                    Trust & Safety <ChevronDown className="w-4 h-4 ml-1 rotate-[-90deg]" />
+                  <Link
+                    href="/solutions/customer-support/call-center"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Call Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-700 hover:text-gray-900 transition-colors flex items-center">
-                    Data & AI <ChevronDown className="w-4 h-4 ml-1 rotate-[-90deg]" />
+                  <Link
+                    href="/solutions/customer-support/live-chat"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Live Chat
                   </Link>
                 </li>
               </ul>
@@ -332,103 +393,85 @@ export default function HomePage() {
 
             {/* Company */}
             <div>
-              <h4 className="font-bold text-gray-900 mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-700">
+              <h4 className="font-bold text-white mb-4 font-heading">
+                Company
+              </h4>
+              <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="#" className="hover:text-gray-900 transition-colors">
-                    About
+                  <Link
+                    href="/about"
+                    className="hover:text-white transition-colors"
+                  >
+                    About Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-gray-900 transition-colors">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-gray-900 transition-colors">
+                  <Link
+                    href="/contact"
+                    className="hover:text-white transition-colors"
+                  >
                     Contact
                   </Link>
                 </li>
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Resources</h4>
-              <ul className="space-y-2 text-gray-700">
                 <li>
-                  <Link href="#" className="hover:text-gray-900 transition-colors">
-                    Resources
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-gray-900 transition-colors">
-                    FAQs
+                  <Link
+                    href="/pricing"
+                    className="hover:text-white transition-colors"
+                  >
+                    Pricing
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Headquarters */}
+            {/* Contact */}
             <div>
-              <h4 className="font-bold text-gray-900 mb-4">Headquarters</h4>
-              <div className="text-gray-700">
+              <h4 className="font-bold text-white mb-4 font-heading">
+                Contact
+              </h4>
+              <div className="text-gray-400">
                 <p>401 N Michigan Ave</p>
                 <p>Chicago, IL 60611</p>
+                <p className="mt-4">
+                  <Link
+                    href="/contact"
+                    className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Get in Touch →
+                  </Link>
+                </p>
               </div>
+            </div>
+
+            {/* Company Info */}
+            <div>
+              <div className="flex items-center space-x-2 mb-6">
+                <div className="w-8 h-8 bg-gradient-emerald-indigo rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">B</span>
+                </div>
+                <span className="text-2xl font-bold text-white font-heading">
+                  B360
+                </span>
+              </div>
+              <p className="text-gray-400">
+                Expert customer support coverage with strategic hubs across four
+                continents.
+              </p>
             </div>
           </div>
 
           {/* Bottom Section */}
-          <div className="flex flex-col lg:flex-row justify-between items-center pt-8 border-t border-gray-200">
-            {/* Logo and Social */}
-            <div className="flex items-center space-x-8 mb-8 lg:mb-0">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">B</span>
-                </div>
-                <span className="text-2xl font-bold text-gray-900">B360</span>
-              </div>
-
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors cursor-pointer">
-                  <X className="w-5 h-5 text-black" />
-                </div>
-                <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors cursor-pointer">
-                  <Facebook className="w-5 h-5 text-black" />
-                </div>
-                <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors cursor-pointer">
-                  <Linkedin className="w-5 h-5 text-black" />
-                </div>
-              </div>
-            </div>
-
-            {/* Certifications */}
-            <div className="flex items-center space-x-6">
-              {["ISO 27001", "MBE CERTIFIED", "HIPAA COMPLIANT", "AICPA SOC"].map((cert, i) => (
-                <div
-                  key={i}
-                  className="w-16 h-16 bg-white rounded-full border-2 border-gray-300 flex items-center justify-center"
-                >
-                  <span className="text-xs font-bold text-gray-600 text-center">{cert}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="text-center mt-8 pt-8 border-t border-gray-200">
-            <div className="flex flex-col lg:flex-row justify-between items-center text-gray-600 text-sm">
-              <p>© 2025 Copyright | All Rights Reserved</p>
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col lg:flex-row justify-between items-center text-gray-400 text-sm">
+              <p>© 2025 B360. All Rights Reserved</p>
               <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                <span>Made with ❤️ in Africa and beyond</span>
+                <span>Made with ❤️ globally</span>
                 <span>|</span>
-                <Link href="#" className="hover:text-gray-900 transition-colors">
+                <Link
+                  href="/privacy"
+                  className="hover:text-white transition-colors"
+                >
                   Privacy Policy
-                </Link>
-                <span>|</span>
-                <Link href="#" className="hover:text-gray-900 transition-colors">
-                  Menu Item
                 </Link>
               </div>
             </div>
@@ -436,5 +479,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
