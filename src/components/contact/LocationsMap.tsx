@@ -73,8 +73,10 @@ const locations: Location[] = [
 
 export function LocationsMap() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [selectedLocation, setSelectedLocation] = useState<Location>(locations[0]);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<Location>(
+    locations[0]
+  );
+  const [, setMapLoaded] = useState(false);
 
   useEffect(() => {
     // Simple map placeholder - in production, you would integrate with Google Maps or similar
@@ -88,7 +90,8 @@ export function LocationsMap() {
           Our Global Locations
         </h2>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          With strategic hubs across four continents, we provide 24/7 customer support coverage wherever your customers are located.
+          With strategic hubs across four continents, we provide 24/7 customer
+          support coverage wherever your customers are located.
         </p>
       </div>
 
@@ -96,7 +99,7 @@ export function LocationsMap() {
         {/* Map Section */}
         <Card className="border-2 border-gray-200">
           <CardContent className="p-0">
-            <div 
+            <div
               ref={mapRef}
               className="w-full h-96 bg-gradient-to-br from-emerald-100 to-indigo-100 rounded-lg flex items-center justify-center relative overflow-hidden"
             >
@@ -112,7 +115,7 @@ export function LocationsMap() {
                   <path d="M100,200 Q200,150 300,200 T500,200 Q600,180 700,200 L700,300 Q600,280 500,300 T300,300 Q200,320 100,300 Z" />
                   <path d="M150,100 Q250,80 350,100 T550,100 Q650,90 750,100 L750,180 Q650,170 550,180 T350,180 Q250,190 150,180 Z" />
                 </svg>
-                
+
                 {/* Location Markers */}
                 {locations.map((location, index) => (
                   <div
@@ -134,7 +137,7 @@ export function LocationsMap() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="text-center z-10">
                 <MapPin className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">
@@ -171,20 +174,24 @@ export function LocationsMap() {
               <h3 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
                 {selectedLocation.name}
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
                   <div>
-                    <div className="font-medium text-gray-900">{selectedLocation.address}</div>
+                    <div className="font-medium text-gray-900">
+                      {selectedLocation.address}
+                    </div>
                     <div className="text-gray-600">{selectedLocation.city}</div>
-                    <div className="text-gray-600">{selectedLocation.country}</div>
+                    <div className="text-gray-600">
+                      {selectedLocation.country}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3">
                   <Phone className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <a 
+                  <a
                     href={`tel:${selectedLocation.phone}`}
                     className="text-gray-900 hover:text-emerald-600 transition-colors"
                   >
@@ -194,7 +201,7 @@ export function LocationsMap() {
 
                 <div className="flex items-center space-x-3">
                   <Mail className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <a 
+                  <a
                     href={`mailto:${selectedLocation.email}`}
                     className="text-gray-900 hover:text-emerald-600 transition-colors"
                   >
@@ -204,11 +211,15 @@ export function LocationsMap() {
 
                 <div className="flex items-center space-x-3">
                   <Clock className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <span className="text-gray-900">{selectedLocation.hours}</span>
+                  <span className="text-gray-900">
+                    {selectedLocation.hours}
+                  </span>
                 </div>
 
                 <div className="pt-2 border-t border-emerald-200">
-                  <p className="text-gray-700">{selectedLocation.description}</p>
+                  <p className="text-gray-700">
+                    {selectedLocation.description}
+                  </p>
                 </div>
               </div>
             </CardContent>

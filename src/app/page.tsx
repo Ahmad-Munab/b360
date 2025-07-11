@@ -6,16 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  ChevronDown,
-  Users,
-  Database,
-  Shield,
-  Settings,
-  Facebook,
-  Linkedin,
-  X,
-} from "lucide-react";
+import { Users, Database, Shield, Settings } from "lucide-react";
 import {
   Header,
   AnnouncementBar,
@@ -97,8 +88,9 @@ export default function HomePage() {
                   struggling to scale or sacrificing quality for speed.
                 </p>
                 <p>
-                  Whether you're a disruptive startup or an iconic brand, with
-                  B360 you get more than outsourcing - you get what you deserve.
+                  Whether you&apos;re a disruptive startup or an iconic brand,
+                  with B360 you get more than outsourcing - you get what you
+                  deserve.
                 </p>
               </div>
             </div>
@@ -147,7 +139,7 @@ export default function HomePage() {
                 Ready to transform your operations?
               </h3>
               <p className="text-white/90">
-                Let's discuss how B360 can help you build better teams and
+                Let&apos;s discuss how B360 can help you build better teams and
                 achieve better outcomes.
               </p>
             </div>
@@ -185,7 +177,7 @@ export default function HomePage() {
                     {testimonials[currentTestimonial].name}
                   </h4>
                   <blockquote className="text-2xl text-gray-900 leading-relaxed">
-                    "{testimonials[currentTestimonial].quote}"
+                    &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
                   </blockquote>
                 </div>
                 <p className="text-gray-500">
@@ -193,7 +185,7 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="text-6xl text-gray-200 font-serif">"</div>
+              <div className="text-6xl text-gray-200 font-serif">&ldquo;</div>
             </div>
 
             {/* Testimonial indicators */}
@@ -220,8 +212,8 @@ export default function HomePage() {
               + More Growth, Less Risk
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Focus on growth, we'll take care of the many small tasks that make
-              the difference between awesome and awful.
+              Focus on growth, we&apos;ll take care of the many small tasks that
+              make the difference between awesome and awful.
             </p>
           </div>
 
@@ -230,7 +222,7 @@ export default function HomePage() {
               {
                 title: "Customer Support",
                 description:
-                  "Across time zones, languages, cultures, and channels, we'll leave your customers feeling great about your brand...even if it's a bad day.",
+                  "Across time zones, languages, cultures, and channels, we&apos;ll leave your customers feeling great about your brand...even if it&apos;s a bad day.",
                 icon: <Users className="w-12 h-12" />,
                 color: "border-emerald-200 bg-emerald-50",
                 iconColor: "text-emerald-500",
@@ -246,7 +238,7 @@ export default function HomePage() {
               {
                 title: "Trust & Safety",
                 description:
-                  "Better compliance, higher engagement, and safer spaces. We'll keep your users playing by your rules.",
+                  "Better compliance, higher engagement, and safer spaces. We&apos;ll keep your users playing by your rules.",
                 icon: <Shield className="w-12 h-12" />,
                 color: "border-purple-200 bg-purple-50",
                 iconColor: "text-purple-500",
@@ -254,7 +246,7 @@ export default function HomePage() {
               {
                 title: "Digital Operations",
                 description:
-                  "Crash costs cut friction, and boost efficiency. We'll help you scale your operations faster and more profitably... and put years back on your life.",
+                  "Crash costs cut friction, and boost efficiency. We&apos;ll help you scale your operations faster and more profitably... and put years back on your life.",
                 icon: <Settings className="w-12 h-12" />,
                 color: "border-teal-200 bg-teal-50",
                 iconColor: "text-teal-500",

@@ -1,11 +1,21 @@
 "use client";
 
-import { Header } from "@/components/public/landing";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { LocationsMap } from "@/components/contact/LocationsMap";
+import { Globe } from "@/components/ui/globe";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Clock, Headphones, Globe, Award } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  Award,
+  Mail,
+  Phone,
+  MessageCircle,
+  ArrowRight,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function ContactPage() {
@@ -14,81 +24,237 @@ export default function ContactPage() {
       icon: <Clock className="w-8 h-8" />,
       title: "24/7 Availability",
       description: "Round-the-clock support across all time zones",
+      gradient: "from-blue-500 to-indigo-600",
     },
     {
-      icon: <Headphones className="w-8 h-8" />,
+      icon: <Users className="w-8 h-8" />,
       title: "Expert Team",
       description: "Highly trained professionals ready to help",
+      gradient: "from-green-500 to-emerald-600",
     },
     {
-      icon: <Globe className="w-8 h-8" />,
+      icon: <MapPin className="w-8 h-8" />,
       title: "Global Reach",
       description: "Strategic hubs across four continents",
+      gradient: "from-purple-500 to-violet-600",
     },
     {
       icon: <Award className="w-8 h-8" />,
       title: "Proven Results",
       description: "98% customer satisfaction rate",
+      gradient: "from-orange-500 to-red-600",
+    },
+  ];
+
+  const contactMethods = [
+    {
+      icon: <Mail className="w-12 h-12" />,
+      title: "Email Us",
+      description: "Get detailed responses to your inquiries",
+      action: "sales@b360.com",
+      href: "mailto:sales@b360.com",
+      gradient: "from-blue-500 to-blue-600",
+    },
+    {
+      icon: <Phone className="w-12 h-12" />,
+      title: "Call Us",
+      description: "Speak directly with our experts",
+      action: "+1 (312) 555-0100",
+      href: "tel:+13125550100",
+      gradient: "from-green-500 to-green-600",
+    },
+    {
+      icon: <MessageCircle className="w-12 h-12" />,
+      title: "Live Chat",
+      description: "Instant support through our AI chat",
+      action: "Start Chat",
+      href: "#",
+      gradient: "from-purple-500 to-purple-600",
+    },
+  ];
+
+  const locations = [
+    {
+      city: "Chicago",
+      country: "USA",
+      role: "Global Headquarters",
+      address: "401 N Michigan Ave, Chicago, IL 60611",
+      phone: "+1 (312) 555-0100",
+      email: "chicago@b360.com",
+    },
+    {
+      city: "Manila",
+      country: "Philippines",
+      role: "Asia-Pacific Hub",
+      address: "Makati Business District, Manila",
+      phone: "+63 2 555-0100",
+      email: "manila@b360.com",
+    },
+    {
+      city: "Bangalore",
+      country: "India",
+      role: "Technology Center",
+      address: "Electronic City, Bangalore",
+      phone: "+91 80 555-0100",
+      email: "bangalore@b360.com",
+    },
+    {
+      city: "Dublin",
+      country: "Ireland",
+      role: "European Operations",
+      address: "Dublin Business District",
+      phone: "+353 1 555-0100",
+      email: "dublin@b360.com",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-50 to-indigo-50 pt-24 pb-16">
+    <PageLayout
+      title="Get in Touch"
+      subtitle="Ready to transform your customer support experience?"
+      description="Connect with our global team of experts and discover how B360 can help you deliver exceptional customer experiences that drive business growth."
+      heroGradient="from-blue-50 to-indigo-50"
+      ctaTitle="Ready to get started?"
+      ctaDescription="Let's discuss how our comprehensive support solutions can transform your customer experience."
+      ctaButtonText="Schedule a Demo"
+    >
+      {/* Contact Methods */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-heading">
-              Get in Touch
-            </h1>
-            <p className="text-xl lg:text-2xl text-gray-700 mb-8 font-medium">
-              Ready to transform your customer support? Let's discuss how B360 can help you achieve better outcomes.
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-heading">
+              How Can We Help You?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Choose the best way to connect with our team and get the support
+              you need.
             </p>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Book a demo, ask questions, or learn more about our global customer support solutions.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+          </div>
 
-      {/* Support Features */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16"
-          >
-            {supportFeatures.map((feature, index) => (
-              <Card key={index} className="border-2 border-gray-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300 text-center">
-                <CardContent className="p-6">
-                  <div className="text-emerald-500 flex justify-center mb-4">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 font-heading">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+            {contactMethods.map((method, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="h-full border-2 border-gray-200 hover:border-blue-200 hover:shadow-xl transition-all duration-300 group">
+                  <CardContent className="p-8 text-center">
+                    <div
+                      className={`w-20 h-20 bg-gradient-to-r ${method.gradient} rounded-2xl flex items-center justify-center text-white mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      {method.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+                      {method.title}
+                    </h3>
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      {method.description}
+                    </p>
+                    <Link href={method.href}>
+                      <Button
+                        className={`w-full bg-gradient-to-r ${method.gradient} hover:opacity-90 text-white rounded-full py-3 font-bold`}
+                      >
+                        {method.action}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </motion.div>
+          </div>
+
+          {/* Support Features */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {supportFeatures.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div
+                  className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center text-white mx-auto mb-4`}
+                >
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 font-heading">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Contact Form and Quick Info */}
-      <section className="py-16 bg-gray-50">
+      {/* Globe Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-white"
+            >
+              <h2 className="text-4xl lg:text-5xl font-bold mb-6 font-heading">
+                Global Presence, Local Expertise
+              </h2>
+              <p className="text-xl mb-8 opacity-90 leading-relaxed">
+                With strategic locations across four continents, we provide 24/7
+                support coverage and local expertise wherever your customers
+                are.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-3xl font-bold mb-2">15+</div>
+                  <div className="opacity-90">Countries Served</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold mb-2">24/7</div>
+                  <div className="opacity-90">Global Coverage</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold mb-2">4</div>
+                  <div className="opacity-90">Continents</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold mb-2">500+</div>
+                  <div className="opacity-90">Expert Agents</div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="h-96"
+            >
+              <Globe
+                className="w-full h-full"
+                globeConfig={{
+                  pointSize: 2,
+                  globeColor: "#1e3a8a",
+                  showAtmosphere: true,
+                  atmosphereColor: "#3b82f6",
+                  autoRotate: true,
+                  autoRotateSpeed: 0.5,
+                }}
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form and Locations */}
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
             {/* Contact Form */}
@@ -101,7 +267,7 @@ export default function ContactPage() {
               <ContactForm />
             </motion.div>
 
-            {/* Quick Contact Info */}
+            {/* Global Locations */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -111,179 +277,67 @@ export default function ContactPage() {
             >
               <div>
                 <h3 className="text-3xl font-bold text-gray-900 mb-6 font-heading">
-                  Other Ways to Reach Us
+                  Our Global Offices
                 </h3>
                 <div className="space-y-6">
-                  <Card className="border-2 border-gray-200">
-                    <CardContent className="p-6">
-                      <h4 className="text-xl font-bold text-gray-900 mb-3 font-heading">
-                        Sales Inquiries
-                      </h4>
-                      <p className="text-gray-600 mb-4">
-                        Ready to get started? Our sales team is here to help you find the perfect solution.
-                      </p>
-                      <div className="space-y-2">
-                        <p className="text-gray-900">
-                          <strong>Email:</strong> <a href="mailto:sales@b360.com" className="text-emerald-600 hover:text-emerald-700">sales@b360.com</a>
-                        </p>
-                        <p className="text-gray-900">
-                          <strong>Phone:</strong> <a href="tel:+13125550100" className="text-emerald-600 hover:text-emerald-700">+1 (312) 555-0100</a>
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-2 border-gray-200">
-                    <CardContent className="p-6">
-                      <h4 className="text-xl font-bold text-gray-900 mb-3 font-heading">
-                        Support & Technical
-                      </h4>
-                      <p className="text-gray-600 mb-4">
-                        Need help with an existing service? Our support team is available 24/7.
-                      </p>
-                      <div className="space-y-2">
-                        <p className="text-gray-900">
-                          <strong>Email:</strong> <a href="mailto:support@b360.com" className="text-emerald-600 hover:text-emerald-700">support@b360.com</a>
-                        </p>
-                        <p className="text-gray-900">
-                          <strong>Phone:</strong> <a href="tel:+13125550200" className="text-emerald-600 hover:text-emerald-700">+1 (312) 555-0200</a>
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-2 border-gray-200">
-                    <CardContent className="p-6">
-                      <h4 className="text-xl font-bold text-gray-900 mb-3 font-heading">
-                        Partnership Opportunities
-                      </h4>
-                      <p className="text-gray-600 mb-4">
-                        Interested in partnering with B360? Let's explore opportunities together.
-                      </p>
-                      <div className="space-y-2">
-                        <p className="text-gray-900">
-                          <strong>Email:</strong> <a href="mailto:partnerships@b360.com" className="text-emerald-600 hover:text-emerald-700">partnerships@b360.com</a>
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {locations.map((location, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <Card className="border-2 border-gray-200 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div>
+                              <h4 className="text-xl font-bold text-gray-900 mb-1 font-heading">
+                                {location.city}
+                              </h4>
+                              <p className="text-blue-600 font-medium">
+                                {location.role}
+                              </p>
+                            </div>
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <MapPin className="w-5 h-5 text-blue-600" />
+                            </div>
+                          </div>
+                          <p className="text-gray-600 mb-4">
+                            {location.address}
+                          </p>
+                          <div className="space-y-2">
+                            <p className="text-gray-900">
+                              <strong>Phone:</strong>{" "}
+                              <a
+                                href={`tel:${location.phone.replace(
+                                  /\s/g,
+                                  ""
+                                )}`}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                {location.phone}
+                              </a>
+                            </p>
+                            <p className="text-gray-900">
+                              <strong>Email:</strong>{" "}
+                              <a
+                                href={`mailto:${location.email}`}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                {location.email}
+                              </a>
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </motion.div>
           </div>
         </div>
       </section>
-
-      {/* Locations Map */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <LocationsMap />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            {/* Company */}
-            <div>
-              <div className="flex items-center space-x-2 mb-6">
-                <div className="w-8 h-8 bg-gradient-emerald-indigo rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">B</span>
-                </div>
-                <span className="text-2xl font-bold font-heading">B360</span>
-              </div>
-              <p className="text-gray-400">
-                Expert customer support coverage with strategic hubs across four continents.
-              </p>
-            </div>
-
-            {/* Services */}
-            <div>
-              <h4 className="font-bold mb-4 font-heading">Services</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/solutions/customer-support/general" className="hover:text-white transition-colors">
-                    General Support
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/solutions/customer-support/technical" className="hover:text-white transition-colors">
-                    Technical Support
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/solutions/customer-support/call-center" className="hover:text-white transition-colors">
-                    Call Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/solutions/customer-support/live-chat" className="hover:text-white transition-colors">
-                    Live Chat
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="font-bold mb-4 font-heading">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/about" className="hover:text-white transition-colors">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white transition-colors">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:text-white transition-colors">
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="font-bold mb-4 font-heading">Headquarters</h4>
-              <div className="text-gray-400">
-                <p>401 N Michigan Ave</p>
-                <p>Chicago, IL 60611</p>
-                <p className="mt-4">
-                  <a href="tel:+13125550100" className="text-emerald-400 hover:text-emerald-300 transition-colors">
-                    +1 (312) 555-0100
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Section */}
-          <div className="border-t border-gray-800 pt-8">
-            <div className="flex flex-col lg:flex-row justify-between items-center text-gray-400 text-sm">
-              <p>© 2025 B360. All Rights Reserved</p>
-              <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                <span>Made with ❤️ globally</span>
-                <span>|</span>
-                <Link href="/privacy" className="hover:text-white transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PageLayout>
   );
 }

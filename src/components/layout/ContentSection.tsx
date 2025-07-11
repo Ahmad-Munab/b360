@@ -2,9 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
-import Link from "next/link";
 
 interface Feature {
   title: string;
@@ -99,7 +97,10 @@ export function ContentSection({
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
           >
             {features.map((feature, index) => (
-              <Card key={index} className="border-2 border-gray-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <Card
+                key={index}
+                className="border-2 border-gray-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300"
+              >
                 <CardContent className="p-8 text-center">
                   {feature.icon && (
                     <div className="flex justify-center mb-6 text-emerald-500">
@@ -136,7 +137,9 @@ export function ContentSection({
                   <h3 className="text-xl font-bold text-gray-900 mb-2 font-heading">
                     {benefit.title}
                     {benefit.metric && (
-                      <span className="text-emerald-600 ml-2">{benefit.metric}</span>
+                      <span className="text-emerald-600 ml-2">
+                        {benefit.metric}
+                      </span>
                     )}
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
@@ -157,7 +160,7 @@ export function ContentSection({
             viewport={{ once: true }}
             className="bg-gradient-to-br from-emerald-50 to-indigo-50 rounded-2xl p-8 lg:p-12 text-center"
           >
-            <div className="text-6xl text-emerald-200 mb-4">"</div>
+            <div className="text-6xl text-emerald-200 mb-4">&ldquo;</div>
             <blockquote className="text-2xl lg:text-3xl text-gray-900 mb-8 font-medium">
               {testimonial.quote}
             </blockquote>

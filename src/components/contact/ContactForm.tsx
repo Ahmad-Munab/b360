@@ -9,7 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Mail, Phone, MessageSquare, Send } from "lucide-react";
 
 const contactSchema = z.object({
@@ -40,15 +46,15 @@ export function ContactForm() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    
+
     // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     console.log("Form submitted:", data);
     setIsSubmitted(true);
     setIsSubmitting(false);
     reset();
-    
+
     // Reset success message after 5 seconds
     setTimeout(() => setIsSubmitted(false), 5000);
   };
@@ -64,7 +70,8 @@ export function ContactForm() {
             Thank You!
           </h3>
           <p className="text-emerald-700">
-            Your message has been sent successfully. We'll get back to you within 24 hours.
+            Your message has been sent successfully. We&apos;ll get back to you
+            within 24 hours.
           </p>
         </CardContent>
       </Card>
@@ -79,14 +86,18 @@ export function ContactForm() {
             Book a Demo Now
           </h3>
           <p className="text-gray-600">
-            Ready to transform your customer support? Let's discuss your needs and show you how B360 can help.
+            Ready to transform your customer support? Let&apos;s discuss your
+            needs and show you how B360 can help.
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="firstName"
+                className="text-sm font-medium text-gray-700"
+              >
                 First Name *
               </Label>
               <Input
@@ -96,12 +107,17 @@ export function ContactForm() {
                 placeholder="John"
               />
               {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.firstName.message}
+                </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="lastName"
+                className="text-sm font-medium text-gray-700"
+              >
                 Last Name *
               </Label>
               <Input
@@ -111,13 +127,18 @@ export function ContactForm() {
                 placeholder="Doe"
               />
               {errors.lastName && (
-                <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.lastName.message}
+                </p>
               )}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-700"
+            >
               Email Address *
             </Label>
             <div className="relative mt-1">
@@ -131,12 +152,17 @@ export function ContactForm() {
               />
             </div>
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="phone"
+              className="text-sm font-medium text-gray-700"
+            >
               Phone Number *
             </Label>
             <div className="relative mt-1">
@@ -150,12 +176,17 @@ export function ContactForm() {
               />
             </div>
             {errors.phone && (
-              <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.phone.message}
+              </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="company" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="company"
+              className="text-sm font-medium text-gray-700"
+            >
               Company Name *
             </Label>
             <Input
@@ -165,12 +196,17 @@ export function ContactForm() {
               placeholder="Your Company Inc."
             />
             {errors.company && (
-              <p className="text-red-500 text-sm mt-1">{errors.company.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.company.message}
+              </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="serviceType" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="serviceType"
+              className="text-sm font-medium text-gray-700"
+            >
               Service Interest *
             </Label>
             <Select onValueChange={(value) => setValue("serviceType", value)}>
@@ -178,21 +214,32 @@ export function ContactForm() {
                 <SelectValue placeholder="Select a service" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="general-support">General Customer Support</SelectItem>
-                <SelectItem value="technical-support">Technical Support</SelectItem>
-                <SelectItem value="call-center">Call Center Services</SelectItem>
+                <SelectItem value="general-support">
+                  General Customer Support
+                </SelectItem>
+                <SelectItem value="technical-support">
+                  Technical Support
+                </SelectItem>
+                <SelectItem value="call-center">
+                  Call Center Services
+                </SelectItem>
                 <SelectItem value="live-chat">Live Chat Support</SelectItem>
                 <SelectItem value="email-support">Email Support</SelectItem>
                 <SelectItem value="custom">Custom Solution</SelectItem>
               </SelectContent>
             </Select>
             {errors.serviceType && (
-              <p className="text-red-500 text-sm mt-1">{errors.serviceType.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.serviceType.message}
+              </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="message" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="message"
+              className="text-sm font-medium text-gray-700"
+            >
               Message *
             </Label>
             <div className="relative mt-1">
@@ -205,7 +252,9 @@ export function ContactForm() {
               />
             </div>
             {errors.message && (
-              <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.message.message}
+              </p>
             )}
           </div>
 

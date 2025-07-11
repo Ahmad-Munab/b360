@@ -54,18 +54,18 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.4 0.15 160); /* Emerald primary */
+  --primary: oklch(0.25 0.08 220); /* Deep navy blue primary */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.55 0.12 260); /* Indigo secondary */
+  --secondary: oklch(0.35 0.06 220); /* Lighter navy secondary */
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.45 0.18 150); /* Emerald accent */
+  --accent: oklch(0.45 0.12 200); /* Professional blue accent */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.5 0.15 160); /* Emerald ring */
+  --ring: oklch(0.4 0.08 220); /* Navy ring */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -122,6 +122,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="rgba(37, 99, 235, 0.2)" stroke="rgba(37, 99, 235, 0.8)" stroke-width="2"/></svg>'), auto;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -148,22 +149,52 @@
 }
 
 @layer utilities {
-  .bg-gradient-emerald-indigo {
-    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  .bg-gradient-navy-blue {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   }
 
-  .bg-gradient-emerald-light {
-    background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+  .bg-gradient-navy-light {
+    background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%);
   }
 
-  .bg-gradient-indigo-light {
-    background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 100%);
+  .bg-gradient-blue-light {
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
   }
 
-  .text-gradient-emerald-indigo {
-    background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  .text-gradient-navy-blue {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.8), rgba(37, 99, 235, 0.6));
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 1), rgba(37, 99, 235, 0.8));
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Interactive cursor effects */
+a, button, [role="button"] {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="rgba(37, 99, 235, 0.3)" stroke="rgba(37, 99, 235, 1)" stroke-width="2"/></svg>'), pointer;
 }
