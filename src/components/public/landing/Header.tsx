@@ -158,6 +158,11 @@ export const Header = () => {
       href: "/customer-support",
     },
     {
+      name: "AI",
+      icon: <Users className="w-5 h-5 text-emerald-500" />,
+      href: "/ai",
+    },
+    {
       name: "IT Support",
       icon: <Users className="w-5 h-5 text-blue-500" />,
       href: "/it-support",
@@ -170,15 +175,9 @@ export const Header = () => {
   ];
 
   const industriesDropdown = [
-    { name: "Gaming", href: "/industries/gaming" },
-    { name: "Crypto", href: "/industries/crypto" },
-    { name: "Ecommerce", href: "/industries/ecommerce" },
-    { name: "Health & Wellness", href: "/industries/health-wellness" },
-    { name: "SaaS", href: "/industries/saas" },
-    { name: "Fintech", href: "/industries/fintech" },
-    { name: "Edtech", href: "/industries/edtech" },
-    { name: "Online Subscriptions", href: "/industries/subscriptions" },
-    { name: "Rewards & GPT Platforms", href: "/industries/rewards-gpt" },
+    { name: "E-commerce", href: "/industries/ecommerce" },
+    { name: "Real Estate", href: "/industries/real-estate" },
+    { name: "Law Firms", href: "/industries/law-firms" },
   ];
 
   const aboutDropdown = [
