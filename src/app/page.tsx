@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Users, Database, Shield, Settings } from "lucide-react";
 import {
   Header,
-  AnnouncementBar,
   HeroSection,
   CompanyLogos,
 } from "@/components/public/landing";
@@ -59,7 +58,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <AnnouncementBar />
       <HeroSection />
       <CompanyLogos />
 
