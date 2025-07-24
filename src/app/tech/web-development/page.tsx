@@ -1,13 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PageLayout } from "@/components/layout/PageLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Monitor, Code, CheckCircle, ArrowRight, Globe } from "lucide-react";
+import { PageLayout } from "../../../components/layout/PageLayout";
+import { Card, CardContent } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Code, CheckCircle, ArrowRight, Globe } from "lucide-react";
 import Link from "next/link";
 
-export default function ITSupportPage() {
+export default function WebDevelopmentPage() {
   const services = [
     {
       title: "Web Development",
@@ -196,51 +196,6 @@ export default function ITSupportPage() {
                 </Button>
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Technology Stack */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-heading">
-              Modern Technology Stack
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We use cutting-edge technologies and industry best practices to
-              deliver robust, scalable solutions.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-6xl mx-auto">
-            {[
-              "React",
-              "Node.js",
-              "Python",
-              "AWS",
-              "Docker",
-              "Kubernetes",
-              "MongoDB",
-              "PostgreSQL",
-              "Redis",
-              "GraphQL",
-              "TypeScript",
-              "Next.js",
-            ].map((tech, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3 hover:bg-indigo-100 transition-colors">
-                  <Monitor className="w-8 h-8 text-indigo-600" />
-                </div>
-                <div className="text-sm font-medium text-gray-700">{tech}</div>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>

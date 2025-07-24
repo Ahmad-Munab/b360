@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Users } from "lucide-react";
+import { ChevronDown, MessageSquare, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type DropdownItem = {
@@ -163,14 +163,19 @@ export const Header = () => {
       href: "/ai",
     },
     {
-      name: "IT Support",
+      name: "Tech",
       icon: <Users className="w-5 h-5 text-blue-500" />,
-      href: "/it-support",
+      href: "/tech",
     },
     {
       name: "Digital Marketing",
       icon: <Users className="w-5 h-5 text-blue-500" />,
       href: "/digital-marketing",
+    },
+    {
+      name: "RCS",
+      icon: <MessageSquare className="w-5 h-5 text-blue-500" />,
+      href: "/rcs",
     },
   ];
 
