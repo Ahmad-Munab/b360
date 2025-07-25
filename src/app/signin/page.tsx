@@ -27,7 +27,7 @@ export default function SignInPage() {
     <div className="min-h-screen flex items-center justify-center bg-background-primary">
       <div className="w-full max-w-md p-8 space-y-8 bg-background-secondary rounded-lg border border-border-primary">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Sign in to BetterFAQ AI</h1>
+          <h1 className="text-2xl font-bold">Sign in to the B360 platform</h1>
           <p className="text-text-secondary mt-2">
             Use your Google account to sign in
           </p>

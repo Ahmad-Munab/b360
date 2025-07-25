@@ -28,7 +28,7 @@ export default function Widget({
   widgetId,
   position = "bottom-right",
   primaryColor = "#6366F1",
-  productName = "BetterFAQ AI",
+  productName = "B360",
   widgetTitle = "Need Help?",
   welcomeMessage = "How can we help you today?",
 }: WidgetProps) {

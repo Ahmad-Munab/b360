@@ -44,14 +44,13 @@ export default function Sidebar() {
   const sidebarContent = (
     <>
       <div className="flex items-center gap-2.5 mx-auto mt-3 mb-6">
-        <Image src={"/icons/logo.svg"} alt="" width={45} height={45} />
         <Link
           href="/"
           title="Home"
           id="Logo"
           className="text-xl font-extrabold bg-gradient-to-r from-indigo-700 to-blue-600 bg-clip-text text-transparent"
         >
-          BetterFAQ AI
+          B360
         </Link>
       </div>
 
