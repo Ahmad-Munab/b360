@@ -13,6 +13,8 @@ import {
 import { getDashboardAnalytics } from "@/lib/user-utils";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 interface DashboardData {
   stats: {
     totalMessages: number;
@@ -103,7 +105,11 @@ export default async function DashboardPage() {
               </Badge>
             </div>
             <Link href="/dashboard/widgets">
-              <Button variant="ghost" size="sm" className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+              >
                 View All
                 <ExternalLink className="h-3 w-3" />
               </Button>

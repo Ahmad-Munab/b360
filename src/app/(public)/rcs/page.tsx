@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PageLayout } from "../../components/public/layout/PageLayout";
-import { Card, CardContent } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
+import { PageLayout } from "@/components/public/layout/PageLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { MessageSquare, CheckCircle, ArrowRight, Bot } from "lucide-react";
 import Link from "next/link";
 

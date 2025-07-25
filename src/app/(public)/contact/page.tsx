@@ -2,12 +2,12 @@
 
 import { PageLayout } from "@/components/public/layout/PageLayout";
 import { ContactForm } from "@/components/public/contact/ContactForm";
-import WorldMapDemo from "@/components/ui/world-map-demo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 import Link from "next/link";
+import WorldMapDemo from "@/components/ui/world-map-demo";
 
 export default function ContactPage() {
   const contactMethods = [
