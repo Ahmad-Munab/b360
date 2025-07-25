@@ -2,20 +2,14 @@ import { NextAuthOptions } from 'next-auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/lib/db';
 import GoogleProvider from 'next-auth/providers/google';
-import GitHubProvider from 'next-auth/providers/github';
 
 // Basic validation for required env vars
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const githubClientId = process.env.GITHUB_CLIENT_ID;
-const githubClientSecret = process.env.GITHUB_CLIENT_SECRET;
 const nextAuthSecret = process.env.NEXTAUTH_SECRET;
 
 if (!googleClientId || !googleClientSecret) {
   throw new Error('Missing Google OAuth environment variables');
-}
-if (!githubClientId || !githubClientSecret) {
-  throw new Error('Missing Github OAuth environment variables');
 }
 if (!nextAuthSecret) {
   throw new Error('Missing NEXTAUTH_SECRET environment variable');
@@ -27,10 +21,6 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
   pages: {
