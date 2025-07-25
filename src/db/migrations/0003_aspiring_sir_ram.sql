@@ -1,0 +1,1 @@
+ALTER TABLE "widget_analytics" ADD CONSTRAINT "widget_analytics_widget_id_unique" UNIQUE("widget_id");
