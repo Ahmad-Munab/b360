@@ -9,7 +9,6 @@ import {
   Bot,
   Zap,
   Globe,
-  Clock,
   Users,
   ArrowRight,
   Smartphone,

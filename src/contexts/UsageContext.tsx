@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useUserSettings } from "@/store/useUserSettings";
 
@@ -193,7 +193,7 @@ export function withUsageCheck<P extends object>(
               : "Widget Limit Reached"}
           </h3>
           <p className="text-sm text-yellow-700 mb-3">
-            You've reached your monthly {requiredAction} limit.
+            You&apos;ve reached your monthly {requiredAction} limit.
             {plan === "free"
               ? " Upgrade to Pro for higher limits."
               : " Please wait until next month."}

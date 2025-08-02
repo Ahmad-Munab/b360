@@ -5,13 +5,11 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Users,
   Clock,
   MessageCircle,
   Phone,
   Mail,
   Globe,
-  CheckCircle,
   ArrowRight,
   Headphones,
   Shield,

@@ -2,20 +2,11 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import {
-  Home,
-  MessageCircle,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  Code,
-} from "lucide-react";
+import { Home, MessageCircle, Settings, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 export default function Sidebar() {
   const pathname = usePathname();

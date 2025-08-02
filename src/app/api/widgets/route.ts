@@ -8,7 +8,7 @@ import { withUsageLimits, trackUsage } from '@/lib/middleware/usage';
 import { ensureUserExists } from '@/lib/user-utils';
 
 // GET - Fetch user's widgets
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 

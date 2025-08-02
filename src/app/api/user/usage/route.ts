@@ -3,9 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { subscription, subscriptionUsage, widget } from "@/db/schema";
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -58,17 +58,17 @@ export async function GET(request: NextRequest) {
 
     const actualWidgetCount = widgetCountResult[0]?.count || 0;
 
-    // Get messages count from analytics for current month
-    const startOfMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1
-    );
-    const endOfMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0
-    );
+    // // Get messages count from analytics for current month
+    // const startOfMonth = new Date(
+    //   currentDate.getFullYear(),
+    //   currentDate.getMonth(),
+    //   1
+    // );
+    // const endOfMonth = new Date(
+    //   currentDate.getFullYear(),
+    //   currentDate.getMonth() + 1,
+    //   0
+    // );
 
     // const messageAnalytics = await db
     //     .select({ count: count() })

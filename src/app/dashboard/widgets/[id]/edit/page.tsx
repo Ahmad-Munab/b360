@@ -114,7 +114,7 @@ export default function EditWidgetPage({
       await updateWidget(widgetId, data);
       toast.success("Widget updated successfully");
       router.push("/dashboard/widgets");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update widget");
     } finally {
       setIsSubmitting(false);
@@ -497,7 +497,14 @@ export default function EditWidgetPage({
                       <Select
                         value={form.watch("position")}
                         onValueChange={(value) =>
-                          form.setValue("position", value as any)
+                          form.setValue(
+                            "position",
+                            value as
+                              | "bottom-right"
+                              | "bottom-left"
+                              | "top-right"
+                              | "top-left"
+                          )
                         }
                       >
                         <SelectTrigger>
@@ -537,7 +544,10 @@ export default function EditWidgetPage({
                     <Select
                       value={form.watch("productType")}
                       onValueChange={(value) =>
-                        form.setValue("productType", value as any)
+                        form.setValue(
+                          "productType",
+                          value as "saas" | "portfolio"
+                        )
                       }
                     >
                       <SelectTrigger>

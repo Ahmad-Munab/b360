@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+
 import { db } from "@/lib/db";
-import { widget } from "@/db/schema";
+import { user, widget } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { widgetFormSchema } from "@/lib/validations/widget";
-import { user } from "@/db/schema";
+import { getServerSession } from "next-auth";
 
 // CORS headers for widget embedding
 const corsHeaders = {

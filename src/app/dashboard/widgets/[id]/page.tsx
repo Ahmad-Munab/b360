@@ -11,25 +11,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Copy, Edit, MessageSquare } from "lucide-react";
+
+import { Copy, Edit } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import Widget from "@/components/Widget";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+// Custom hook to get the correct base URL
+function useBaseUrl() {
+  const [baseUrl, setBaseUrl] = useState("");
+
+  useEffect(() => {
+    // Check if we're in production (Vercel)
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+
+      if (hostname === "b360-one.vercel.app") {
+        setBaseUrl("https://b360-one.vercel.app");
+      } else if (hostname === "localhost" || hostname === "127.0.0.1") {
+        // For local development, use the current port
+        setBaseUrl(`${window.location.protocol}//${window.location.host}`);
+      } else {
+        // For other domains, use the current domain
+        setBaseUrl(`${window.location.protocol}//${window.location.host}`);
+      }
+    }
+  }, []);
+
+  return baseUrl;
+}
 
 export default function WidgetViewPage({
   params,
@@ -37,11 +46,10 @@ export default function WidgetViewPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const { widgets, isLoading, fetchWidgets, getWidgetEmbedCode } =
-    useWidgetsStore();
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+  const { widgets, isLoading, fetchWidgets } = useWidgetsStore();
+
   const [widgetId, setWidgetId] = useState<string>("");
+  const baseUrl = useBaseUrl();
 
   useEffect(() => {
     fetchWidgets();
@@ -53,32 +61,14 @@ export default function WidgetViewPage({
     });
   }, [params]);
 
-  useEffect(() => {
-    if (!widgetId) return;
-
-    const fetchAnalytics = async () => {
-      try {
-        const response = await fetch(`/api/widgets/${widgetId}/analytics`);
-        const data = await response.json();
-        setAnalytics(data);
-      } catch (error) {
-        console.error("Failed to fetch analytics:", error);
-        toast.error("Failed to load analytics");
-      } finally {
-        setIsLoadingAnalytics(false);
-      }
-    };
-
-    fetchAnalytics();
-  }, [widgetId]);
-
   const handleCopyCode = async () => {
-    if (!widgetId) return;
+    if (!widgetId || !baseUrl) return;
     try {
-      const code = await getWidgetEmbedCode(widgetId);
+      // Generate the embed code with the correct base URL
+      const code = `<script src="${baseUrl}/widget.js" data-widget-id="${widgetId}" defer></script>`;
       await navigator.clipboard.writeText(code);
       toast.success("Embed code copied to clipboard");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to copy embed code");
     }
   };
@@ -88,11 +78,15 @@ export default function WidgetViewPage({
       <div className="max-w-7xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <Skeleton className="h-8 w-[200px]" />
-            <Skeleton className="h-4 w-[300px]" />
+            <CardTitle>Loading...</CardTitle>
+            <CardDescription>
+              Please wait while we load your widget.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-[400px] w-full" />
+            <div className="flex items-center justify-center h-64">
+              <div className="text-gray-500">Loading widget data...</div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -176,9 +170,7 @@ export default function WidgetViewPage({
             <CardContent>
               <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono">
                 <code>{`<script src="${
-                  typeof window !== "undefined"
-                    ? `${window.location.protocol}//${window.location.host}`
-                    : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+                  baseUrl || "http://localhost:3000"
                 }/widget.js" data-widget-id="${
                   widget.id
                 }" defer></script>`}</code>
@@ -194,171 +186,23 @@ export default function WidgetViewPage({
           </Card>
         </div>
 
-        {/* Analytics and Data */}
+        {/* Widget Preview and Actions */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      Total Messages
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {analytics?.totalMessages || 0}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      Feedback
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {analytics?.totalFeedbacks || 0}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      Bug Reports
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {analytics?.totalBugReports || 0}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Feedback */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Recent Feedback
-              </CardTitle>
+              <CardTitle>Widget Status</CardTitle>
               <CardDescription>
-                Latest customer feedback and responses
+                Your widget is {widget.isActive ? "active" : "inactive"} and
+                ready to use.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingAnalytics ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="border-b border-gray-200 pb-4">
-                      <Skeleton className="h-4 w-[200px] mb-2" />
-                      <Skeleton className="h-3 w-full" />
-                    </div>
-                  ))}
-                </div>
-              ) : analytics?.recentFeedbacks?.length > 0 ? (
-                <div className="space-y-4">
-                  {analytics.recentFeedbacks.map(
-                    (feedback: any, index: number) => (
-                      <div
-                        key={index}
-                        className="border-b border-gray-200 pb-4 last:border-b-0"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Feedback
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(feedback.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700">
-                          {feedback.content}
-                        </p>
-                      </div>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    No feedback yet
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Customer feedback will appear here once they start using
-                    your widget.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Bug Reports */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Bug Reports
-              </CardTitle>
-              <CardDescription>Issues reported by customers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoadingAnalytics ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="border-b border-gray-200 pb-4">
-                      <Skeleton className="h-4 w-[200px] mb-2" />
-                      <Skeleton className="h-3 w-full" />
-                    </div>
-                  ))}
-                </div>
-              ) : analytics?.recentBugReports?.length > 0 ? (
-                <div className="space-y-4">
-                  {analytics.recentBugReports.map((bug: any, index: number) => (
-                    <div
-                      key={index}
-                      className="border-b border-gray-200 pb-4 last:border-b-0"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          Bug Report
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {new Date(bug.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700">{bug.content}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    No bug reports
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Bug reports from customers will appear here.
-                  </p>
-                </div>
-              )}
+              <p className="text-sm text-gray-600">
+                Widget ID:{" "}
+                <code className="bg-gray-100 px-2 py-1 rounded">
+                  {widget.id}
+                </code>
+              </p>
             </CardContent>
           </Card>
         </div>

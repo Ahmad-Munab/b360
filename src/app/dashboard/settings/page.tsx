@@ -135,7 +135,7 @@ export default async function SettingsPage() {
             <CardHeader>
               <CardTitle>Usage Statistics</CardTitle>
               <CardDescription>
-                Here's how you're using your plan's resources.
+                Here&apos;s how you&apos;re using your plan&apos;s resources.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -206,7 +206,9 @@ export default async function SettingsPage() {
 
           {remainingMessages <= 0 && (
             <Alert variant="destructive">
-              <AlertTitle>You've reached your AI response limit!</AlertTitle>
+              <AlertTitle>
+                You&apos;ve reached your AI response limit!
+              </AlertTitle>
               <AlertDescription>
                 Please upgrade your plan to continue receiving AI-powered
                 responses. Your widgets will still collect feedback.

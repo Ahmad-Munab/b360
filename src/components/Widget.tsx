@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageSquare, X, Send, Loader2 } from "lucide-react";
-import Image from "next/image";
 
 interface Message {
   id: string;

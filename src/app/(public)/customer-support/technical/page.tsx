@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Settings,
   Code,
-  Shield,
   Zap,
   Monitor,
   Database,
@@ -25,19 +24,22 @@ export default function TechnicalSupportPage() {
     {
       icon: <Code className="w-8 h-8" />,
       title: "Expert Technical Knowledge",
-      description: "Certified technicians with deep product and system expertise.",
+      description:
+        "Certified technicians with deep product and system expertise.",
       gradient: "from-blue-500 to-indigo-600",
     },
     {
       icon: <Zap className="w-8 h-8" />,
       title: "Rapid Issue Resolution",
-      description: "Quick diagnosis and resolution of complex technical problems.",
+      description:
+        "Quick diagnosis and resolution of complex technical problems.",
       gradient: "from-green-500 to-emerald-600",
     },
     {
       icon: <Monitor className="w-8 h-8" />,
       title: "Remote Assistance",
-      description: "Secure remote access for hands-on troubleshooting and support.",
+      description:
+        "Secure remote access for hands-on troubleshooting and support.",
       gradient: "from-purple-500 to-violet-600",
     },
     {
@@ -53,19 +55,34 @@ export default function TechnicalSupportPage() {
       icon: <Bug className="w-6 h-6" />,
       title: "Bug Reporting & Fixes",
       description: "Systematic bug identification, tracking, and resolution",
-      features: ["Issue reproduction", "Root cause analysis", "Priority classification", "Fix verification"],
+      features: [
+        "Issue reproduction",
+        "Root cause analysis",
+        "Priority classification",
+        "Fix verification",
+      ],
     },
     {
       icon: <Settings className="w-6 h-6" />,
       title: "System Configuration",
       description: "Expert setup and configuration of complex systems",
-      features: ["Initial setup", "Performance optimization", "Security configuration", "Integration support"],
+      features: [
+        "Initial setup",
+        "Performance optimization",
+        "Security configuration",
+        "Integration support",
+      ],
     },
     {
       icon: <Wrench className="w-6 h-6" />,
       title: "Troubleshooting",
       description: "Advanced diagnostic and problem-solving services",
-      features: ["System diagnostics", "Performance analysis", "Error resolution", "Preventive maintenance"],
+      features: [
+        "System diagnostics",
+        "Performance analysis",
+        "Error resolution",
+        "Preventive maintenance",
+      ],
     },
   ];
 
@@ -140,8 +157,8 @@ export default function TechnicalSupportPage() {
               Advanced Technical Capabilities
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our technical support team combines deep expertise with advanced tools
-              to solve complex technical challenges efficiently.
+              Our technical support team combines deep expertise with advanced
+              tools to solve complex technical challenges efficiently.
             </p>
           </div>
 
@@ -155,7 +172,9 @@ export default function TechnicalSupportPage() {
               >
                 <Card className="h-full border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <CardHeader className="text-center pb-4">
-                    <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${feature.gradient} flex items-center justify-center text-white mb-4`}>
+                    <div
+                      className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${feature.gradient} flex items-center justify-center text-white mb-4`}
+                    >
                       {feature.icon}
                     </div>
                     <CardTitle className="text-xl font-bold text-gray-900">
@@ -180,7 +199,8 @@ export default function TechnicalSupportPage() {
               Comprehensive Technical Services
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From bug fixes to system optimization, we provide complete technical support solutions.
+              From bug fixes to system optimization, we provide complete
+              technical support solutions.
             </p>
           </div>
 
@@ -202,10 +222,15 @@ export default function TechnicalSupportPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-gray-600 text-center">{service.description}</p>
+                    <p className="text-gray-600 text-center">
+                      {service.description}
+                    </p>
                     <ul className="space-y-2">
                       {service.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center text-sm text-gray-600">
+                        <li
+                          key={featureIndex}
+                          className="flex items-center text-sm text-gray-600"
+                        >
                           <CheckCircle className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
                           {feature}
                         </li>
@@ -227,7 +252,8 @@ export default function TechnicalSupportPage() {
               Multi-Tier Technical Support
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Escalating support levels ensure the right expertise for every technical challenge.
+              Escalating support levels ensure the right expertise for every
+              technical challenge.
             </p>
           </div>
 
@@ -249,21 +275,27 @@ export default function TechnicalSupportPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-gray-600 text-center">{level.description}</p>
+                    <p className="text-gray-600 text-center">
+                      {level.description}
+                    </p>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-500 flex items-center">
                           <Clock className="w-4 h-4 mr-2" />
                           Response Time:
                         </span>
-                        <span className="text-sm font-medium text-gray-900">{level.responseTime}</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {level.responseTime}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-500 flex items-center">
                           <Users className="w-4 h-4 mr-2" />
                           Availability:
                         </span>
-                        <span className="text-sm font-medium text-gray-900">{level.availability}</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {level.availability}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -288,8 +320,9 @@ export default function TechnicalSupportPage() {
               Get Expert Technical Support
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Don't let technical issues slow you down. Our certified specialists are ready
-              to help you resolve complex problems and optimize your systems.
+              Don&apos;t let technical issues slow you down. Our certified
+              specialists are ready to help you resolve complex problems and
+              optimize your systems.
             </p>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
               <div>

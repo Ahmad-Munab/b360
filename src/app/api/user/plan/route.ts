@@ -7,7 +7,7 @@ import { eq, and, count } from 'drizzle-orm';
 import { ensureUserExists } from '@/lib/user-utils';
 import { getCurrentBillingPeriod, getBillingPeriodKey } from '@/lib/billing';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions);
 

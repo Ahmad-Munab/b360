@@ -59,7 +59,14 @@ export default function NewWidgetPage() {
     currentView: "main", // main, chat, feedback, bug
   });
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (
+    field: string,
+    value:
+      | string
+      | boolean
+      | Array<{ question: string; answer: string }>
+      | Array<string>
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
