@@ -9,182 +9,228 @@ import {
   json,
   decimal,
   uuid,
-} from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
-import { AdapterAccount } from 'next-auth/adapters';
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { AdapterAccount } from "next-auth/adapters";
 
-export const user = pgTable('user', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  email: text('email').notNull().unique(),
-  emailVerified: timestamp('emailVerified', { mode: 'date' }),
-  name: text('name'),
-  image: text('image'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const user = pgTable("user", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull().unique(),
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  name: text("name"),
+  image: text("image"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const userRelations = relations(user, ({ many }) => ({
- widgets: many(widget),
- subscriptions: many(subscription),
- payments: many(payment),
- subscriptionUsage: many(subscriptionUsage),
+  widgets: many(widget),
+  subscriptions: many(subscription),
+  payments: many(payment),
+  subscriptionUsage: many(subscriptionUsage),
 }));
 
 export const account = pgTable(
-  'account',
+  "account",
   {
-    userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
-    type: text('type').$type<AdapterAccount['type']>().notNull(),
-    provider: text('provider').notNull(),
-    providerAccountId: text('providerAccountId').notNull(),
-    refresh_token: text('refresh_token'),
-    access_token: text('access_token'),
-    expires_at: integer('expires_at'),
-    token_type: text('token_type'),
-    scope: text('scope'),
-    id_token: text('id_token'),
-    session_state: text('session_state'),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
   },
   (account) => ({
-    compoundKey: primaryKey({ columns: [account.provider, account.providerAccountId] }),
+    compoundKey: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
   })
 );
 
-export const sessions = pgTable('session', {
-  sessionToken: text('sessionToken').primaryKey(),
-  userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  expires: timestamp('expires', { mode: 'date' }).notNull(),
+export const sessions = pgTable("session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
 });
 
 export const verificationTokens = pgTable(
-  'verificationToken',
+  "verificationToken",
   {
-    identifier: text('identifier').notNull(),
-    token: text('token').notNull(),
-    expires: timestamp('expires', { mode: 'date' }).notNull(),
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   })
 );
 
-export const widget = pgTable('widget', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => user.id).notNull(),
-  name: text('name').notNull(),
-  position: text('position').notNull().default('bottom-right'),
-  primaryColor: text('primary_color').default('#6366F1').notNull(),
-  productType: text('product_type').notNull().default('saas'), // 'saas' or 'portfolio'
-  productName: text('product_name').notNull(),
-  features: json('features').$type<string[]>().notNull().default([]),
-  description: text('description').notNull(),
-  faqs: json('faqs').$type<Array<{
-    question: string;
-    answer: string;
-  }>>().default([]),
-  widgetTitle: text('widget_title').default('Need Help?').notNull(),
-  welcomeMessage: text('welcome_message').default('How can we help you today?').notNull(),
-  feedbackQuestion: text('feedback_question').default(''),
-  enableBugReports: boolean('enable_bug_reports').default(true).notNull(),
-  isActive: boolean('is_active').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const widget = pgTable("widget", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .references(() => user.id)
+    .notNull(),
+  name: text("name").notNull(),
+  position: text("position").notNull().default("bottom-right"),
+  primaryColor: text("primary_color").default("#6366F1").notNull(),
+  productType: text("product_type").notNull().default("saas"), // 'saas' or 'portfolio'
+  productName: text("product_name").notNull(),
+  features: json("features").$type<string[]>().notNull().default([]),
+  description: text("description").notNull(),
+  faqs: json("faqs")
+    .$type<
+      Array<{
+        question: string;
+        answer: string;
+      }>
+    >()
+    .default([]),
+  widgetTitle: text("widget_title").default("Need Help?").notNull(),
+  welcomeMessage: text("welcome_message")
+    .default("How can we help you today?")
+    .notNull(),
+  feedbackQuestion: text("feedback_question").default(""),
+  enableBugReports: boolean("enable_bug_reports").default(true).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const widgetRelations = relations(widget, ({ one, many }) => ({
- user: one(user, { fields: [widget.userId], references: [user.id] }),
- feedbacks: many(feedback),
- analytics: one(widgetAnalytics, { fields: [widget.id], references: [widgetAnalytics.widgetId] }),
+  user: one(user, { fields: [widget.userId], references: [user.id] }),
+  feedbacks: many(feedback),
+  analytics: one(widgetAnalytics, {
+    fields: [widget.id],
+    references: [widgetAnalytics.widgetId],
+  }),
 }));
 
-export const feedback = pgTable('feedback', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  widgetId: uuid('widget_id').references(() => widget.id).notNull(),
-  type: text('type').notNull(), // 'question', 'bug', 'agent'
-  content: text('content').notNull(),
-  status: text('status').notNull().default('pending'), // 'pending', 'resolved', 'rejected'
-  response: text('response'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const feedback = pgTable("feedback", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  widgetId: uuid("widget_id")
+    .references(() => widget.id)
+    .notNull(),
+  type: text("type").notNull(), // 'question', 'bug', 'agent'
+  content: text("content").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'resolved', 'rejected'
+  response: text("response"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const feedbackRelations = relations(feedback, ({ one }) => ({
- widget: one(widget, { fields: [feedback.widgetId], references: [widget.id] }),
+  widget: one(widget, { fields: [feedback.widgetId], references: [widget.id] }),
 }));
 
-export const widgetAnalytics = pgTable('widget_analytics', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  widgetId: uuid('widget_id').references(() => widget.id).notNull().unique(), // Added .unique()
-  messageCount: integer('message_count').default(0).notNull(),
-  feedbackCount: integer('feedback_count').default(0).notNull(),
-  bugReportCount: integer('bug_report_count').default(0).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const widgetAnalytics = pgTable("widget_analytics", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  widgetId: uuid("widget_id")
+    .references(() => widget.id)
+    .notNull()
+    .unique(), // Added .unique()
+  messageCount: integer("message_count").default(0).notNull(),
+  feedbackCount: integer("feedback_count").default(0).notNull(),
+  bugReportCount: integer("bug_report_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const widgetAnalyticsRelations = relations(widgetAnalytics, ({ one }) => ({
- widget: one(widget, { fields: [widgetAnalytics.widgetId], references: [widget.id] }),
-}));
+export const widgetAnalyticsRelations = relations(
+  widgetAnalytics,
+  ({ one }) => ({
+    widget: one(widget, {
+      fields: [widgetAnalytics.widgetId],
+      references: [widget.id],
+    }),
+  })
+);
 
-export const subscription = pgTable('subscription', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => user.id).notNull(),
-  plan: text('plan').notNull().default('free'), // 'free', 'pro'
-  status: text('status').notNull().default('active'),
-  currentPeriodStart: timestamp('current_period_start').notNull(),
-  currentPeriodEnd: timestamp('current_period_end').notNull(),
-  billingCycleDay: integer('billing_cycle_day').notNull().default(1), // Day of month for billing (1-31)
-  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const subscription = pgTable("subscription", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .references(() => user.id)
+    .notNull(),
+  plan: text("plan").notNull().default("free"), // 'free', 'pro'
+  status: text("status").notNull().default("active"),
+  currentPeriodStart: timestamp("current_period_start").notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  billingCycleDay: integer("billing_cycle_day").notNull().default(1), // Day of month for billing (1-31)
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const subscriptionRelations = relations(subscription, ({ one, many }) => ({
- user: one(user, { fields: [subscription.userId], references: [user.id] }),
- payments: many(payment),
-}));
+export const subscriptionRelations = relations(
+  subscription,
+  ({ one, many }) => ({
+    user: one(user, { fields: [subscription.userId], references: [user.id] }),
+    payments: many(payment),
+  })
+);
 
-export const payment = pgTable('payment', {
-  id: serial('id').primaryKey(),
-  userId: uuid('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  subscriptionId: uuid('subscription_id').references(() => subscription.id),
-  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
-  currency: text('currency').notNull().default('USD'),
-  status: text('status').notNull(), // 'succeeded', 'failed', 'pending'
-  polarPaymentId: text('polar_payment_id').unique(),
-  metadata: json('metadata'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+export const payment = pgTable("payment", {
+  id: serial("id").primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  subscriptionId: uuid("subscription_id").references(() => subscription.id),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").notNull().default("USD"),
+  status: text("status").notNull(), // 'succeeded', 'failed', 'pending'
+  stripePaymentId: text("stripe_payment_id").unique(),
+  metadata: json("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const paymentRelations = relations(payment, ({ one }) => ({
- user: one(user, { fields: [payment.userId], references: [user.id] }),
- subscription: one(subscription, { fields: [payment.subscriptionId], references: [subscription.id] }),
+  user: one(user, { fields: [payment.userId], references: [user.id] }),
+  subscription: one(subscription, {
+    fields: [payment.subscriptionId],
+    references: [subscription.id],
+  }),
 }));
 
-export const subscriptionUsage = pgTable('subscription_usage', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => user.id).notNull(),
-  period: text('period').notNull(), // Format: 'YYYY-MM'
-  messageCount: integer('message_count').default(0).notNull(),
-  widgetCount: integer('widget_count').default(0).notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
+export const subscriptionUsage = pgTable("subscription_usage", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .references(() => user.id)
+    .notNull(),
+  period: text("period").notNull(), // Format: 'YYYY-MM'
+  messageCount: integer("message_count").default(0).notNull(),
+  widgetCount: integer("widget_count").default(0).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const subscriptionUsageRelations = relations(subscriptionUsage, ({ one }) => ({
- user: one(user, { fields: [subscriptionUsage.userId], references: [user.id] }),
-}));
+export const subscriptionUsageRelations = relations(
+  subscriptionUsage,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [subscriptionUsage.userId],
+      references: [user.id],
+    }),
+  })
+);
 
-export const testimonial = pgTable('testimonial', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  quote: text('quote').notNull(),
-  name: text('name').notNull(),
-  designation: text('designation').notNull(),
-  image: text('image').notNull(),
-  isActive: boolean('is_active').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const testimonial = pgTable("testimonial", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  quote: text("quote").notNull(),
+  name: text("name").notNull(),
+  designation: text("designation").notNull(),
+  image: text("image").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const testimonialRelations = relations(testimonial, ({ }) => ({
- // No relations for testimonial
+export const testimonialRelations = relations(testimonial, ({}) => ({
+  // No relations for testimonial
 }));

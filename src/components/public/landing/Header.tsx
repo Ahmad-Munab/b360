@@ -1,8 +1,19 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, MessageSquare, Users } from "lucide-react";
+import { ChevronDown, MessageSquare, Users, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type DropdownItem = {
   name: string;
@@ -22,20 +33,20 @@ type DropdownProps = {
 
 const servicesSubmenus = {
   "Customer Support": [
-    { name: "General Support", href: "/solutions/customer-support/general" },
+    { name: "General Support", href: "/customer-support/general" },
     {
       name: "Call Center Support",
-      href: "/solutions/customer-support/call-center",
+      href: "/customer-support/call-center",
     },
     {
       name: "Technical Support",
-      href: "/solutions/customer-support/technical",
+      href: "/customer-support/technical",
     },
     {
       name: "Live Chat Support",
-      href: "/solutions/customer-support/live-chat",
+      href: "/customer-support/live-chat",
     },
-    { name: "Email Support", href: "/solutions/customer-support/email" },
+    { name: "Email Support", href: "/customer-support/email" },
   ],
 };
 
@@ -150,6 +161,7 @@ const Dropdown = ({
 export const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: session, status } = useSession();
 
   const servicesDropdown = [
     {
@@ -255,11 +267,80 @@ export const Header = () => {
             />
           </nav>
 
-          <Link href="/contact">
-            <Button className="bg-gradient-navy-blue text-white hover:opacity-90 rounded-full px-8 py-2 font-bold shadow-lg">
-              Book a Demo Now
-            </Button>
-          </Link>
+          <div className="flex items-center space-x-4">
+            {/* Authentication Section */}
+            {status === "loading" ? (
+              <div className="w-8 h-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+            ) : session ? (
+              // Authenticated User - Show User Menu
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={session.user?.image || ""}
+                        alt={session.user?.name || ""}
+                      />
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {session.user?.name && (
+                        <p className="font-medium">{session.user.name}</p>
+                      )}
+                      {session.user?.email && (
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          {session.user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      signOut();
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              // Not Authenticated - Show Sign In Button
+              <Button
+                onClick={() => signIn()}
+                variant="outline"
+                className="rounded-full px-6 py-2 font-medium"
+              >
+                Sign In
+              </Button>
+            )}
+
+            {/* Book a Demo Button - Always Visible */}
+            <Link href="/contact">
+              <Button className="bg-gradient-navy-blue text-white hover:opacity-90 rounded-full px-8 py-2 font-bold shadow-lg">
+                Book a Demo Now
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </header>

@@ -176,7 +176,9 @@ export default function WidgetViewPage({
             <CardContent>
               <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono">
                 <code>{`<script src="${
-                  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+                  typeof window !== "undefined"
+                    ? `${window.location.protocol}//${window.location.host}`
+                    : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
                 }/widget.js" data-widget-id="${
                   widget.id
                 }" defer></script>`}</code>

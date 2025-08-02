@@ -73,11 +73,13 @@ export const useWidgetsStore = create<WidgetsStore>((set, get) => ({
       if (!response.ok) throw new Error(data.error);
 
       set({
-        widgets: data.widgets.map((widget: any) => ({
-          ...widget,
-          createdAt: new Date(widget.createdAt),
-          updatedAt: new Date(widget.updatedAt),
-        })),
+        widgets: data.widgets.map(
+          (widget: Widget & { createdAt: string; updatedAt: string }) => ({
+            ...widget,
+            createdAt: new Date(widget.createdAt),
+            updatedAt: new Date(widget.updatedAt),
+          })
+        ),
         hasFetched: true,
       });
     } catch (error) {

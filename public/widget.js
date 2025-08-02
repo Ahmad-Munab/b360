@@ -1,4 +1,29 @@
-const API_BASE="http://localhost:3000"
+// Dynamically determine the API base URL
+const API_BASE = (() => {
+  // Check if we're in a browser environment
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    // Production environment (Vercel)
+    if (hostname === 'b360-one.vercel.app') {
+      return 'https://b360-one.vercel.app';
+    }
+
+    // Local development - always use localhost:3000 for API calls
+    // This handles cases where the widget is embedded in Live Server or other local servers
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3000';
+    }
+
+    // For other domains, assume it's the same domain (production case)
+    const port = window.location.port;
+    return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+  }
+
+  // Fallback for non-browser environments
+  return 'http://localhost:3000';
+})();
 
 // Modern Support Widget
 class ModernSupportWidget {

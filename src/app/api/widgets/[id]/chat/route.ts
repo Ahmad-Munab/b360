@@ -5,9 +5,26 @@ import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { generateAIResponse } from "@/lib/ai";
 import { UsageService } from "@/lib/usage";
- 
- // POST - Handle chat messages for a specific widget (public endpoint)
- export async function POST(
+
+// CORS headers for widget embedding
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With",
+  "Access-Control-Allow-Credentials": "false",
+};
+
+// Handle preflight OPTIONS requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
+
+// POST - Handle chat messages for a specific widget (public endpoint)
+export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -20,7 +37,7 @@ import { UsageService } from "@/lib/usage";
     if (!message) {
       return NextResponse.json(
         { error: "Message is required" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -30,16 +47,19 @@ import { UsageService } from "@/lib/usage";
     });
 
     if (!widgetData) {
-      return NextResponse.json({ error: "Widget not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Widget not found" },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
     if (!widgetData.isActive) {
       return NextResponse.json(
         { error: "Widget is not active" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
- 
+
     // Check usage limits before processing
     const canSendMessage = await UsageService.canPerformAction(
       widgetData.userId,
@@ -53,13 +73,13 @@ import { UsageService } from "@/lib/usage";
           response:
             "Sorry, but I can't reply. The message limit for this widget has been reached.",
         },
-        { status: 429 }
+        { status: 429, headers: corsHeaders }
       );
     }
- 
-     // Generate AI response (replace with your actual AI logic)
-     const aiResponse = await generateAIResponse(message, widgetData);
- 
+
+    // Generate AI response (replace with your actual AI logic)
+    const aiResponse = await generateAIResponse(message, widgetData);
+
     // Generate a session ID for tracking
     const sessionId = uuidv4();
 
@@ -77,38 +97,13 @@ import { UsageService } from "@/lib/usage";
         response: aiResponse,
         sessionId,
       },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      }
+      { headers: corsHeaders }
     );
   } catch (error) {
     console.error("Error processing widget chat message:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      }
+      { status: 500, headers: corsHeaders }
     );
   }
-}
-
-// Handle preflight requests
-export async function OPTIONS(request: Request) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
 }

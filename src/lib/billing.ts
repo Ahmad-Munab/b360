@@ -6,7 +6,10 @@
  * Calculate the next billing date based on signup date
  * Handles edge cases like February 29th, 30th, 31st
  */
-export function calculateNextBillingDate(signupDate: Date, currentDate: Date = new Date()): Date {
+export function calculateNextBillingDate(
+  signupDate: Date,
+  currentDate: Date = new Date()
+): Date {
   const signupDay = signupDate.getDate();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -28,7 +31,11 @@ export function calculateNextBillingDate(signupDate: Date, currentDate: Date = n
   }
 
   // Get the last day of the target month
-  const lastDayOfMonth = new Date(nextBillingYear, nextBillingMonth + 1, 0).getDate();
+  const lastDayOfMonth = new Date(
+    nextBillingYear,
+    nextBillingMonth + 1,
+    0
+  ).getDate();
 
   // Use the signup day or the last day of the month, whichever is smaller
   const billingDay = Math.min(signupDay, lastDayOfMonth);
@@ -39,7 +46,10 @@ export function calculateNextBillingDate(signupDate: Date, currentDate: Date = n
 /**
  * Calculate the current billing period for a user based on their signup date
  */
-export function getCurrentBillingPeriod(signupDate: Date, currentDate: Date = new Date()): {
+export function getCurrentBillingPeriod(
+  signupDate: Date,
+  currentDate: Date = new Date()
+): {
   periodStart: Date;
   periodEnd: Date;
   periodKey: string; // Format: YYYY-MM-DD for unique identification
@@ -48,10 +58,10 @@ export function getCurrentBillingPeriod(signupDate: Date, currentDate: Date = ne
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
   const currentDay = currentDate.getDate();
-  
+
   let periodStartYear = currentYear;
   let periodStartMonth = currentMonth;
-  
+
   // If we haven't reached the billing day this month, use previous month
   if (currentDay < signupDay) {
     periodStartMonth--;
@@ -60,30 +70,44 @@ export function getCurrentBillingPeriod(signupDate: Date, currentDate: Date = ne
       periodStartYear--;
     }
   }
-  
+
   // Calculate period start
-  const lastDayOfStartMonth = new Date(periodStartYear, periodStartMonth + 1, 0).getDate();
+  const lastDayOfStartMonth = new Date(
+    periodStartYear,
+    periodStartMonth + 1,
+    0
+  ).getDate();
   const periodStartDay = Math.min(signupDay, lastDayOfStartMonth);
-  const periodStart = new Date(periodStartYear, periodStartMonth, periodStartDay);
-  
+  const periodStart = new Date(
+    periodStartYear,
+    periodStartMonth,
+    periodStartDay
+  );
+
   // Calculate period end (next billing date minus 1 day)
   const nextBilling = calculateNextBillingDate(signupDate, periodStart);
   const periodEnd = new Date(nextBilling.getTime() - 24 * 60 * 60 * 1000);
-  
+
   // Create a unique period key
-  const periodKey = `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`;
-  
+  const periodKey = `${periodStart.getFullYear()}-${String(
+    periodStart.getMonth() + 1
+  ).padStart(2, "0")}-${String(periodStart.getDate()).padStart(2, "0")}`;
+
   return {
     periodStart,
     periodEnd,
-    periodKey
+    periodKey,
   };
 }
 
 /**
  * Check if a date falls within a billing period
  */
-export function isDateInBillingPeriod(date: Date, periodStart: Date, periodEnd: Date): boolean {
+export function isDateInBillingPeriod(
+  date: Date,
+  periodStart: Date,
+  periodEnd: Date
+): boolean {
   return date >= periodStart && date <= periodEnd;
 }
 
@@ -91,7 +115,10 @@ export function isDateInBillingPeriod(date: Date, periodStart: Date, periodEnd: 
  * Get the billing period key for usage tracking
  * This replaces the simple YYYY-MM format with a more accurate period tracking
  */
-export function getBillingPeriodKey(signupDate: Date, currentDate: Date = new Date()): string {
+export function getBillingPeriodKey(
+  signupDate: Date,
+  currentDate: Date = new Date()
+): string {
   const { periodKey } = getCurrentBillingPeriod(signupDate, currentDate);
   return periodKey;
 }
@@ -100,46 +127,56 @@ export function getBillingPeriodKey(signupDate: Date, currentDate: Date = new Da
  * Calculate subscription renewal date based on signup date
  * Handles edge cases for months with different numbers of days
  */
-export function calculateRenewalDate(signupDate: Date, monthsToAdd: number = 1): Date {
+export function calculateRenewalDate(
+  signupDate: Date,
+  monthsToAdd: number = 1
+): Date {
   const signupDay = signupDate.getDate();
   const targetYear = signupDate.getFullYear();
   const targetMonth = signupDate.getMonth() + monthsToAdd;
-  
+
   // Handle year and month overflow
   const finalYear = targetYear + Math.floor(targetMonth / 12);
   const finalMonth = targetMonth % 12;
-  
+
   // Get the last day of the target month
   const lastDayOfMonth = new Date(finalYear, finalMonth + 1, 0).getDate();
-  
+
   // Use the signup day or the last day of the month, whichever is smaller
   const renewalDay = Math.min(signupDay, lastDayOfMonth);
-  
+
   return new Date(finalYear, finalMonth, renewalDay);
 }
 
 /**
  * Format billing period for display
  */
-export function formatBillingPeriod(periodStart: Date, periodEnd: Date): string {
-  const startStr = periodStart.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric',
-    year: 'numeric'
+export function formatBillingPeriod(
+  periodStart: Date,
+  periodEnd: Date
+): string {
+  const startStr = periodStart.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
-  const endStr = periodEnd.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric',
-    year: 'numeric'
+  const endStr = periodEnd.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
-  
+
   return `${startStr} - ${endStr}`;
 }
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
 import { db } from "./db";
-import { user, subscription, subscriptionUsage as usageTable } from "@/db/schema";
+import {
+  user,
+  subscription,
+  subscriptionUsage as usageTable,
+} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { plans } from "@/lib/config/plans";
 
@@ -176,9 +213,7 @@ export async function getUserUsage() {
     return null;
   }
 
-  const { periodStart, periodEnd } = getCurrentBillingPeriod(
-    currentUser.createdAt
-  );
+  const { periodEnd } = getCurrentBillingPeriod(currentUser.createdAt);
 
   const [usage] = await db
     .select({
@@ -189,10 +224,7 @@ export async function getUserUsage() {
     .where(
       and(
         eq(usageTable.userId, session.user.id),
-        eq(
-          usageTable.period,
-          getBillingPeriodKey(currentUser.createdAt)
-        )
+        eq(usageTable.period, getBillingPeriodKey(currentUser.createdAt))
       )
     );
 

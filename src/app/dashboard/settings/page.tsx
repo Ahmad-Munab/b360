@@ -26,8 +26,10 @@ export default async function SettingsPage() {
   const plan = await getUserPlan();
   const usage = await getUserUsage();
 
-  const remainingMessages = (usage?.limits.messages || 0) - (usage?.messageCount || 0);
-  const remainingWidgets = (usage?.limits.widgets || 0) - (usage?.widgetCount || 0);
+  const remainingMessages =
+    (usage?.limits.messages || 0) - (usage?.messageCount || 0);
+  const remainingWidgets =
+    (usage?.limits.widgets || 0) - (usage?.widgetCount || 0);
   const messageUsagePercentage =
     ((usage?.messageCount || 0) / (usage?.limits.messages || 1)) * 100;
   const widgetUsagePercentage =
@@ -63,7 +65,9 @@ export default async function SettingsPage() {
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Status</span>
                 <Badge
-                  variant={plan?.status === "active" ? "default" : "destructive"}
+                  variant={
+                    plan?.status === "active" ? "default" : "destructive"
+                  }
                   className="capitalize"
                 >
                   {plan?.status || "Active"}
@@ -79,13 +83,11 @@ export default async function SettingsPage() {
               )}
             </CardContent>
             <CardFooter>
-              <Link href={process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || ""} target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full">
-                    {plan?.plan === "pro"
-                      ? "Manage Subscription"
-                      : "Upgrade to Pro"}
-                  </Button>
-              </Link>
+              <Button className="w-full" disabled>
+                {plan?.plan === "pro"
+                  ? "Pro Plan Active"
+                  : "Contact Sales to Upgrade"}
+              </Button>
             </CardFooter>
           </Card>
 
@@ -119,8 +121,8 @@ export default async function SettingsPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Link href="/dashboard/credits">
-                  <Button className="w-full">View Pricing</Button>
+                <Link href="/contact">
+                  <Button className="w-full">Contact Sales</Button>
                 </Link>
               </CardFooter>
             </Card>
@@ -144,13 +146,16 @@ export default async function SettingsPage() {
                     <MessageSquare className="w-5 h-5 mr-2 text-blue-500" />
                     AI Responses
                   </h3>
-                  <Badge variant={remainingMessages > 0 ? "default" : "destructive"}>
+                  <Badge
+                    variant={remainingMessages > 0 ? "default" : "destructive"}
+                  >
                     {remainingMessages > 0 ? "Available" : "Limit Reached"}
                   </Badge>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground mb-1">
                   <span>
-                    {usage?.messageCount || 0} / {usage?.limits.messages || 0} used
+                    {usage?.messageCount || 0} / {usage?.limits.messages || 0}{" "}
+                    used
                   </span>
                   <span className="font-medium text-green-600">
                     {remainingMessages} remaining
@@ -168,13 +173,16 @@ export default async function SettingsPage() {
                     <Mail className="w-5 h-5 mr-2 text-purple-500" />
                     Widgets
                   </h3>
-                  <Badge variant={remainingWidgets > 0 ? "default" : "destructive"}>
+                  <Badge
+                    variant={remainingWidgets > 0 ? "default" : "destructive"}
+                  >
                     {remainingWidgets > 0 ? "Available" : "Limit Reached"}
                   </Badge>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground mb-1">
                   <span>
-                    {usage?.widgetCount || 0} / {usage?.limits.widgets || 0} used
+                    {usage?.widgetCount || 0} / {usage?.limits.widgets || 0}{" "}
+                    used
                   </span>
                   <span className="font-medium text-green-600">
                     {remainingWidgets} remaining

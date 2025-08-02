@@ -7,11 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Users, Database, Shield, Settings } from "lucide-react";
-import {
-  Header,
-  HeroSection,
-  CompanyLogos,
-} from "@/components/public/landing";
+import { Header, HeroSection, CompanyLogos } from "@/components/public/landing";
 
 export default function HomePage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -348,7 +344,7 @@ export default function HomePage() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="/solutions/customer-support/general"
+                    href="/customer-support/general"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     General Support
@@ -356,7 +352,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/solutions/customer-support/technical"
+                    href="/customer-support/technical"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Technical Support
@@ -364,7 +360,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/solutions/customer-support/call-center"
+                    href="/customer-support/call-center"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Call Center
@@ -372,7 +368,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link
-                    href="/solutions/customer-support/live-chat"
+                    href="/customer-support/live-chat"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Live Chat

@@ -110,7 +110,7 @@ function Footer() {
             <ul className="space-y-2 text-gray-400">
               <li>
                 <Link
-                  href="/solutions/customer-support/general"
+                  href="/customer-support/general"
                   className="hover:text-white transition-colors"
                 >
                   General Support
@@ -118,7 +118,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/solutions/customer-support/technical"
+                  href="/customer-support/technical"
                   className="hover:text-white transition-colors"
                 >
                   Technical Support
@@ -126,7 +126,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/solutions/customer-support/call-center"
+                  href="/customer-support/call-center"
                   className="hover:text-white transition-colors"
                 >
                   Call Center
@@ -134,7 +134,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/solutions/customer-support/live-chat"
+                  href="/customer-support/live-chat"
                   className="hover:text-white transition-colors"
                 >
                   Live Chat

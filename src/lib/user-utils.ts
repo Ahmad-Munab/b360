@@ -1,65 +1,65 @@
-import { db } from '@/lib/db';
-import { user } from '@/db/schema';
-import { eq, and, count, desc } from 'drizzle-orm';
+import { db } from "@/lib/db";
+import { user } from "@/db/schema";
+import { eq, and, count, desc } from "drizzle-orm";
 
 export interface UserData {
-    id: string;
-    email: string;
-    name: string;
-    image?: string | null;
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
 }
 
 /**
  * Ensures a user exists in the database, creating them if they don't exist
  */
 export async function ensureUserExists(userData: UserData): Promise<boolean> {
-    try {
-        // Check if user exists
-        const existingUser = await db
-            .select({ id: user.id })
-            .from(user)
-            .where(eq(user.id, userData.id))
-            .limit(1);
+  try {
+    // Check if user exists
+    const existingUser = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.id, userData.id))
+      .limit(1);
 
-        if (existingUser.length === 0) {
-            // User doesn't exist, create them
-            await db.insert(user).values({
-                id: userData.id,
-                email: userData.email,
-                name: userData.name,
-                image: userData.image || null,
-            });
-            console.log(`Created user record for ${userData.email}`);
-        }
-
-        return true;
-    } catch (error) {
-        console.error('Error ensuring user exists:', error);
-        return false;
+    if (existingUser.length === 0) {
+      // User doesn't exist, create them
+      await db.insert(user).values({
+        id: userData.id,
+        email: userData.email,
+        name: userData.name,
+        image: userData.image || null,
+      });
+      console.log(`Created user record for ${userData.email}`);
     }
+
+    return true;
+  } catch (error) {
+    console.error("Error ensuring user exists:", error);
+    return false;
+  }
 }
 
 /**
  * Checks if a user exists in the database
  */
 export async function userExists(userId: string): Promise<boolean> {
-    try {
-        const existingUser = await db
-            .select({ id: user.id })
-            .from(user)
-            .where(eq(user.id, userId))
-            .limit(1);
+  try {
+    const existingUser = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
 
-        return existingUser.length > 0;
-    } catch (error) {
-        console.error('Error checking if user exists:', error);
-        return false;
-    }
+    return existingUser.length > 0;
+  } catch (error) {
+    console.error("Error checking if user exists:", error);
+    return false;
+  }
 }
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
-import { widget, feedback, widgetAnalytics, subscriptionUsage } from "@/db/schema";
+import { widget, feedback, subscriptionUsage } from "@/db/schema";
 import { getCurrentBillingPeriod } from "@/lib/billing";
 
 export async function getDashboardAnalytics() {
@@ -82,12 +82,6 @@ export async function getDashboardAnalytics() {
     }
 
     const { periodKey } = getCurrentBillingPeriod(currentUser.createdAt);
-
-    // Get total stats
-    const [totalWidgetsResult] = await db
-      .select({ count: count() })
-      .from(widget)
-      .where(eq(widget.userId, userId));
 
     // Use subscriptionUsage table to get total messages for the current period
     const [totalMessages] = await db

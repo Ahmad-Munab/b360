@@ -1,11 +1,20 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { widget } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { widgetFormSchema } from '@/lib/validations/widget';
-import { user } from '@/db/schema';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { widget } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+import { widgetFormSchema } from "@/lib/validations/widget";
+import { user } from "@/db/schema";
+
+// CORS headers for widget embedding
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With",
+  "Access-Control-Allow-Credentials": "false",
+};
 
 // Get a specific widget (public access for widget loading)
 export async function GET(
@@ -19,11 +28,17 @@ export async function GET(
     });
 
     if (!widgetData) {
-      return NextResponse.json({ error: 'Widget not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Widget not found" },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
     if (!widgetData.isActive) {
-      return NextResponse.json({ error: 'Widget is not active' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Widget is not active" },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     // Return only public widget configuration (no sensitive data)
@@ -42,23 +57,16 @@ export async function GET(
       enableBugReports: widgetData.enableBugReports,
     };
 
-    return NextResponse.json({ widget: publicWidget }, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
-    });
+    return NextResponse.json(
+      { widget: publicWidget },
+      { headers: corsHeaders }
+    );
   } catch (error) {
-    console.error('Error fetching widget:', error);
-    return NextResponse.json({ error: 'Internal server error' }, {
-      status: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
-    });
+    console.error("Error fetching widget:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
@@ -67,9 +75,9 @@ export async function OPTIONS(request: Request) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
     },
   });
 }
@@ -83,10 +91,7 @@ export async function PATCH(
     const params = await context.params;
     const session = await getServerSession();
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userData = await db.query.user.findFirst({
@@ -94,10 +99,7 @@ export async function PATCH(
     });
 
     if (!userData) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const body = await req.json();
@@ -109,19 +111,11 @@ export async function PATCH(
         ...body,
         updatedAt: now,
       })
-      .where(
-        and(
-          eq(widget.id, params.id),
-          eq(widget.userId, userData.id)
-        )
-      )
+      .where(and(eq(widget.id, params.id), eq(widget.userId, userData.id)))
       .returning();
 
     if (!updatedWidget) {
-      return NextResponse.json(
-        { error: "Widget not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Widget not found" }, { status: 404 });
     }
 
     return NextResponse.json({ widget: updatedWidget });
@@ -140,13 +134,10 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const params = await context.params;     // Get the params from the context
+    const params = await context.params; // Get the params from the context
     const session = await getServerSession();
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userData = await db.query.user.findFirst({
@@ -154,27 +145,16 @@ export async function DELETE(
     });
 
     if (!userData) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const [deletedWidget] = await db
       .delete(widget)
-      .where(
-        and(
-          eq(widget.id, params.id),
-          eq(widget.userId, userData.id)
-        )
-      )
+      .where(and(eq(widget.id, params.id), eq(widget.userId, userData.id)))
       .returning();
 
     if (!deletedWidget) {
-      return NextResponse.json(
-        { error: "Widget not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Widget not found" }, { status: 404 });
     }
 
     return NextResponse.json({ widget: deletedWidget });

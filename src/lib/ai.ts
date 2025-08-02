@@ -1,14 +1,14 @@
-import { Groq } from 'groq-sdk';
+import { Groq } from "groq-sdk";
 
 if (!process.env.GROQ_API_KEY) {
-    throw new Error('GROQ_API_KEY is not set');
+  throw new Error("GROQ_API_KEY is not set");
 }
 
 export const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY,
 });
 
-export const AI_MODEL = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+export const AI_MODEL = "meta-llama/llama-4-maverick-17b-128e-instruct";
 
 // Define the widget type based on your database schema
 // Note: Nullable fields in the database return null, not undefined
@@ -39,36 +39,43 @@ export async function generateAIResponse(
   message: string,
   widgetData: WidgetData
 ) {
-  // Build context from widget data
-  let context = '';
+  try {
+    // Build context from widget data
+    let context = "";
 
-  if (widgetData.productName) {
-    context += `Product: ${widgetData.productName}\n`;
-  }
+    if (widgetData.productName) {
+      context += `Product: ${widgetData.productName}\n`;
+    }
 
-  if (widgetData.productType) {
-    context += `Product Type: ${widgetData.productType}\n`;
-  }
+    if (widgetData.productType) {
+      context += `Product Type: ${widgetData.productType}\n`;
+    }
 
-  if (widgetData.description) {
-    context += `Product Description: ${widgetData.description}\n`;
-  }
+    if (widgetData.description) {
+      context += `Product Description: ${widgetData.description}\n`;
+    }
 
-  if (widgetData.features && widgetData.features.length > 0) {
-    context += `Product Features: ${widgetData.features.join(', ')}\n`;
-  }
+    if (widgetData.features && widgetData.features.length > 0) {
+      context += `Product Features: ${widgetData.features.join(", ")}\n`;
+    }
 
-  if (widgetData.faqs && widgetData.faqs.length > 0) {
-    context += `Frequently Asked Questions:\n`;
-    widgetData.faqs.forEach(qa => {
-      context += `Q: ${qa.question}\nA: ${qa.answer}\n`;
-    });
-  }
+    if (widgetData.faqs && widgetData.faqs.length > 0) {
+      context += `Frequently Asked Questions:\n`;
+      widgetData.faqs.forEach((qa) => {
+        context += `Q: ${qa.question}\nA: ${qa.answer}\n`;
+      });
+    }
 
-  const systemPrompt = `You are a helpful AI assistant for ${widgetData.productName || 'this product'}'s customer support widget.
+    const systemPrompt = `You are a helpful AI assistant for ${
+      widgetData.productName || "this product"
+    }'s customer support widget.
 You should provide helpful, accurate, and friendly responses to customer inquiries.
 
-${context ? `Here is important information about the product/service:\n${context}` : ''}
+${
+  context
+    ? `Here is important information about the product/service:\n${context}`
+    : ""
+}
 
 Guidelines:
 - Be helpful and professional
@@ -78,21 +85,38 @@ Guidelines:
 - Use the FAQ information as reference when relevant
 - Always maintain a friendly and supportive tone`;
 
-  const completion = await groq.chat.completions.create({
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-    ],
-    model: AI_MODEL,
-    temperature: 0.7,
-    max_tokens: 1024,
-  });
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: message,
+        },
+      ],
+      model: AI_MODEL,
+      temperature: 0.7,
+      max_tokens: 1024,
+    });
 
-  return completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
-} 
+    const response = completion.choices[0]?.message?.content;
+
+    if (!response) {
+      console.error("No response content from AI model");
+      return "I apologize, but I'm having trouble generating a response right now. Please try again or contact our support team for assistance.";
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Error generating AI response:", error);
+
+    // Return a helpful fallback message
+    return `Thank you for your message! I'm currently experiencing some technical difficulties, but I'd be happy to help you. For immediate assistance, please contact our support team. In the meantime, ${
+      widgetData.faqs && widgetData.faqs.length > 0
+        ? "you might find answers to common questions in our FAQ section."
+        : "feel free to describe your issue and we'll get back to you as soon as possible."
+    }`;
+  }
+}
