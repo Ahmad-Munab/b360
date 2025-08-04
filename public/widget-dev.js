@@ -1,5 +1,5 @@
 // Dynamically determine the API base URL
-const API_BASE = "https://b360-one.vercel.app";
+const API_BASE = "http://localhost:3000";
 
 // Modern Support Widget
 class ModernSupportWidget {

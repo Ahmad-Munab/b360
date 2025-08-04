@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWidgetsStore } from "@/store/useWidgetsStore";
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,6 @@ function useBaseUrl() {
 
       if (hostname === "b360-one.vercel.app") {
         setBaseUrl("https://b360-one.vercel.app");
-      } else if (hostname === "localhost" || hostname === "127.0.0.1") {
-        // For local development, use the current port
-        setBaseUrl(`${window.location.protocol}//${window.location.host}`);
       } else {
         // For other domains, use the current domain
         setBaseUrl(`${window.location.protocol}//${window.location.host}`);
@@ -50,6 +47,12 @@ export default function WidgetViewPage({
 
   const [widgetId, setWidgetId] = useState<string>("");
   const baseUrl = useBaseUrl();
+  const code = useMemo(() => {
+    const widgetJSFile = baseUrl.includes("vercel")
+      ? "widget.js"
+      : "widget-dev.js";
+    return `<script src="${baseUrl}/${widgetJSFile}" data-widget-id="${widgetId}" defer></script>`;
+  }, [widgetId, baseUrl]);
 
   useEffect(() => {
     fetchWidgets();
@@ -64,8 +67,6 @@ export default function WidgetViewPage({
   const handleCopyCode = async () => {
     if (!widgetId || !baseUrl) return;
     try {
-      // Generate the embed code with the correct base URL
-      const code = `<script src="${baseUrl}/widget.js" data-widget-id="${widgetId}" defer></script>`;
       await navigator.clipboard.writeText(code);
       toast.success("Embed code copied to clipboard");
     } catch (_error) {
@@ -169,11 +170,7 @@ export default function WidgetViewPage({
             </CardHeader>
             <CardContent>
               <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono">
-                <code>{`<script src="${
-                  baseUrl || "http://localhost:3000"
-                }/widget.js" data-widget-id="${
-                  widget.id
-                }" defer></script>`}</code>
+                <code>{code}</code>
               </div>
               <Button
                 onClick={handleCopyCode}

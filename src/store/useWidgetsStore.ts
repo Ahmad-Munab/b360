@@ -45,7 +45,6 @@ interface WidgetsStore {
   ) => Promise<void>;
   deleteWidget: (id: string) => Promise<void>;
   setSelectedWidget: (widget: Widget | null) => void;
-  getWidgetEmbedCode: (widgetId: string) => Promise<string>;
   getWidgetForEdit: (widgetId: string) => Promise<Widget>;
 }
 
@@ -186,18 +185,6 @@ export const useWidgetsStore = create<WidgetsStore>((set, get) => ({
   },
 
   setSelectedWidget: (widget) => set({ selectedWidget: widget }),
-
-  getWidgetEmbedCode: async (widgetId) => {
-    try {
-      const response = await fetch(`/api/widgets/${widgetId}/embed`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-      return data.embedCode;
-    } catch (error) {
-      toast.error("Failed to get embed code");
-      throw error;
-    }
-  },
 
   // Add method to get widget for editing (authenticated)
   getWidgetForEdit: async (widgetId: string) => {
