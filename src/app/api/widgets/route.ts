@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { widget } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { withUsageLimits, trackUsage } from '@/lib/middleware/usage';
-import { ensureUserExists } from '@/lib/user-utils';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { widget } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { withUsageLimits, trackUsage } from "@/lib/middleware/usage";
+import { ensureUserExists } from "@/lib/user-utils";
 
 // GET - Fetch user's widgets
 export async function GET() {
@@ -13,17 +13,14 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Ensure user exists in database
     await ensureUserExists({
       id: session.user.id,
-      email: session.user.email || '',
-      name: session.user.name || '',
+      email: session.user.email || "",
+      name: session.user.name || "",
       image: session.user.image || null,
     });
 
@@ -34,115 +31,104 @@ export async function GET() {
       .orderBy(widget.createdAt);
 
     return NextResponse.json({ widgets: userWidgets });
-
   } catch (error) {
-    console.error('Error fetching widgets:', error);
+    console.error("Error fetching widgets:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-// POST - Create new widget (with usage checking)
-export const POST = withUsageLimits({ action: 'widget' })(
-  async function createWidget(request: NextRequest) {
-    try {
-      const session = await getServerSession(authOptions);
-      const userId = session!.user!.id; // Safe because of middleware check
+// POST - Create new widget
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
 
-      // Ensure user exists in database
-      await ensureUserExists({
-        id: userId,
-        email: session!.user!.email || '',
-        name: session!.user!.name || '',
-        image: session!.user!.image || null,
-      });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-      const body = await request.json();
-      const {
-        name,
-        position = 'bottom-right',
-        primaryColor = '#6366F1',
-        productType = 'saas',
-        productName,
-        features = [],
-        description,
-        faqs = [],
-        widgetTitle = 'Need Help?',
-        welcomeMessage = 'How can we help you today?',
-        feedbackQuestion = '',
-        enableBugReports = true,
-        isActive = true,
-      } = body;
+    const userId = session.user.id;
 
-      // Validate required fields
-      if (!name) {
-        return NextResponse.json(
-          { error: 'Widget name is required' },
-          { status: 400 }
-        );
-      }
+    // Ensure user exists in database
+    await ensureUserExists({
+      id: userId,
+      email: session.user.email || "",
+      name: session.user.name || "",
+      image: session.user.image || null,
+    });
 
-      if (!productName) {
-        return NextResponse.json(
-          { error: 'Product name is required' },
-          { status: 400 }
-        );
-      }
+    const body = await request.json();
+    const {
+      name,
+      position = "bottom-right",
+      primaryColor = "#6366F1",
+      productName,
+      description,
+      widgetTitle = "Chat with us",
+      welcomeMessage = "Hi! How can I help you today?",
+      isActive = true,
+    } = body;
 
-      if (!description) {
-        return NextResponse.json(
-          { error: 'Description is required' },
-          { status: 400 }
-        );
-      }
-
-      if (!features || features.length === 0) {
-        return NextResponse.json(
-          { error: 'At least one feature is required' },
-          { status: 400 }
-        );
-      }
-
-      // Create the widget
-      const newWidget = await db
-        .insert(widget)
-        .values({
-          userId,
-          name,
-          position,
-          primaryColor,
-          productType,
-          productName,
-          features,
-          description,
-          faqs,
-          widgetTitle,
-          welcomeMessage,
-          feedbackQuestion,
-          enableBugReports,
-          isActive,
-        })
-        .returning();
-
-      // Track the widget creation in usage
-      await trackUsage(userId, 'widget');
-
+    // Validate required fields
+    if (!name) {
       return NextResponse.json(
-        {
-          widget: newWidget[0],
-          message: 'Widget created successfully'
-        },
-        { status: 201 }
-      );
-
-    } catch (error) {
-      console.error('Error creating widget:', error);
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
+        { error: "Widget name is required" },
+        { status: 400 }
       );
     }
+
+    if (!productName) {
+      return NextResponse.json(
+        { error: "Product name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!description) {
+      return NextResponse.json(
+        { error: "Description is required" },
+        { status: 400 }
+      );
+    }
+
+    // Create the widget
+    const newWidget = await db
+      .insert(widget)
+      .values({
+        userId,
+        name,
+        position,
+        primaryColor,
+        productType: "saas", // Default value
+        productName,
+        features: [], // Default empty array
+        description,
+        faqs: [], // Default empty array
+        widgetTitle,
+        welcomeMessage,
+        feedbackQuestion: "", // Default empty string
+        enableBugReports: false, // Default false for simplified widget
+        isActive,
+      })
+      .returning();
+
+    // Track the widget creation in usage
+    await trackUsage(userId, "widget");
+
+    return NextResponse.json(
+      {
+        widget: newWidget[0],
+        message: "Widget created successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating widget:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-);
+}

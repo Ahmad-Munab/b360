@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { user, widget } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // CORS headers for widget embedding
 const corsHeaders = {
@@ -87,7 +88,7 @@ export async function PATCH(
 ) {
   try {
     const params = await context.params;
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -133,7 +134,7 @@ export async function DELETE(
 ) {
   try {
     const params = await context.params; // Get the params from the context
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

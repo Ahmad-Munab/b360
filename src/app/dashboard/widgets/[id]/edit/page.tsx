@@ -29,15 +29,7 @@ import {
   widgetFormSchema,
   type WidgetFormValues,
 } from "@/lib/validations/widget";
-import {
-  Plus,
-  X,
-  MessageCircle,
-  Bug,
-  ThumbsUp,
-  Send,
-  ArrowLeft,
-} from "lucide-react";
+import { MessageCircle, Send, X } from "lucide-react";
 
 export default function EditWidgetPage({
   params,
@@ -50,7 +42,6 @@ export default function EditWidgetPage({
   const [widgetId, setWidgetId] = useState<string>("");
   const [previewState, setPreviewState] = useState({
     isOpen: false,
-    currentView: "main", // main, chat, feedback, bug
   });
 
   const form = useForm<WidgetFormValues>({
@@ -59,15 +50,10 @@ export default function EditWidgetPage({
       name: "",
       position: "bottom-right",
       primaryColor: "#6366F1",
-      productType: "saas",
       productName: "",
-      features: [""],
       description: "",
-      faqs: [],
-      widgetTitle: "Need Help?",
-      welcomeMessage: "How can we help you today?",
-      feedbackQuestion: "",
-      enableBugReports: true,
+      widgetTitle: "Chat with us",
+      welcomeMessage: "Hi! How can I help you today?",
       isActive: true,
     },
   });
@@ -92,15 +78,11 @@ export default function EditWidgetPage({
           name: widget.name,
           position: widget.position,
           primaryColor: widget.primaryColor,
-          productType: widget.productType,
           productName: widget.productName,
-          features: widget.features,
           description: widget.description,
-          faqs: widget.faqs,
-          widgetTitle: widget.widgetTitle,
-          welcomeMessage: widget.welcomeMessage,
-          feedbackQuestion: widget.feedbackQuestion,
-          enableBugReports: widget.enableBugReports,
+          widgetTitle: widget.widgetTitle || "Chat with us",
+          welcomeMessage:
+            widget.welcomeMessage || "Hi! How can I help you today?",
           isActive: widget.isActive,
         });
       }
@@ -121,239 +103,68 @@ export default function EditWidgetPage({
     }
   };
 
-  const addFeature = () => {
-    const currentFeatures = form.getValues("features");
-    if (currentFeatures.length < 10) {
-      form.setValue("features", [...currentFeatures, ""]);
-    }
-  };
-
-  const removeFeature = (index: number) => {
-    const currentFeatures = form.getValues("features");
-    if (currentFeatures.length > 1) {
-      form.setValue(
-        "features",
-        currentFeatures.filter((_, i) => i !== index)
-      );
-    }
-  };
-
-  const updateFeature = (index: number, value: string) => {
-    const currentFeatures = form.getValues("features");
-    const newFeatures = [...currentFeatures];
-    newFeatures[index] = value;
-    form.setValue("features", newFeatures);
-  };
-
-  const addFAQ = () => {
-    const currentFAQs = form.getValues("faqs");
-    if (currentFAQs.length < 3) {
-      form.setValue("faqs", [...currentFAQs, { question: "", answer: "" }]);
-    }
-  };
-
-  const removeFAQ = (index: number) => {
-    const currentFAQs = form.getValues("faqs");
-    form.setValue(
-      "faqs",
-      currentFAQs.filter((_, i) => i !== index)
-    );
-  };
-
-  const updateFAQ = (
-    index: number,
-    field: "question" | "answer",
-    value: string
-  ) => {
-    const currentFAQs = form.getValues("faqs");
-    const newFAQs = [...currentFAQs];
-    newFAQs[index][field] = value;
-    form.setValue("faqs", newFAQs);
-  };
-
   const WidgetPreview = () => {
     const formData = form.watch();
-
-    const getAvailableOptions = () => {
-      const options = [];
-      options.push({
-        icon: MessageCircle,
-        label: "Talk to Agent",
-        action: "chat",
-      });
-      if (formData.feedbackQuestion) {
-        options.push({
-          icon: ThumbsUp,
-          label: "Give Feedback",
-          action: "feedback",
-        });
-      }
-      if (formData.enableBugReports) {
-        options.push({ icon: Bug, label: "Report Bug", action: "bug" });
-      }
-      return options;
-    };
-
-    const renderMainView = () => (
-      <>
-        <div
-          className="px-6 py-5 text-white rounded-t-2xl"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <h3 className="font-semibold text-lg mb-1">
-            {formData.productName || "Your Product"}
-          </h3>
-          <p className="text-sm opacity-90">
-            {formData.welcomeMessage || "How can we help you today?"}
-          </p>
-        </div>
-
-        <div className="p-6 space-y-3">
-          {getAvailableOptions().map((option) => (
-            <button
-              key={option.action}
-              onClick={() =>
-                setPreviewState((prev) => ({
-                  ...prev,
-                  currentView: option.action,
-                }))
-              }
-              className="w-full flex items-center gap-4 p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left"
-            >
-              <div
-                className="p-2 rounded-lg text-white"
-                style={{ backgroundColor: formData.primaryColor }}
-              >
-                <option.icon size={20} />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">{option.label}</div>
-                <div className="text-sm text-gray-500">
-                  {option.action === "chat" &&
-                    "Start a conversation with our AI assistant"}
-                  {option.action === "feedback" &&
-                    "Share your thoughts about our product"}
-                  {option.action === "bug" &&
-                    "Report any issues you encountered"}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </>
-    );
 
     const renderChatView = () => (
       <>
         <div
-          className="px-6 py-4 text-white rounded-t-2xl flex items-center gap-3"
+          className="px-6 py-5 text-white rounded-t-2xl flex items-center gap-3"
           style={{ backgroundColor: formData.primaryColor }}
         >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+          >
+            {(formData.productName || "B").charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">
+              {formData.productName || "Your Product"}
+            </h3>
+            <p className="text-white/90 text-sm">{formData.widgetTitle}</p>
+          </div>
           <button
             onClick={() =>
-              setPreviewState((prev) => ({ ...prev, currentView: "main" }))
+              setPreviewState((prev) => ({ ...prev, isOpen: false }))
             }
-            className="p-1 hover:bg-white/20 rounded-lg"
+            className="ml-auto text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
           >
-            <ArrowLeft size={20} />
+            <X size={20} />
           </button>
-          <h3 className="font-semibold">Chat with Agent</h3>
         </div>
 
-        <div className="flex-1 p-6 space-y-3 min-h-[200px]">
-          <div className="bg-gray-100 p-3 rounded-2xl rounded-bl-sm max-w-[80%]">
-            <p className="text-sm text-gray-800">
-              {formData.welcomeMessage || "How can we help you today?"}
-            </p>
+        <div className="flex-1 p-6 space-y-4 bg-gray-50 min-h-[300px]">
+          <div className="h-full flex items-center justify-center text-center">
+            <div>
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-gray-600 text-lg font-medium mb-2">
+                {formData.welcomeMessage || "Hi! How can I help you today?"}
+              </p>
+              <p className="text-gray-500 text-sm">
+                Ask me anything about {formData.productName || "our product"}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 border-t">
-          <div className="flex gap-3">
+        <div className="p-4 bg-white border-t border-gray-200">
+          <div className="flex space-x-3">
             <input
               type="text"
               placeholder="Type your message..."
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+              style={{ "--tw-ring-color": formData.primaryColor + "33" } as any}
             />
             <button
-              className="p-2 rounded-full text-white"
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg"
               style={{ backgroundColor: formData.primaryColor }}
             >
-              <Send size={16} />
+              <Send className="w-5 h-5 text-white" />
             </button>
           </div>
-        </div>
-      </>
-    );
-
-    const renderFeedbackView = () => (
-      <>
-        <div
-          className="px-6 py-4 text-white rounded-t-2xl flex items-center gap-3"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, currentView: "main" }))
-            }
-            className="p-1 hover:bg-white/20 rounded-lg"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h3 className="font-semibold">Give Feedback</h3>
-        </div>
-
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            {formData.feedbackQuestion || "How was your experience?"}
-          </label>
-          <textarea
-            placeholder="Please share your feedback..."
-            className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            rows={4}
-          />
-          <button
-            className="w-full mt-4 py-3 text-white font-medium rounded-xl"
-            style={{ backgroundColor: formData.primaryColor }}
-          >
-            Submit Feedback
-          </button>
-        </div>
-      </>
-    );
-
-    const renderBugView = () => (
-      <>
-        <div
-          className="px-6 py-4 text-white rounded-t-2xl flex items-center gap-3"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, currentView: "main" }))
-            }
-            className="p-1 hover:bg-white/20 rounded-lg"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h3 className="font-semibold">Report Bug</h3>
-        </div>
-
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Describe the issue you encountered
-          </label>
-          <textarea
-            placeholder="Please describe the bug in detail..."
-            className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            rows={4}
-          />
-          <button
-            className="w-full mt-4 py-3 text-white font-medium rounded-xl"
-            style={{ backgroundColor: formData.primaryColor }}
-          >
-            Submit Bug Report
-          </button>
         </div>
       </>
     );
@@ -370,11 +181,10 @@ export default function EditWidgetPage({
             onClick={() =>
               setPreviewState((prev) => ({ ...prev, isOpen: !prev.isOpen }))
             }
-            className="px-4 py-3 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+            className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
             style={{ backgroundColor: formData.primaryColor }}
           >
-            <MessageCircle size={18} />
-            {formData.widgetTitle || "Need Help?"}
+            <MessageCircle className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
           </button>
         </div>
 
@@ -384,15 +194,10 @@ export default function EditWidgetPage({
             className={`absolute ${
               formData.position.includes("right") ? "right-4" : "left-4"
             } ${
-              formData.position.includes("bottom") ? "bottom-20" : "top-20"
-            } w-80 bg-white rounded-2xl shadow-2xl overflow-hidden`}
+              formData.position.includes("bottom") ? "bottom-24" : "top-24"
+            } w-96 h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100`}
           >
-            <div className="flex flex-col h-full max-h-[400px]">
-              {previewState.currentView === "main" && renderMainView()}
-              {previewState.currentView === "chat" && renderChatView()}
-              {previewState.currentView === "feedback" && renderFeedbackView()}
-              {previewState.currentView === "bug" && renderBugView()}
-            </div>
+            <div className="flex flex-col h-full">{renderChatView()}</div>
           </div>
         )}
       </div>
@@ -538,70 +343,6 @@ export default function EditWidgetPage({
                       )}
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="productType">Product Type</Label>
-                    <Select
-                      value={form.watch("productType")}
-                      onValueChange={(value) =>
-                        form.setValue(
-                          "productType",
-                          value as "saas" | "portfolio"
-                        )
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="saas">SaaS</SelectItem>
-                        <SelectItem value="portfolio">Portfolio</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Features</h3>
-                  <div className="space-y-2">
-                    <Label>Product Features</Label>
-                    {form.watch("features").map((feature, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          placeholder={`Feature ${index + 1}`}
-                          value={feature}
-                          onChange={(e) => updateFeature(index, e.target.value)}
-                        />
-                        {form.watch("features").length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeFeature(index)}
-                          >
-                            <X size={16} />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    {form.watch("features").length < 10 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addFeature}
-                        className="w-full"
-                      >
-                        <Plus size={16} className="mr-2" />
-                        Add Feature
-                      </Button>
-                    )}
-                    {form.formState.errors.features && (
-                      <p className="text-sm text-red-500">
-                        {form.formState.errors.features.message}
-                      </p>
-                    )}
-                  </div>
                 </div>
 
                 {/* Widget Configuration */}
@@ -640,34 +381,6 @@ export default function EditWidgetPage({
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="feedbackQuestion">
-                        Feedback Question (Optional)
-                      </Label>
-                      <Input
-                        id="feedbackQuestion"
-                        {...form.register("feedbackQuestion")}
-                        placeholder="How was your experience?"
-                      />
-                      {form.formState.errors.feedbackQuestion && (
-                        <p className="text-sm text-red-500">
-                          {form.formState.errors.feedbackQuestion.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="enableBugReports"
-                        {...form.register("enableBugReports")}
-                        className="rounded"
-                      />
-                      <Label htmlFor="enableBugReports">
-                        Enable Bug Reports
-                      </Label>
-                    </div>
-
                     <div className="flex items-center space-x-2">
                       <input
                         type="checkbox"
@@ -677,62 +390,6 @@ export default function EditWidgetPage({
                       />
                       <Label htmlFor="isActive">Widget Active</Label>
                     </div>
-                  </div>
-                </div>
-
-                {/* FAQs */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">FAQs (Optional)</h3>
-                  <div className="space-y-4">
-                    {form.watch("faqs").map((faq, index) => (
-                      <div
-                        key={index}
-                        className="space-y-2 p-4 border rounded-lg"
-                      >
-                        <div className="flex justify-between items-center">
-                          <Label>FAQ {index + 1}</Label>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeFAQ(index)}
-                          >
-                            <X size={14} />
-                          </Button>
-                        </div>
-                        <Input
-                          placeholder="Question"
-                          value={faq.question}
-                          onChange={(e) =>
-                            updateFAQ(index, "question", e.target.value)
-                          }
-                        />
-                        <Textarea
-                          placeholder="Answer"
-                          value={faq.answer}
-                          onChange={(e) =>
-                            updateFAQ(index, "answer", e.target.value)
-                          }
-                          rows={2}
-                        />
-                      </div>
-                    ))}
-                    {form.watch("faqs").length < 3 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addFAQ}
-                        className="w-full"
-                      >
-                        <Plus size={16} className="mr-2" />
-                        Add FAQ
-                      </Button>
-                    )}
-                    {form.formState.errors.faqs && (
-                      <p className="text-sm text-red-500">
-                        {form.formState.errors.faqs.message}
-                      </p>
-                    )}
                   </div>
                 </div>
 
