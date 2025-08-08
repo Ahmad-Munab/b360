@@ -160,7 +160,10 @@ export const subscription = pgTable("subscription", {
     .references(() => user.id)
     .notNull(),
   plan: text("plan").notNull().default("free"), // 'free', 'pro'
-  status: text("status").notNull().default("active"),
+  status: text("status").notNull().default("active"), // 'active', 'canceled', 'past_due', 'unpaid'
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  stripePriceId: text("stripe_price_id"),
   currentPeriodStart: timestamp("current_period_start").notNull(),
   currentPeriodEnd: timestamp("current_period_end").notNull(),
   billingCycleDay: integer("billing_cycle_day").notNull().default(1), // Day of month for billing (1-31)
@@ -187,6 +190,8 @@ export const payment = pgTable("payment", {
   currency: text("currency").notNull().default("USD"),
   status: text("status").notNull(), // 'succeeded', 'failed', 'pending'
   stripePaymentId: text("stripe_payment_id").unique(),
+  stripeInvoiceId: text("stripe_invoice_id"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
   metadata: json("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

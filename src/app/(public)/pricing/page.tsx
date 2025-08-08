@@ -1,87 +1,81 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { PageLayout } from "@/components/public/layout/PageLayout";
 import { ContentSection } from "@/components/public/layout/ContentSection";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Star, Zap, Crown, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Check, Star, Zap, ArrowRight, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { plans } from "@/lib/config/plans";
 
 export default function PricingPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSubscribe = async (planType: "free" | "pro") => {
+    if (!session) {
+      router.push("/signin");
+      return;
+    }
+
+    if (planType === "free") {
+      router.push("/dashboard");
+      return;
+    }
+
+    setLoading(planType);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+        }),
+      });
+
+      const { url } = await response.json();
+
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const pricingPlans = [
     {
-      name: "Starter",
-      price: "$2,500",
-      period: "/month",
-      description:
-        "Perfect for small businesses getting started with professional customer support",
-      icon: <Star className="w-8 h-8" />,
-      features: [
-        "Up to 500 tickets/month",
-        "Email & live chat support",
-        "Basic AI chat integration",
-        "5-agent dedicated team",
-        "4-hour response time SLA",
-        "Business hours coverage (8AM-6PM)",
-        "Basic training & onboarding",
-        "Monthly performance reports",
-        "Standard integrations (5 platforms)",
-      ],
-      popular: false,
-      gradient: "from-blue-500 to-blue-600",
-      savings: null,
-    },
-    {
-      name: "Professional",
-      price: "$5,500",
-      period: "/month",
-      description:
-        "Comprehensive support solution for growing businesses with higher volume needs",
-      icon: <Zap className="w-8 h-8" />,
-      features: [
-        "Up to 2,000 tickets/month",
-        "All channels (email, chat, phone, social)",
-        "Advanced AI chat with human escalation",
-        "15-agent specialized team",
-        "2-hour priority response time SLA",
-        "Extended hours coverage (6AM-10PM)",
-        "Advanced training & certification",
-        "Dedicated account manager",
-        "Custom workflows & automations",
-        "Advanced analytics & insights",
-        "Premium integrations (15+ platforms)",
-        "Quality assurance program",
-      ],
-      popular: true,
-      gradient: "from-indigo-500 to-indigo-600",
-      savings: "Save 15%",
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
+      name: plans.free.name,
+      price: "Free",
       period: "",
       description:
-        "Fully customized support solutions for large enterprises with complex requirements",
-      icon: <Crown className="w-8 h-8" />,
-      features: [
-        "Unlimited tickets & volume",
-        "All channels + custom integrations",
-        "Real-time dashboards & BI analytics",
-        "Scalable team (25+ specialized agents)",
-        "Instant response time (<30 minutes)",
-        "24/7 global coverage across time zones",
-        "White-label & co-branded solutions",
-        "Dedicated customer success team",
-        "Custom SLAs & performance KPIs",
-        "Advanced security & compliance (SOC2, GDPR)",
-        "Multi-language support (20+ languages)",
-        "Custom API development",
-        "Dedicated infrastructure & servers",
-      ],
+        "Perfect for getting started with AI-powered customer support",
+      icon: <Star className="w-8 h-8" />,
+      features: plans.free.features,
       popular: false,
-      gradient: "from-purple-500 to-purple-600",
-      savings: "Best Value",
+      gradient: "from-gray-500 to-gray-600",
+      planType: "free" as const,
+    },
+    {
+      name: plans.pro.name,
+      price: "$9",
+      period: "/month",
+      description:
+        "Professional AI-powered customer support for growing businesses",
+      icon: <Zap className="w-8 h-8" />,
+      features: plans.pro.features,
+      popular: true,
+      gradient: "from-indigo-500 to-purple-500",
+      planType: "pro" as const,
     },
   ];
 
@@ -149,14 +143,6 @@ export default function PricingPage() {
                     </div>
                   )}
 
-                  {plan.savings && !plan.popular && (
-                    <div className="absolute -top-4 right-4">
-                      <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1 rounded-full text-xs font-bold">
-                        {plan.savings}
-                      </span>
-                    </div>
-                  )}
-
                   <CardContent className="p-8">
                     <div className="text-center mb-8">
                       <div
@@ -190,20 +176,29 @@ export default function PricingPage() {
                       ))}
                     </ul>
 
-                    <Link href="/contact" className="block">
-                      <Button
-                        className={`w-full py-3 font-bold rounded-full ${
-                          plan.popular
-                            ? "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white"
-                            : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
-                        }`}
-                      >
-                        {plan.price === "Custom"
-                          ? "Contact Sales"
-                          : "Get Started"}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
+                    <Button
+                      onClick={() => handleSubscribe(plan.planType)}
+                      disabled={loading === plan.planType}
+                      className={`w-full py-3 font-bold rounded-full ${
+                        plan.popular
+                          ? "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white"
+                          : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                      }`}
+                    >
+                      {loading === plan.planType ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          {plan.planType === "free"
+                            ? "Get Started Free"
+                            : "Subscribe Now"}
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
