@@ -12,15 +12,10 @@ interface WidgetProps {
   widgetId: string;
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   primaryColor?: string;
-  productType?: "saas" | "portfolio";
   productName?: string;
-  features?: string[];
   description?: string;
-  faqs?: Array<{ question: string; answer: string }>;
   widgetTitle?: string;
   welcomeMessage?: string;
-  feedbackQuestion?: string;
-  enableBugReports?: boolean;
 }
 
 export default function Widget({
@@ -28,8 +23,8 @@ export default function Widget({
   position = "bottom-right",
   primaryColor = "#6366F1",
   productName = "B360",
-  widgetTitle = "Need Help?",
-  welcomeMessage = "How can we help you today?",
+  widgetTitle = "Chat with us",
+  welcomeMessage = "Hi! How can I help you today?",
 }: WidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -103,46 +98,58 @@ export default function Widget({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105"
+          className="w-16 h-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl group"
           style={{ backgroundColor: primaryColor }}
         >
-          <MessageSquare className="w-6 h-6 text-white" />
+          <MessageSquare className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="w-96 h-[600px] bg-white rounded-lg shadow-xl flex flex-col">
+        <div className="w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-100 overflow-hidden">
           {/* Header */}
           <div
-            className="p-4 rounded-t-lg flex items-center justify-between"
+            className="p-5 flex items-center justify-between"
             style={{ backgroundColor: primaryColor }}
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium"
-                style={{ backgroundColor: `${primaryColor}80` }}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg"
+                style={{ backgroundColor: `rgba(255, 255, 255, 0.2)` }}
               >
-                {productName.charAt(0)}
+                {productName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h3 className="text-white font-medium">{productName}</h3>
-                <p className="text-white/80 text-sm">{widgetTitle}</p>
+                <h3 className="text-white font-semibold text-lg">
+                  {productName}
+                </h3>
+                <p className="text-white/90 text-sm">{widgetTitle}</p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
             {messages.length === 0 ? (
               <div className="h-full flex items-center justify-center">
-                <p className="text-gray-500 text-center">{welcomeMessage}</p>
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-gray-600 text-lg font-medium">
+                    {welcomeMessage}
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Ask me anything about {productName}
+                  </p>
+                </div>
               </div>
             ) : (
               messages.map((message) => (
@@ -153,15 +160,23 @@ export default function Widget({
                   }`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                       message.role === "user"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-900"
+                        ? "text-white"
+                        : "bg-white text-gray-900 border border-gray-200"
                     }`}
+                    style={
+                      message.role === "user"
+                        ? { backgroundColor: primaryColor }
+                        : {}
+                    }
                   >
-                    <p className="text-sm">{message.content}</p>
-                    <p className="text-xs mt-1 opacity-70">
-                      {message.timestamp.toLocaleTimeString()}
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    <p className="text-xs mt-2 opacity-70">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
                 </div>
@@ -169,8 +184,11 @@ export default function Widget({
             )}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg p-3">
-                  <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
+                <div className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                    <span className="text-sm text-gray-500">Typing...</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -178,19 +196,23 @@ export default function Widget({
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-4 border-t">
-            <div className="flex space-x-2">
+          <form
+            onSubmit={handleSubmit}
+            className="p-4 bg-white border-t border-gray-200"
+          >
+            <div className="flex space-x-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                style={{ focusRingColor: primaryColor }}
               />
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
+                disabled={isLoading || !input.trim()}
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
                 style={{ backgroundColor: primaryColor }}
               >
                 <Send className="w-5 h-5 text-white" />

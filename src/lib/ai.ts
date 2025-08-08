@@ -18,18 +18,10 @@ type WidgetData = {
   name: string;
   position: string;
   primaryColor: string;
-  productType: string;
   productName: string;
-  features: string[] | null;
   description: string;
-  faqs: Array<{
-    question: string;
-    answer: string;
-  }> | null;
   widgetTitle: string;
   welcomeMessage: string;
-  feedbackQuestion: string | null;
-  enableBugReports: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -47,23 +39,8 @@ export async function generateAIResponse(
       context += `Product: ${widgetData.productName}\n`;
     }
 
-    if (widgetData.productType) {
-      context += `Product Type: ${widgetData.productType}\n`;
-    }
-
     if (widgetData.description) {
       context += `Product Description: ${widgetData.description}\n`;
-    }
-
-    if (widgetData.features && widgetData.features.length > 0) {
-      context += `Product Features: ${widgetData.features.join(", ")}\n`;
-    }
-
-    if (widgetData.faqs && widgetData.faqs.length > 0) {
-      context += `Frequently Asked Questions:\n`;
-      widgetData.faqs.forEach((qa) => {
-        context += `Q: ${qa.question}\nA: ${qa.answer}\n`;
-      });
     }
 
     const systemPrompt = `You are a helpful AI assistant for ${
@@ -82,7 +59,6 @@ Guidelines:
 - If you don't know something specific about the product, be honest about it
 - For complex issues, suggest contacting customer support
 - Keep responses concise but informative
-- Use the FAQ information as reference when relevant
 - Always maintain a friendly and supportive tone`;
 
     const completion = await groq.chat.completions.create({

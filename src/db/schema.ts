@@ -82,24 +82,12 @@ export const widget = pgTable("widget", {
   name: text("name").notNull(),
   position: text("position").notNull().default("bottom-right"),
   primaryColor: text("primary_color").default("#6366F1").notNull(),
-  productType: text("product_type").notNull().default("saas"), // 'saas' or 'portfolio'
   productName: text("product_name").notNull(),
-  features: json("features").$type<string[]>().notNull().default([]),
   description: text("description").notNull(),
-  faqs: json("faqs")
-    .$type<
-      Array<{
-        question: string;
-        answer: string;
-      }>
-    >()
-    .default([]),
-  widgetTitle: text("widget_title").default("Need Help?").notNull(),
+  widgetTitle: text("widget_title").default("Chat with us").notNull(),
   welcomeMessage: text("welcome_message")
-    .default("How can we help you today?")
+    .default("Hi! How can I help you today?")
     .notNull(),
-  feedbackQuestion: text("feedback_question").default(""),
-  enableBugReports: boolean("enable_bug_reports").default(true).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

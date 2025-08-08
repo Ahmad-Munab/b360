@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Test Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>B360 Widget Test</h1>
+        <p>This is a test page to demonstrate the B360 chat widget functionality.</p>
+        
+        <div class="card">
+            <h2>Welcome to our test page!</h2>
+            <p>Look for the chat widget in the bottom-right corner. Click it to start a conversation with our AI assistant.</p>
+        </div>
+        
+        <div class="card">
+            <h3>Features</h3>
+            <ul style="text-align: left; max-width: 400px; margin: 0 auto;">
+                <li>Modern, responsive design</li>
+                <li>AI-powered chat assistance</li>
+                <li>Easy integration</li>
+                <li>Customizable appearance</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- B360 Widget -->
+    <script 
+        src="/widget.js"
+        data-widget-id="test-widget"
+        data-position="bottom-right"
+        data-primary-color="#6366F1"
+        data-product-name="B360"
+        data-widget-title="Chat with us"
+        data-welcome-message="Hi! How can I help you today?"
+        data-is-active="true">
+    </script>
+</body>
+</html>

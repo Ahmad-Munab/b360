@@ -22,15 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import {
-  Plus,
-  X,
-  MessageCircle,
-  Bug,
-  ThumbsUp,
-  Send,
-  ArrowLeft,
-} from "lucide-react";
+import { MessageCircle, Send, X } from "lucide-react";
 import { useWidgetsStore } from "@/store/useWidgetsStore";
 
 export default function NewWidgetPage() {
@@ -42,76 +34,19 @@ export default function NewWidgetPage() {
     name: "",
     position: "bottom-right" as const,
     primaryColor: "#6366F1",
-    productType: "saas" as const,
     productName: "",
-    features: [""],
     description: "",
-    faqs: [] as Array<{ question: string; answer: string }>,
-    widgetTitle: "Need Help?",
-    welcomeMessage: "How can we help you today?",
-    feedbackQuestion: "",
-    enableBugReports: true,
+    widgetTitle: "Chat with us",
+    welcomeMessage: "Hi! How can I help you today?",
     isActive: true,
   });
 
   const [previewState, setPreviewState] = useState({
     isOpen: false,
-    currentView: "main", // main, chat, feedback, bug
   });
 
-  const updateFormData = (
-    field: string,
-    value:
-      | string
-      | boolean
-      | Array<{ question: string; answer: string }>
-      | Array<string>
-  ) => {
+  const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addFeature = () => {
-    if (formData.features.length < 10) {
-      updateFormData("features", [...formData.features, ""]);
-    }
-  };
-
-  const removeFeature = (index: number) => {
-    if (formData.features.length > 1) {
-      updateFormData(
-        "features",
-        formData.features.filter((_, i) => i !== index)
-      );
-    }
-  };
-
-  const updateFeature = (index: number, value: string) => {
-    const newFeatures = [...formData.features];
-    newFeatures[index] = value;
-    updateFormData("features", newFeatures);
-  };
-
-  const addFAQ = () => {
-    if (formData.faqs.length < 3) {
-      updateFormData("faqs", [...formData.faqs, { question: "", answer: "" }]);
-    }
-  };
-
-  const removeFAQ = (index: number) => {
-    updateFormData(
-      "faqs",
-      formData.faqs.filter((_, i) => i !== index)
-    );
-  };
-
-  const updateFAQ = (
-    index: number,
-    field: "question" | "answer",
-    value: string
-  ) => {
-    const newFAQs = [...formData.faqs];
-    newFAQs[index][field] = value;
-    updateFormData("faqs", newFAQs);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -126,12 +61,8 @@ export default function NewWidgetPage() {
       toast.error("Product name is required");
       return;
     }
-    if (formData.features.filter((f) => f.trim()).length === 0) {
-      toast.error("At least one feature is required");
-      return;
-    }
-    if (formData.description.split(" ").length < 20) {
-      toast.error("Description must be at least 20 words");
+    if (!formData.description.trim()) {
+      toast.error("Description is required");
       return;
     }
 
@@ -143,15 +74,10 @@ export default function NewWidgetPage() {
         name: formData.name.trim(),
         position: formData.position,
         primaryColor: formData.primaryColor,
-        productType: formData.productType,
         productName: formData.productName.trim(),
-        features: formData.features.filter((f) => f.trim()),
         description: formData.description.trim(),
-        faqs: formData.faqs,
         widgetTitle: formData.widgetTitle.trim(),
         welcomeMessage: formData.welcomeMessage.trim(),
-        feedbackQuestion: formData.feedbackQuestion.trim(),
-        enableBugReports: formData.enableBugReports,
         isActive: formData.isActive,
       };
 
@@ -169,186 +95,65 @@ export default function NewWidgetPage() {
   };
 
   const WidgetPreview = () => {
-    const getAvailableOptions = () => {
-      const options = [];
-      options.push({
-        icon: MessageCircle,
-        label: "Talk to Agent",
-        action: "chat",
-      });
-      if (formData.feedbackQuestion) {
-        options.push({
-          icon: ThumbsUp,
-          label: "Give Feedback",
-          action: "feedback",
-        });
-      }
-      if (formData.enableBugReports) {
-        options.push({ icon: Bug, label: "Report Bug", action: "bug" });
-      }
-      return options;
-    };
-
-    const renderMainView = () => (
-      <>
-        <div
-          className="px-6 py-5 text-white rounded-t-2xl"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <h3 className="font-semibold text-lg mb-1">
-            {formData.productName || "Your Product"}
-          </h3>
-          <p className="text-sm opacity-90">
-            {formData.welcomeMessage || "How can we help you today?"}
-          </p>
-        </div>
-
-        <div className="p-6 space-y-3">
-          {getAvailableOptions().map((option) => (
-            <button
-              key={option.action}
-              onClick={() =>
-                setPreviewState((prev) => ({
-                  ...prev,
-                  currentView: option.action,
-                }))
-              }
-              className="w-full flex items-center gap-4 p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left"
-            >
-              <div
-                className="p-2 rounded-lg text-white"
-                style={{ backgroundColor: formData.primaryColor }}
-              >
-                <option.icon size={20} />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">{option.label}</div>
-                <div className="text-sm text-gray-500">
-                  {option.action === "chat" &&
-                    "Start a conversation with our AI assistant"}
-                  {option.action === "feedback" &&
-                    "Share your thoughts about our product"}
-                  {option.action === "bug" &&
-                    "Report any issues you encountered"}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </>
-    );
-
     const renderChatView = () => (
       <>
         <div
-          className="px-6 py-4 text-white rounded-t-2xl flex items-center gap-3"
+          className="px-6 py-5 text-white rounded-t-2xl flex items-center gap-3"
           style={{ backgroundColor: formData.primaryColor }}
         >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+          >
+            {(formData.productName || "B").charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">
+              {formData.productName || "Your Product"}
+            </h3>
+            <p className="text-white/90 text-sm">{formData.widgetTitle}</p>
+          </div>
           <button
             onClick={() =>
-              setPreviewState((prev) => ({ ...prev, currentView: "main" }))
+              setPreviewState((prev) => ({ ...prev, isOpen: false }))
             }
-            className="p-1 hover:bg-white/20 rounded-lg"
+            className="ml-auto text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
           >
-            <ArrowLeft size={20} />
+            <X size={20} />
           </button>
-          <h3 className="font-semibold">Chat with Agent</h3>
         </div>
 
-        <div className="flex-1 p-6 space-y-3 min-h-[200px]">
-          <div className="bg-gray-100 p-3 rounded-2xl rounded-bl-sm max-w-[80%]">
-            <p className="text-sm text-gray-800">
-              {formData.welcomeMessage || "How can we help you today?"}
-            </p>
+        <div className="flex-1 p-6 space-y-4 bg-gray-50 min-h-[300px]">
+          <div className="h-full flex items-center justify-center text-center">
+            <div>
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-gray-600 text-lg font-medium mb-2">
+                {formData.welcomeMessage || "Hi! How can I help you today?"}
+              </p>
+              <p className="text-gray-500 text-sm">
+                Ask me anything about {formData.productName || "our product"}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 border-t">
-          <div className="flex gap-3">
+        <div className="p-4 bg-white border-t border-gray-200">
+          <div className="flex space-x-3">
             <input
               type="text"
               placeholder="Type your message..."
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+              style={{ "--tw-ring-color": formData.primaryColor + "33" } as any}
             />
             <button
-              className="p-2 rounded-full text-white"
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg"
               style={{ backgroundColor: formData.primaryColor }}
             >
-              <Send size={16} />
+              <Send className="w-5 h-5 text-white" />
             </button>
           </div>
-        </div>
-      </>
-    );
-
-    const renderFeedbackView = () => (
-      <>
-        <div
-          className="px-6 py-4 text-white rounded-t-2xl flex items-center gap-3"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, currentView: "main" }))
-            }
-            className="p-1 hover:bg-white/20 rounded-lg"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h3 className="font-semibold">Give Feedback</h3>
-        </div>
-
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            {formData.feedbackQuestion || "How was your experience?"}
-          </label>
-          <textarea
-            placeholder="Please share your feedback..."
-            className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            rows={4}
-          />
-          <button
-            className="w-full mt-4 py-3 text-white font-medium rounded-xl"
-            style={{ backgroundColor: formData.primaryColor }}
-          >
-            Submit Feedback
-          </button>
-        </div>
-      </>
-    );
-
-    const renderBugView = () => (
-      <>
-        <div
-          className="px-6 py-4 text-white rounded-t-2xl flex items-center gap-3"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, currentView: "main" }))
-            }
-            className="p-1 hover:bg-white/20 rounded-lg"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h3 className="font-semibold">Report Bug</h3>
-        </div>
-
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Describe the issue you encountered
-          </label>
-          <textarea
-            placeholder="Please describe the bug in detail..."
-            className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-opacity-50"
-            rows={4}
-          />
-          <button
-            className="w-full mt-4 py-3 text-white font-medium rounded-xl"
-            style={{ backgroundColor: formData.primaryColor }}
-          >
-            Submit Bug Report
-          </button>
         </div>
       </>
     );
@@ -365,11 +170,10 @@ export default function NewWidgetPage() {
             onClick={() =>
               setPreviewState((prev) => ({ ...prev, isOpen: !prev.isOpen }))
             }
-            className="px-4 py-3 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+            className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
             style={{ backgroundColor: formData.primaryColor }}
           >
-            <MessageCircle size={18} />
-            {formData.widgetTitle || "Need Help?"}
+            <MessageCircle className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
           </button>
         </div>
 
@@ -379,15 +183,10 @@ export default function NewWidgetPage() {
             className={`absolute ${
               formData.position.includes("right") ? "right-4" : "left-4"
             } ${
-              formData.position.includes("bottom") ? "bottom-20" : "top-20"
-            } w-80 bg-white rounded-2xl shadow-2xl overflow-hidden`}
+              formData.position.includes("bottom") ? "bottom-24" : "top-24"
+            } w-96 h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100`}
           >
-            <div className="flex flex-col h-full max-h-[400px]">
-              {previewState.currentView === "main" && renderMainView()}
-              {previewState.currentView === "chat" && renderChatView()}
-              {previewState.currentView === "feedback" && renderFeedbackView()}
-              {previewState.currentView === "bug" && renderBugView()}
-            </div>
+            <div className="flex flex-col h-full">{renderChatView()}</div>
           </div>
         )}
       </div>
@@ -484,81 +283,24 @@ export default function NewWidgetPage() {
                       Product Details
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="productType">Product Type</Label>
-                        <Select
-                          value={formData.productType}
-                          onValueChange={(value) =>
-                            updateFormData("productType", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="saas">SaaS</SelectItem>
-                            <SelectItem value="portfolio">Portfolio</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="productName">Product Name</Label>
-                        <Input
-                          id="productName"
-                          placeholder="Your Amazing Product"
-                          value={formData.productName}
-                          onChange={(e) =>
-                            updateFormData("productName", e.target.value)
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-
                     <div className="space-y-2">
-                      <Label>Features</Label>
-                      {formData.features.map((feature, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input
-                            placeholder={`Feature ${index + 1}`}
-                            value={feature}
-                            onChange={(e) =>
-                              updateFeature(index, e.target.value)
-                            }
-                            required
-                          />
-                          {formData.features.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => removeFeature(index)}
-                            >
-                              <X size={16} />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      {formData.features.length < 10 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={addFeature}
-                          className="w-full"
-                        >
-                          <Plus size={16} className="mr-2" />
-                          Add Feature
-                        </Button>
-                      )}
+                      <Label htmlFor="productName">Product Name</Label>
+                      <Input
+                        id="productName"
+                        placeholder="Your Amazing Product"
+                        value={formData.productName}
+                        onChange={(e) =>
+                          updateFormData("productName", e.target.value)
+                        }
+                        required
+                      />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="description">Description</Label>
                       <Textarea
                         id="description"
-                        placeholder="Describe your product in at least 20 words..."
+                        placeholder="Describe your product or service..."
                         value={formData.description}
                         onChange={(e) =>
                           updateFormData("description", e.target.value)
@@ -566,74 +308,7 @@ export default function NewWidgetPage() {
                         className="min-h-20"
                         required
                       />
-                      <p className="text-sm text-gray-500">
-                        {
-                          formData.description
-                            .trim()
-                            .split(/\s+/)
-                            .filter(Boolean).length
-                        }
-                        /20 words minimum
-                      </p>
                     </div>
-                  </div>
-
-                  {/* FAQ Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        FAQ (Optional)
-                      </h3>
-                      <span className="text-sm text-gray-500">
-                        Up to 3 questions
-                      </span>
-                    </div>
-
-                    {formData.faqs.map((faq, index) => (
-                      <div
-                        key={index}
-                        className="p-4 border border-gray-200 rounded-xl space-y-3"
-                      >
-                        <div className="flex items-center justify-between">
-                          <Label>Question {index + 1}</Label>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFAQ(index)}
-                          >
-                            <X size={16} />
-                          </Button>
-                        </div>
-                        <Input
-                          placeholder="Enter your question"
-                          value={faq.question}
-                          onChange={(e) =>
-                            updateFAQ(index, "question", e.target.value)
-                          }
-                        />
-                        <Textarea
-                          placeholder="Enter the answer"
-                          value={faq.answer}
-                          onChange={(e) =>
-                            updateFAQ(index, "answer", e.target.value)
-                          }
-                          className="min-h-16"
-                        />
-                      </div>
-                    ))}
-
-                    {formData.faqs.length < 3 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addFAQ}
-                        className="w-full"
-                      >
-                        <Plus size={16} className="mr-2" />
-                        Add FAQ
-                      </Button>
-                    )}
                   </div>
 
                   {/* Widget Configuration */}
@@ -668,44 +343,15 @@ export default function NewWidgetPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="feedbackQuestion">
-                        Feedback Question (Optional)
-                      </Label>
-                      <Input
-                        id="feedbackQuestion"
-                        placeholder="How was your experience?"
-                        value={formData.feedbackQuestion}
-                        onChange={(e) =>
-                          updateFormData("feedbackQuestion", e.target.value)
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="isActive"
+                        checked={formData.isActive}
+                        onCheckedChange={(checked) =>
+                          updateFormData("isActive", checked)
                         }
                       />
-                    </div>
-
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="enableBugReports"
-                          checked={formData.enableBugReports}
-                          onCheckedChange={(checked) =>
-                            updateFormData("enableBugReports", checked)
-                          }
-                        />
-                        <Label htmlFor="enableBugReports">
-                          Enable Bug Reports
-                        </Label>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="isActive"
-                          checked={formData.isActive}
-                          onCheckedChange={(checked) =>
-                            updateFormData("isActive", checked)
-                          }
-                        />
-                        <Label htmlFor="isActive">Widget Active</Label>
-                      </div>
+                      <Label htmlFor="isActive">Widget Active</Label>
                     </div>
                   </div>
 

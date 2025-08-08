@@ -7,18 +7,10 @@ export interface Widget {
   name: string;
   position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   primaryColor: string;
-  productType: "saas" | "portfolio";
   productName: string;
-  features: string[];
   description: string;
-  faqs: Array<{
-    question: string;
-    answer: string;
-  }>;
   widgetTitle: string;
   welcomeMessage: string;
-  feedbackQuestion: string;
-  enableBugReports: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
