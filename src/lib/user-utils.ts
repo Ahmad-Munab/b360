@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { user } from "@/db/schema";
-import { eq, and, count, desc } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 
 export interface UserData {
   id: string;

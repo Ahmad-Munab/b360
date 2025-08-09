@@ -101,23 +101,6 @@ export const widgetRelations = relations(widget, ({ one }) => ({
   }),
 }));
 
-export const feedback = pgTable("feedback", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  widgetId: uuid("widget_id")
-    .references(() => widget.id)
-    .notNull(),
-  type: text("type").notNull(), // 'question', 'bug', 'agent'
-  content: text("content").notNull(),
-  status: text("status").notNull().default("pending"), // 'pending', 'resolved', 'rejected'
-  response: text("response"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const feedbackRelations = relations(feedback, ({ one }) => ({
-  widget: one(widget, { fields: [feedback.widgetId], references: [widget.id] }),
-}));
-
 export const widgetAnalytics = pgTable("widget_analytics", {
   id: uuid("id").defaultRandom().primaryKey(),
   widgetId: uuid("widget_id")
