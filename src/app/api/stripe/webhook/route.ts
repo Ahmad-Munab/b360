@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { constructWebhookEvent, STRIPE_CONFIG, stripe } from "@/lib/stripe";
+import { constructWebhookEvent, stripe } from "@/lib/stripe-server";
 import { upsertSubscription } from "@/lib/subscription";
 import { db } from "@/lib/db";
 import { payment, subscription } from "@/db/schema";
@@ -21,11 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Construct the webhook event
-    const event = constructWebhookEvent(
-      body,
-      signature,
-      STRIPE_CONFIG.webhookSecret
-    );
+    const event = constructWebhookEvent(body, signature);
 
     console.log("Received webhook event:", event.type);
 

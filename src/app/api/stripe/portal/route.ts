@@ -1,18 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { createBillingPortalSession } from '@/lib/stripe';
-import { getUserSubscription } from '@/lib/subscription';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { createBillingPortalSession } from "@/lib/stripe-server";
+import { getUserSubscription } from "@/lib/subscription";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's subscription to find Stripe customer ID
@@ -20,13 +17,13 @@ export async function POST(request: NextRequest) {
 
     if (!userSubscription?.stripeCustomerId) {
       return NextResponse.json(
-        { error: 'No subscription found' },
+        { error: "No subscription found" },
         { status: 404 }
       );
     }
 
     // Get the base URL for return URL
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
     // Create billing portal session
     const portalSession = await createBillingPortalSession(
@@ -38,9 +35,9 @@ export async function POST(request: NextRequest) {
       url: portalSession.url,
     });
   } catch (error) {
-    console.error('Error creating billing portal session:', error);
+    console.error("Error creating billing portal session:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

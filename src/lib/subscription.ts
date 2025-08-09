@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { subscription, user } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { stripe, createStripeCustomer } from "./stripe";
+import { stripe, createStripeCustomer } from "./stripe-server";
 import type Stripe from "stripe";
 
 export interface SubscriptionData {

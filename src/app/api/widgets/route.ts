@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { widget } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { withUsageLimits, trackUsage } from "@/lib/middleware/usage";
+import { trackUsage } from "@/lib/middleware/usage";
 import { ensureUserExists } from "@/lib/user-utils";
 
 // GET - Fetch user's widgets
