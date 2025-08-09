@@ -12,7 +12,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 // Stripe configuration
 export const STRIPE_CONFIG = {
   publishableKey: process.env.STRIPE_PUBLISHABLE_KEY!,
-  priceId: process.env.STRIPE_PRICE_ID!,
+  priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID!,
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
   currency: "usd",
   amount: 900, // $9.00 in cents
