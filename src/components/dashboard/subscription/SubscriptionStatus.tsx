@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Loader2,
+  CreditCard,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { formatPrice } from "@/lib/stripe";
 import { plans } from "@/lib/config/plans";
 
@@ -22,7 +28,7 @@ interface SubscriptionData {
 }
 
 interface SubscriptionStatusData {
-  status: 'free' | 'active' | 'canceled' | 'past_due' | 'unpaid';
+  status: "free" | "active" | "canceled" | "past_due" | "unpaid";
   label: string;
   description: string;
 }
@@ -33,7 +39,8 @@ interface SubscriptionResponse {
 }
 
 export function SubscriptionStatus() {
-  const [subscriptionData, setSubscriptionData] = useState<SubscriptionResponse | null>(null);
+  const [subscriptionData, setSubscriptionData] =
+    useState<SubscriptionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -43,83 +50,124 @@ export function SubscriptionStatus() {
 
   const fetchSubscription = async () => {
     try {
-      const response = await fetch('/api/stripe/subscription');
+      const response = await fetch("/api/stripe/subscription");
       const data = await response.json();
       setSubscriptionData(data);
     } catch (error) {
-      console.error('Error fetching subscription:', error);
+      console.error("Error fetching subscription:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBillingPortal = async () => {
-    setActionLoading('portal');
+    setActionLoading("portal");
     try {
-      const response = await fetch('/api/stripe/portal', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
       });
       const { url } = await response.json();
-      
+
       if (url) {
-        window.open(url, '_blank');
+        window.open(url, "_blank");
       }
     } catch (error) {
-      console.error('Error opening billing portal:', error);
+      console.error("Error opening billing portal:", error);
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleCancelSubscription = async () => {
-    setActionLoading('cancel');
+    setActionLoading("cancel");
     try {
-      const response = await fetch('/api/stripe/subscription', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/subscription", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: 'cancel' }),
+        body: JSON.stringify({ action: "cancel" }),
       });
-      
+
       if (response.ok) {
         await fetchSubscription();
       }
     } catch (error) {
-      console.error('Error canceling subscription:', error);
+      console.error("Error canceling subscription:", error);
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleReactivateSubscription = async () => {
-    setActionLoading('reactivate');
+    setActionLoading("reactivate");
     try {
-      const response = await fetch('/api/stripe/subscription', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/subscription", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: 'reactivate' }),
+        body: JSON.stringify({ action: "reactivate" }),
       });
-      
+
       if (response.ok) {
         await fetchSubscription();
       }
     } catch (error) {
-      console.error('Error reactivating subscription:', error);
+      console.error("Error reactivating subscription:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSyncSubscription = async () => {
+    setActionLoading("sync");
+    try {
+      const response = await fetch("/api/stripe/sync", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        await fetchSubscription();
+      }
+    } catch (error) {
+      console.error("Error syncing subscription:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleFixSubscription = async () => {
+    setActionLoading("fix");
+    try {
+      const response = await fetch("/api/stripe/fix-subscription", {
+        method: "POST",
+      });
+
+      const result = await response.json();
+      console.log("Fix result:", result);
+
+      if (response.ok) {
+        await fetchSubscription();
+        alert("Subscription fixed successfully!");
+      } else {
+        alert(`Failed to fix subscription: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error fixing subscription:", error);
+      alert("Error fixing subscription");
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleUpgrade = async () => {
-    setActionLoading('upgrade');
+    setActionLoading("upgrade");
     try {
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
@@ -127,12 +175,12 @@ export function SubscriptionStatus() {
       });
 
       const { url } = await response.json();
-      
+
       if (url) {
         window.location.href = url;
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error("Error creating checkout session:", error);
     } finally {
       setActionLoading(null);
     }
@@ -152,23 +200,25 @@ export function SubscriptionStatus() {
     return (
       <Card>
         <CardContent className="p-8">
-          <p className="text-center text-gray-500">Unable to load subscription data.</p>
+          <p className="text-center text-gray-500">
+            Unable to load subscription data.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
   const { subscription, status } = subscriptionData;
-  const currentPlan = subscription?.plan === 'pro' ? plans.pro : plans.free;
+  const currentPlan = subscription?.plan === "pro" ? plans.pro : plans.free;
 
   const getStatusIcon = () => {
     switch (status.status) {
-      case 'active':
+      case "active":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'canceled':
+      case "canceled":
         return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-      case 'past_due':
-      case 'unpaid':
+      case "past_due":
+      case "unpaid":
         return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
         return <CreditCard className="w-5 h-5 text-gray-500" />;
@@ -177,44 +227,53 @@ export function SubscriptionStatus() {
 
   const getStatusColor = () => {
     switch (status.status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'canceled':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'past_due':
-      case 'unpaid':
-        return 'bg-red-100 text-red-800';
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "canceled":
+        return "bg-yellow-100 text-yellow-800";
+      case "past_due":
+      case "unpaid":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="w-5 h-5" />
-          Subscription
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="p-2 bg-emerald-100 rounded-lg">
+            <CreditCard className="w-5 h-5 text-emerald-600" />
+          </div>
+          Subscription Plan
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Current Plan */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-lg">{currentPlan.name} Plan</h3>
-            <p className="text-sm text-gray-600">
-              {currentPlan.price > 0 
-                ? `${formatPrice(currentPlan.price)} per ${currentPlan.interval}`
-                : 'Free forever'
-              }
-            </p>
-          </div>
-          <Badge className={getStatusColor()}>
-            <div className="flex items-center gap-1">
-              {getStatusIcon()}
-              {status.label}
+        <div className="bg-gradient-to-r from-emerald-50 to-indigo-50 p-6 rounded-xl border border-emerald-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-xl text-gray-900">
+                {currentPlan.name} Plan
+              </h3>
+              <p className="text-emerald-600 font-medium mt-1">
+                {currentPlan.price > 0
+                  ? `${formatPrice(currentPlan.price)} per ${
+                      currentPlan.interval
+                    }`
+                  : "Free forever"}
+              </p>
             </div>
-          </Badge>
+            <Badge
+              className={`${getStatusColor()} px-3 py-1 text-sm font-medium`}
+            >
+              <div className="flex items-center gap-2">
+                {getStatusIcon()}
+                {status.label}
+              </div>
+            </Badge>
+          </div>
         </div>
 
         {/* Status Description */}
@@ -225,7 +284,8 @@ export function SubscriptionStatus() {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4" />
             <span>
-              Next billing: {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+              Next billing:{" "}
+              {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
             </span>
           </div>
         )}
@@ -245,77 +305,121 @@ export function SubscriptionStatus() {
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
-          {status.status === 'free' && (
-            <Button 
+          {status.status === "free" && (
+            <Button
               onClick={handleUpgrade}
-              disabled={actionLoading === 'upgrade'}
-              className="w-full"
+              disabled={actionLoading === "upgrade"}
+              className="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700 text-white font-medium py-3 rounded-xl transition-all duration-200"
             >
-              {actionLoading === 'upgrade' ? (
+              {actionLoading === "upgrade" ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processing...
                 </>
               ) : (
-                'Upgrade to Pro'
+                "Upgrade to Pro Plan"
               )}
             </Button>
           )}
 
-          {status.status === 'active' && subscription?.stripeCustomerId && (
+          {/* Debug: Sync Subscription Button - Remove in production */}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSyncSubscription}
+              disabled={actionLoading === "sync"}
+              variant="outline"
+              size="sm"
+              className="flex-1 border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+            >
+              {actionLoading === "sync" ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                "🔄 Refresh"
+              )}
+            </Button>
+
+            <Button
+              onClick={handleFixSubscription}
+              disabled={actionLoading === "fix"}
+              variant="outline"
+              size="sm"
+              className="flex-1 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+            >
+              {actionLoading === "fix" ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Fixing...
+                </>
+              ) : (
+                "🔧 Fix"
+              )}
+            </Button>
+          </div>
+
+          {status.status === "active" && subscription?.stripeCustomerId && (
             <>
-              <Button 
+              <Button
                 onClick={handleBillingPortal}
-                disabled={actionLoading === 'portal'}
+                disabled={actionLoading === "portal"}
                 variant="outline"
-                className="w-full"
+                className="w-full border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-medium py-3 rounded-xl"
               >
-                {actionLoading === 'portal' ? (
+                {actionLoading === "portal" ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Loading...
                   </>
                 ) : (
-                  'Manage Billing'
+                  <>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Manage Billing
+                  </>
                 )}
               </Button>
 
               {!subscription.cancelAtPeriodEnd && (
-                <Button 
+                <Button
                   onClick={handleCancelSubscription}
-                  disabled={actionLoading === 'cancel'}
-                  variant="destructive"
-                  className="w-full"
+                  disabled={actionLoading === "cancel"}
+                  variant="outline"
+                  className="w-full border-red-200 text-red-600 hover:bg-red-50 font-medium py-3 rounded-xl"
                 >
-                  {actionLoading === 'cancel' ? (
+                  {actionLoading === "cancel" ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Canceling...
                     </>
                   ) : (
-                    'Cancel Subscription'
+                    <>
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Cancel Subscription
+                    </>
                   )}
                 </Button>
               )}
             </>
           )}
 
-          {status.status === 'canceled' && subscription?.stripeSubscriptionId && (
-            <Button 
-              onClick={handleReactivateSubscription}
-              disabled={actionLoading === 'reactivate'}
-              className="w-full"
-            >
-              {actionLoading === 'reactivate' ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Reactivating...
-                </>
-              ) : (
-                'Reactivate Subscription'
-              )}
-            </Button>
-          )}
+          {status.status === "canceled" &&
+            subscription?.stripeSubscriptionId && (
+              <Button
+                onClick={handleReactivateSubscription}
+                disabled={actionLoading === "reactivate"}
+                className="w-full"
+              >
+                {actionLoading === "reactivate" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Reactivating...
+                  </>
+                ) : (
+                  "Reactivate Subscription"
+                )}
+              </Button>
+            )}
         </div>
       </CardContent>
     </Card>

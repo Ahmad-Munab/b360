@@ -43,12 +43,10 @@ export async function upsertSubscription(
     stripeSubscriptionId: stripeSubscription.id,
     stripePriceId: stripeSubscription.items.data[0]?.price.id || null,
     currentPeriodStart: new Date(
-      (stripeSubscription as any).current_period_start * 1000
+      stripeSubscription.current_period_start * 1000
     ),
-    currentPeriodEnd: new Date(
-      (stripeSubscription as any).current_period_end * 1000
-    ),
-    cancelAtPeriodEnd: (stripeSubscription as any).cancel_at_period_end,
+    currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+    cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
     updatedAt: new Date(),
   };
 

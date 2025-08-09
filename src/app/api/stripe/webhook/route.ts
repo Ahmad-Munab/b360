@@ -29,27 +29,50 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        console.log("Checkout session completed:", {
+          sessionId: session.id,
+          mode: session.mode,
+          subscription: session.subscription,
+          metadata: session.metadata,
+        });
 
         if (session.mode === "subscription" && session.subscription) {
           const userId = session.metadata?.userId;
+          console.log("Processing subscription for user:", userId);
 
           if (userId) {
             // Get the subscription details
             const stripeSubscription = await stripe.subscriptions.retrieve(
               session.subscription as string
             );
+            console.log("Retrieved Stripe subscription:", {
+              id: stripeSubscription.id,
+              status: stripeSubscription.status,
+              customer: stripeSubscription.customer,
+            });
 
             // Create or update subscription in database
-            await upsertSubscription(userId, stripeSubscription);
+            const result = await upsertSubscription(userId, stripeSubscription);
+            console.log("Subscription upserted:", result);
 
             console.log("Subscription created/updated for user:", userId);
+          } else {
+            console.error("No userId found in session metadata");
           }
+        } else {
+          console.log("Not a subscription checkout or no subscription ID");
         }
         break;
       }
 
+      case "customer.subscription.created":
       case "customer.subscription.updated": {
         const stripeSubscription = event.data.object as Stripe.Subscription;
+        console.log("Processing subscription event:", event.type, {
+          subscriptionId: stripeSubscription.id,
+          customer: stripeSubscription.customer,
+          status: stripeSubscription.status,
+        });
 
         // Find user by Stripe customer ID
         const [existingSubscription] = await db
@@ -64,14 +87,52 @@ export async function POST(request: NextRequest) {
           .limit(1);
 
         if (existingSubscription) {
-          await upsertSubscription(
+          const result = await upsertSubscription(
             existingSubscription.userId,
             stripeSubscription
           );
           console.log(
-            "Subscription updated for user:",
-            existingSubscription.userId
+            "Subscription created/updated for user:",
+            existingSubscription.userId,
+            result
           );
+        } else {
+          // Try to find user by checking recent checkout sessions
+          console.log(
+            "No existing subscription found, checking recent sessions..."
+          );
+
+          // Get recent checkout sessions for this customer
+          const sessions = await stripe.checkout.sessions.list({
+            customer: stripeSubscription.customer as string,
+            limit: 10,
+          });
+
+          console.log("Found sessions:", sessions.data.length);
+
+          // Find a session with userId in metadata
+          const sessionWithUser = sessions.data.find(
+            (session) => session.metadata?.userId
+          );
+
+          if (sessionWithUser?.metadata?.userId) {
+            console.log(
+              "Found userId from session:",
+              sessionWithUser.metadata.userId
+            );
+            const result = await upsertSubscription(
+              sessionWithUser.metadata.userId,
+              stripeSubscription
+            );
+            console.log("Subscription created for user from session:", result);
+          } else {
+            console.error(
+              "No user found for customer:",
+              stripeSubscription.customer,
+              "Sessions checked:",
+              sessions.data.map((s) => ({ id: s.id, metadata: s.metadata }))
+            );
+          }
         }
         break;
       }
