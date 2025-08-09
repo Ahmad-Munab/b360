@@ -120,47 +120,6 @@ export function SubscriptionStatus() {
     }
   };
 
-  const handleSyncSubscription = async () => {
-    setActionLoading("sync");
-    try {
-      const response = await fetch("/api/stripe/sync", {
-        method: "POST",
-      });
-
-      if (response.ok) {
-        await fetchSubscription();
-      }
-    } catch (error) {
-      console.error("Error syncing subscription:", error);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleFixSubscription = async () => {
-    setActionLoading("fix");
-    try {
-      const response = await fetch("/api/stripe/fix-subscription", {
-        method: "POST",
-      });
-
-      const result = await response.json();
-      console.log("Fix result:", result);
-
-      if (response.ok) {
-        await fetchSubscription();
-        alert("Subscription fixed successfully!");
-      } else {
-        alert(`Failed to fix subscription: ${result.message}`);
-      }
-    } catch (error) {
-      console.error("Error fixing subscription:", error);
-      alert("Error fixing subscription");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleUpgrade = async () => {
     setActionLoading("upgrade");
     try {
@@ -321,43 +280,6 @@ export function SubscriptionStatus() {
               )}
             </Button>
           )}
-
-          {/* Debug: Sync Subscription Button - Remove in production */}
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSyncSubscription}
-              disabled={actionLoading === "sync"}
-              variant="outline"
-              size="sm"
-              className="flex-1 border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-            >
-              {actionLoading === "sync" ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Syncing...
-                </>
-              ) : (
-                "🔄 Refresh"
-              )}
-            </Button>
-
-            <Button
-              onClick={handleFixSubscription}
-              disabled={actionLoading === "fix"}
-              variant="outline"
-              size="sm"
-              className="flex-1 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-            >
-              {actionLoading === "fix" ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Fixing...
-                </>
-              ) : (
-                "🔧 Fix"
-              )}
-            </Button>
-          </div>
 
           {status.status === "active" && subscription?.stripeCustomerId && (
             <>

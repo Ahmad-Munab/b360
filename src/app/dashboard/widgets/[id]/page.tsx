@@ -126,8 +126,7 @@ export default function WidgetViewPage({
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{widget.name}</h1>
           <p className="text-gray-600 mt-1">
-            Manage your widget configuration, view analytics, and handle
-            customer feedback
+            Manage your widget configuration and view analytics
           </p>
           <div className="flex items-center space-x-4 mt-3">
             <span className="text-sm text-gray-500">

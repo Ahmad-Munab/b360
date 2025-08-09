@@ -1,41 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
+
 import {
   MessageSquare,
-  ThumbsUp,
-  Bug,
   WorkflowIcon as Widgets,
   Plus,
   ExternalLink,
 } from "lucide-react";
 import { getDashboardAnalytics } from "@/lib/user-utils";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
 interface DashboardData {
   stats: {
     totalMessages: number;
-    totalFeedbacks: number;
-    totalBugReports: number;
     activeWidgets: number;
   };
-  recentFeedbacks: Array<{
-    id: string;
-    widgetId: string;
-    widgetName: string;
-    content: string;
-    createdAt: Date;
-  }>;
-  recentBugReports: Array<{
-    id: string;
-    widgetId: string;
-    widgetName: string;
-    title: string;
-    createdAt: Date;
-  }>;
 }
 
 export default async function DashboardPage() {
@@ -46,13 +28,13 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 p-6">
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Messages
             </CardTitle>
-            <MessageSquare className="h-4 w-4 text-blue-600" />
+            <MessageSquare className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -64,28 +46,12 @@ export default async function DashboardPage() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Feedbacks
+              Active Widgets
             </CardTitle>
-            <ThumbsUp className="h-4 w-4 text-green-600" />
+            <Widgets className="h-4 w-4 text-indigo-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {data.stats.totalFeedbacks}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Bug Reports
-            </CardTitle>
-            <Bug className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {data.stats.totalBugReports}
-            </div>
+            <div className="text-2xl font-bold">{data.stats.activeWidgets}</div>
           </CardContent>
         </Card>
       </div>
@@ -124,8 +90,8 @@ export default async function DashboardPage() {
                 No widgets created yet
               </h3>
               <p className="text-muted-foreground mb-4">
-                Create your first widget to start collecting feedback and
-                messages.
+                Create your first widget to start collecting messages from your
+                customers.
               </p>
               <Link href="/dashboard/widgets/new">
                 <Button className="flex items-center gap-2">
@@ -135,92 +101,16 @@ export default async function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Recent Feedbacks */}
-              <Card className="border-l-4 border-l-green-500">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <ThumbsUp className="h-4 w-4 text-green-600" />
-                    Recent Feedbacks
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {data.recentFeedbacks.map((feedback) => (
-                      <Link
-                        href={`/dashboard/widgets/${feedback.widgetId}`}
-                        key={feedback.id}
-                      >
-                        <div className="p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors">
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge
-                              variant="default"
-                              className="bg-blue-100 text-blue-700"
-                            >
-                              Feedback
-                            </Badge>
-                            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                          </div>
-                          <p className="text-sm font-medium mb-1 line-clamp-2">
-                            {feedback.content}
-                          </p>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{feedback.widgetName}</span>
-                            <span>
-                              {formatDistanceToNow(feedback.createdAt, {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recent Bug Reports */}
-              <Card className="border-l-4 border-l-red-500">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Bug className="h-4 w-4 text-red-600" />
-                    Recent Bug Reports
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {data.recentBugReports.map((bug) => (
-                      <Link
-                        href={`/dashboard/widgets/${bug.widgetId}`}
-                        key={bug.id}
-                      >
-                        <div className="p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors">
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge
-                              variant="destructive"
-                              className="bg-red-100 text-red-700"
-                            >
-                              Bug Report
-                            </Badge>
-                            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                          </div>
-                          <p className="text-sm font-medium mb-1 line-clamp-2">
-                            {bug.title}
-                          </p>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{bug.widgetName}</span>
-                            <span>
-                              {formatDistanceToNow(bug.createdAt, {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                You have {data.stats.activeWidgets} active widget
+                {data.stats.activeWidgets !== 1 ? "s" : ""}.
+              </p>
+              <Link href="/dashboard/widgets">
+                <Button variant="outline" className="mt-4">
+                  Manage Widgets
+                </Button>
+              </Link>
             </div>
           )}
         </CardContent>

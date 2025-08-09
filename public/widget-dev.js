@@ -589,75 +589,13 @@ class ModernSupportWidget {
   }
 
   createFormViews() {
-    const formTypes = [];
-    
-    if (this.config.feedbackQuestion) {
-      formTypes.push({
-        type: 'feedback',
-        title: 'Give Feedback',
-        placeholder: this.config.feedbackQuestion
-      });
-    }
-    
-    if (this.config.enableBugReports) {
-      formTypes.push({
-        type: 'bug',
-        title: 'Report Bug',
-        placeholder: 'Please describe the issue you encountered...'
-      });
-    }
-
-    formTypes.forEach(formType => {
-      const view = document.createElement('div');
-      view.className = `widget-view widget-${formType.type}-view`;
-
-      // Header with back button
-      const header = document.createElement('div');
-      header.className = 'widget-header';
-      header.innerHTML = `
-        <button class="back-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-        </button>
-        <div>
-          <h3>${formType.title}</h3>
-          <p>Your input helps us improve</p>
-        </div>
-      `;
-      header.querySelector('.back-btn').addEventListener('click', () => this.showView('main'));
-
-      // Form
-      const form = document.createElement('div');
-      form.className = 'widget-form';
-
-      const label = document.createElement('label');
-      label.className = 'form-label';
-      label.textContent = formType.placeholder;
-
-      const textarea = document.createElement('textarea');
-      textarea.className = 'form-textarea';
-      textarea.placeholder = `Please share your ${formType.type === 'feedback' ? 'feedback' : 'bug report'}...`;
-      textarea.required = true;
-
-      const submitButton = document.createElement('button');
-      submitButton.className = 'form-submit-btn';
-      submitButton.textContent = `Submit ${formType.title}`;
-      submitButton.addEventListener('click', () => this.submitForm(formType.type, textarea.value, form));
-
-      form.appendChild(label);
-      form.appendChild(textarea);
-      form.appendChild(submitButton);
-
-      view.appendChild(header);
-      view.appendChild(form);
-      this.popup.appendChild(view);
-    });
+    // Feedback and bug report functionality removed
+    // Only message functionality is supported
   }
 
   getAvailableOptions() {
     const options = [];
-    
+
     // Always show chat option
     options.push({
       icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -667,32 +605,6 @@ class ModernSupportWidget {
       desc: 'Start a conversation with our AI assistant',
       action: 'chat'
     });
-
-    // Show feedback option if question is provided
-    if (this.config.feedbackQuestion) {
-      options.push({
-        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-               </svg>`,
-        title: 'Give Feedback',
-        desc: 'Share your thoughts and suggestions',
-        action: 'feedback'
-      });
-    }
-
-    // Show bug report option if enabled
-    if (this.config.enableBugReports) {
-      options.push({
-        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <rect x="8" y="6" width="8" height="14" rx="4"/>
-                 <path d="m9 9-5 3 5 3"/>
-                 <path d="m15 9 5 3-5 3"/>
-               </svg>`,
-        title: 'Report Bug',
-        desc: 'Report any issues you encountered',
-        action: 'bug'
-      });
-    }
 
     return options;
   }
@@ -816,93 +728,7 @@ class ModernSupportWidget {
     }
   }
 
-  async submitForm(type, content, formContainer) {
-    if (!content.trim()) return;
 
-    const submitButton = formContainer.querySelector('.form-submit-btn');
-
-    submitButton.disabled = true;
-    submitButton.textContent = 'Submitting...';
-
-    try {
-      // Call the actual API
-      const success = await this.submitFeedbackOrBug(type, content);
-
-      if (success) {
-        // Show success message
-        formContainer.innerHTML = `
-          <div class="success-message">
-            <div class="success-icon">✅</div>
-            <h3 class="success-title">Thank you!</h3>
-            <p class="success-desc">Your ${type} has been submitted successfully. We'll review it and get back to you soon.</p>
-          </div>
-        `;
-
-        // Auto close after 3 seconds
-        setTimeout(() => {
-          this.showView('main');
-          // Reset form after a delay
-          setTimeout(() => {
-            this.resetForm(type);
-          }, 300);
-        }, 3000);
-      } else {
-        throw new Error('Submission failed');
-      }
-
-    } catch (error) {
-      console.error('Submit error:', error);
-      submitButton.disabled = false;
-      submitButton.textContent = `Submit ${type === 'feedback' ? 'Feedback' : 'Bug Report'}`;
-
-      // Show error message
-      const errorDiv = document.createElement('div');
-      errorDiv.style.cssText = 'color: #ef4444; font-size: 14px; margin-top: 8px; text-align: center; padding: 8px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;';
-      errorDiv.textContent = 'Failed to submit. Please try again.';
-      formContainer.appendChild(errorDiv);
-
-      setTimeout(() => {
-        if (formContainer.contains(errorDiv)) {
-          formContainer.removeChild(errorDiv);
-        }
-      }, 5000);
-    }
-  }
-
-  resetForm(type) {
-    const view = this.popup.querySelector(`.widget-${type}-view`);
-    const form = view.querySelector('.widget-form');
-    
-    // Recreate the form
-    const formType = type === 'feedback' ? {
-      type: 'feedback',
-      title: 'Give Feedback',
-      placeholder: this.config.feedbackQuestion
-    } : {
-      type: 'bug',
-      title: 'Report Bug',
-      placeholder: 'Please describe the issue you encountered...'
-    };
-
-    const label = document.createElement('label');
-    label.className = 'form-label';
-    label.textContent = formType.placeholder;
-
-    const textarea = document.createElement('textarea');
-    textarea.className = 'form-textarea';
-    textarea.placeholder = `Please share your ${type === 'feedback' ? 'feedback' : 'bug report'}...`;
-    textarea.required = true;
-
-    const submitButton = document.createElement('button');
-    submitButton.className = 'form-submit-btn';
-    submitButton.textContent = `Submit ${formType.title}`;
-    submitButton.addEventListener('click', () => this.submitForm(type, textarea.value, form));
-
-    form.innerHTML = '';
-    form.appendChild(label);
-    form.appendChild(textarea);
-    form.appendChild(submitButton);
-  }
 
   autoResizeTextarea() {
     this.style.height = 'auto';
@@ -978,34 +804,7 @@ class ModernSupportWidget {
     }
   }
 
-  async submitFeedbackOrBug(type, content) {
-    try {
-      // Use relative URL to work with any domain
-      const apiUrl = `${API_BASE}/api/widgets/${this.config.widgetId}/feedback`;
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: type === 'feedback' ? 'feedback' : 'bug',
-          content,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('ModernSupportWidget: API Error Response:', errorText);
-        throw new Error('Failed to submit');
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Submit error:', error);
-      throw error; // Re-throw to be handled by the calling function
-    }
-  }
 }
 
 // Auto-initialize widget

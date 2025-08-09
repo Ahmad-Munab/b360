@@ -29,23 +29,20 @@ export function UsageTracker() {
 
   const fetchUsage = async () => {
     try {
-      // This would be replaced with actual API call to get usage data
-      // For now, we'll simulate some usage data
-      const mockUsage: UsageData = {
-        messages: {
-          used: 15,
-          limit: plans.free.limits.messages,
-        },
-        widgets: {
-          used: 1,
-          limit: plans.free.limits.widgets,
-        },
-        plan: "free",
-      };
-
-      setUsage(mockUsage);
+      const response = await fetch("/api/usage");
+      if (!response.ok) {
+        throw new Error("Failed to fetch usage data");
+      }
+      const usageData = await response.json();
+      setUsage(usageData);
     } catch (error) {
       console.error("Error fetching usage:", error);
+      // Set default empty usage on error
+      setUsage({
+        messages: { used: 0, limit: plans.free.limits.messages },
+        widgets: { used: 0, limit: plans.free.limits.widgets },
+        plan: "free",
+      });
     } finally {
       setLoading(false);
     }

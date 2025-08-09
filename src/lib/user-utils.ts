@@ -59,7 +59,7 @@ export async function userExists(userId: string): Promise<boolean> {
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
-import { widget, feedback, subscriptionUsage } from "@/db/schema";
+import { widget, subscriptionUsage } from "@/db/schema";
 import { getCurrentBillingPeriod } from "@/lib/billing";
 
 export async function getDashboardAnalytics() {
@@ -94,68 +94,16 @@ export async function getDashboardAnalytics() {
         )
       );
 
-    const [totalFeedbacks] = await db
-      .select({ count: count() })
-      .from(feedback)
-      .innerJoin(widget, eq(feedback.widgetId, widget.id))
-      .where(and(eq(widget.userId, userId), eq(feedback.type, "feedback")));
-
-    const [totalBugReports] = await db
-      .select({ count: count() })
-      .from(feedback)
-      .innerJoin(widget, eq(feedback.widgetId, widget.id))
-      .where(and(eq(widget.userId, userId), eq(feedback.type, "bug")));
-
     const [activeWidgets] = await db
       .select({ count: count() })
       .from(widget)
       .where(and(eq(widget.userId, userId), eq(widget.isActive, true)));
 
-    // Get recent feedbacks (last 10)
-    const recentFeedbacks = await db
-      .select({
-        id: feedback.id,
-        widgetId: feedback.widgetId,
-        widgetName: widget.name,
-        content: feedback.content,
-        createdAt: feedback.createdAt,
-      })
-      .from(feedback)
-      .innerJoin(widget, eq(feedback.widgetId, widget.id))
-      .where(and(eq(widget.userId, userId), eq(feedback.type, "feedback")))
-      .orderBy(desc(feedback.createdAt))
-      .limit(10);
-
-    // Get recent bug reports (last 10)
-    const recentBugReports = await db
-      .select({
-        id: feedback.id,
-        widgetId: feedback.widgetId,
-        widgetName: widget.name,
-        title: feedback.content,
-        createdAt: feedback.createdAt,
-      })
-      .from(feedback)
-      .innerJoin(widget, eq(feedback.widgetId, widget.id))
-      .where(and(eq(widget.userId, userId), eq(feedback.type, "bug")))
-      .orderBy(desc(feedback.createdAt))
-      .limit(10);
-
     return {
       stats: {
         totalMessages: totalMessages?.messageCount || 0,
-        totalFeedbacks: totalFeedbacks.count || 0,
-        totalBugReports: totalBugReports.count || 0,
         activeWidgets: activeWidgets.count || 0,
       },
-      recentFeedbacks: recentFeedbacks.map((f) => ({
-        ...f,
-        createdAt: new Date(f.createdAt),
-      })),
-      recentBugReports: recentBugReports.map((b) => ({
-        ...b,
-        createdAt: new Date(b.createdAt),
-      })),
     };
   } catch (error) {
     console.error("Dashboard analytics error:", error);

@@ -93,9 +93,8 @@ export const widget = pgTable("widget", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const widgetRelations = relations(widget, ({ one, many }) => ({
+export const widgetRelations = relations(widget, ({ one }) => ({
   user: one(user, { fields: [widget.userId], references: [user.id] }),
-  feedbacks: many(feedback),
   analytics: one(widgetAnalytics, {
     fields: [widget.id],
     references: [widgetAnalytics.widgetId],
@@ -126,8 +125,6 @@ export const widgetAnalytics = pgTable("widget_analytics", {
     .notNull()
     .unique(), // Added .unique()
   messageCount: integer("message_count").default(0).notNull(),
-  feedbackCount: integer("feedback_count").default(0).notNull(),
-  bugReportCount: integer("bug_report_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

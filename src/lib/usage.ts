@@ -156,8 +156,6 @@ export class UsageService {
         await db.insert(widgetAnalytics).values({
           widgetId,
           messageCount: count,
-          feedbackCount: 0,
-          bugReportCount: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
