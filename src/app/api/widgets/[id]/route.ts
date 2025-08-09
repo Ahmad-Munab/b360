@@ -45,15 +45,10 @@ export async function GET(
       id: widgetData.id,
       position: widgetData.position,
       primaryColor: widgetData.primaryColor,
-      productType: widgetData.productType,
       productName: widgetData.productName,
-      features: widgetData.features,
       description: widgetData.description,
-      faqs: widgetData.faqs,
       widgetTitle: widgetData.widgetTitle,
       welcomeMessage: widgetData.welcomeMessage,
-      feedbackQuestion: widgetData.feedbackQuestion,
-      enableBugReports: widgetData.enableBugReports,
     };
 
     return NextResponse.json(

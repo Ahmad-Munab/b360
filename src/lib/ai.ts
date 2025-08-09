@@ -89,10 +89,6 @@ Guidelines:
     console.error("Error generating AI response:", error);
 
     // Return a helpful fallback message
-    return `Thank you for your message! I'm currently experiencing some technical difficulties, but I'd be happy to help you. For immediate assistance, please contact our support team. In the meantime, ${
-      widgetData.faqs && widgetData.faqs.length > 0
-        ? "you might find answers to common questions in our FAQ section."
-        : "feel free to describe your issue and we'll get back to you as soon as possible."
-    }`;
+    return `Thank you for your message! I'm currently experiencing some technical difficulties, but I'd be happy to help you. For immediate assistance, please contact our support team.`;
   }
 }

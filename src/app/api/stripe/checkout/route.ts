@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createCheckoutSession, STRIPE_CONFIG } from '@/lib/stripe';
+import { createCheckoutSession } from '@/lib/stripe';
 import { getOrCreateStripeCustomer } from '@/lib/subscription';
 
 export async function POST(request: NextRequest) {

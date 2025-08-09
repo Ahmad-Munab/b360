@@ -206,8 +206,7 @@ export default function Widget({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                style={{ focusRingColor: primaryColor }}
+                className={`flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent focus:ring-[${primaryColor}] transition-all`}
               />
               <button
                 type="submit"

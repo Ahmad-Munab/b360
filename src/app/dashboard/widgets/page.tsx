@@ -132,12 +132,6 @@ export default function WidgetsPage() {
                         Primary Color
                       </span>
                     </div>
-                    <div className="flex text-sm items-center space-x-2">
-                      <span className="">Type:</span>{" "}
-                      <span className=" text-gray-500 capitalize">
-                        {widget.productType}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </CardContent>

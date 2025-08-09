@@ -101,15 +101,10 @@ export async function POST(request: NextRequest) {
         name,
         position,
         primaryColor,
-        productType: "saas", // Default value
         productName,
-        features: [], // Default empty array
         description,
-        faqs: [], // Default empty array
         widgetTitle,
         welcomeMessage,
-        feedbackQuestion: "", // Default empty string
-        enableBugReports: false, // Default false for simplified widget
         isActive,
       })
       .returning();
