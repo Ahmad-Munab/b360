@@ -16,15 +16,14 @@ class ModernSupportWidget {
       faqs: config.faqs,
       widgetTitle: config.widgetTitle,
       welcomeMessage: config.welcomeMessage,
-      feedbackQuestion: config.feedbackQuestion ,
-      enableBugReports: config.enableBugReports,
+
       isActive: config.isActive,
       ...config
     };
 
 
     this.isOpen = false;
-    this.currentView = 'main'; // main, chat, feedback, bug
+    this.currentView = 'main'; // main, chat
     this.messages = [];
 
     if (this.config.isActive) {
@@ -766,14 +765,11 @@ class ModernSupportWidget {
     const headers = this.popup.querySelectorAll('.widget-header h3');
     headers.forEach(header => {
       if (header.textContent === 'Chat with Agent') return;
-      if (header.textContent === 'Give Feedback') return;
-      if (header.textContent === 'Report Bug') return;
       header.textContent = this.config.productName;
     });
 
     const welcomeMessages = this.popup.querySelectorAll('.widget-header p');
     welcomeMessages.forEach(p => {
-      if (p.textContent.includes('Your input helps us improve')) return;
       if (p.textContent.includes('We\'re here to help you!')) return;
       p.textContent = this.config.welcomeMessage;
     });
@@ -841,8 +837,6 @@ class ModernSupportWidget {
                 productName: script.getAttribute('data-product-name'),
                 widgetTitle: script.getAttribute('data-widget-title'),
                 welcomeMessage: script.getAttribute('data-welcome-message'),
-                feedbackQuestion: script.getAttribute('data-feedback-question'),
-                enableBugReports: script.getAttribute('data-enable-bug-reports'),
                 isActive: data.isActive
               };
               new ModernSupportWidget(config);
