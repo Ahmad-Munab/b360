@@ -84,7 +84,7 @@ export default function GeneralSupportPage() {
       heroGradient="from-blue-50 to-indigo-50"
       ctaTitle="Ready to enhance your customer support?"
       ctaDescription="Let's discuss how our general support solutions can improve your customer experience."
-      ctaButtonText="Get Started Today"
+      ctaButtonText="Start General Support"
     >
       {/* Stats Section */}
       <section className="py-16 bg-white">
@@ -197,50 +197,6 @@ export default function GeneralSupportPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-blue-600">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center text-white max-w-4xl mx-auto"
-          >
-            <Headphones className="w-16 h-16 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold mb-4">
-              Experience Superior General Support
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Join thousands of businesses that trust B360 for their customer support needs.
-              Get started today and see the difference professional support makes.
-            </p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-              <div>
-                <div className="text-3xl font-bold mb-2">500K+</div>
-                <div className="opacity-90">Tickets Resolved</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold mb-2">99.9%</div>
-                <div className="opacity-90">Uptime Guarantee</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold mb-2">&lt;2min</div>
-                <div className="opacity-90">Response Time</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold mb-2">15+</div>
-                <div className="opacity-90">Languages</div>
-              </div>
-            </div>
-            <Link href="/contact">
-              <Button className="bg-white text-indigo-600 hover:bg-gray-100 rounded-full px-8 py-3 font-bold text-lg shadow-lg">
-                Start General Support
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
     </PageLayout>
   );
 }

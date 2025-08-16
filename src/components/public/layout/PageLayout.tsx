@@ -35,7 +35,7 @@ export function PageLayout({
       <Header />
 
       {/* Hero Section */}
-      <section className={`bg-gradient-to-br ${heroGradient} pt-24 pb-16`}>
+      <section className={`bg-gradient-to-br ${heroGradient} pt-44 pb-16`}>
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -50,10 +50,15 @@ export function PageLayout({
               {subtitle}
             </p>
             {description && (
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
                 {description}
               </p>
             )}
+            <Link href={ctaButtonHref}>
+              <Button className="bg-white text-blue-600 hover:bg-gray-100 rounded-full px-8 py-3 font-bold text-lg shadow-lg ">
+                {ctaButtonText}
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </section>
