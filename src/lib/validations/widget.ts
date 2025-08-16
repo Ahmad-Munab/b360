@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const widgetFormSchema = z.object({
+  customIcon: z.string().optional(),
   name: z
     .string()
     .min(1, "Name is required")

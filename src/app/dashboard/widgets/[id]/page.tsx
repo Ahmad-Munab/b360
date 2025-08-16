@@ -160,11 +160,11 @@ export default function WidgetViewPage({
           {/* Embed Code */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                Embed Code
+              <CardTitle className="text-xl font-bold">
+                Integrate Your Widget
               </CardTitle>
-              <CardDescription>
-                Paste this code inside your your websites head or body tag
+              <CardDescription className="text-md">
+                Copy and paste this snippet into the `&lt;head&gt;` or `&lt;body&gt;` of your website.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -176,7 +176,7 @@ export default function WidgetViewPage({
                 className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700"
               >
                 <Copy className="mr-2 h-4 w-4" />
-                Copy Embed Code
+                Copy Integration Snippet
               </Button>
             </CardContent>
           </Card>

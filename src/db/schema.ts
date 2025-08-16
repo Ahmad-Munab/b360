@@ -89,6 +89,7 @@ export const widget = pgTable("widget", {
     .default("Hi! How can I help you today?")
     .notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  customIcon: text("custom_icon"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

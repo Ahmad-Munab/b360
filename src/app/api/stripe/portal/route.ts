@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { createBillingPortalSession } from "@/lib/stripe-server";
 import { getUserSubscription } from "@/lib/subscription";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const session = await getServerSession(authOptions);
 

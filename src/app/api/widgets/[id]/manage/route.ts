@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { widget } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { user } from '@/db/schema';
+
 
 // Get a specific widget for authenticated user
 export async function GET(

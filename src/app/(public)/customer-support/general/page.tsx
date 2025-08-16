@@ -2,7 +2,7 @@
 
 import { PageLayout } from "@/components/public/layout/PageLayout";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Clock,
@@ -10,12 +10,11 @@ import {
   Phone,
   Mail,
   Globe,
-  ArrowRight,
-  Headphones,
+  
   Shield,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
+
 
 export default function GeneralSupportPage() {
   const features = [

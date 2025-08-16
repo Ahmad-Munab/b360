@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 import Link from "next/link";
 import { ReactNode } from "react";
+import { MessageSquare } from "lucide-react";
 
 interface PageLayoutProps {
   title: string;
@@ -85,6 +86,13 @@ export function PageLayout({
 
       {/* Footer */}
       <Footer />
+
+      {/* Floating Contact Button */}
+      <Link href="/contact">
+        <Button className="fixed bottom-8 right-8 h-16 w-16 rounded-full bg-gradient-navy-blue text-white shadow-lg hover:scale-110 transition-transform duration-300 z-50">
+          <MessageSquare className="h-8 w-8" />
+        </Button>
+      </Link>
     </div>
   );
 }

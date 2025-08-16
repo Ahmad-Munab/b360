@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -39,7 +40,8 @@ export default function EditWidgetPage({
   const router = useRouter();
   const { widgets, isLoading, fetchWidgets, updateWidget } = useWidgetsStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [widgetId, setWidgetId] = useState<string>("");
+    const [widgetId, setWidgetId] = useState<string>("");
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
   const [previewState, setPreviewState] = useState({
     isOpen: false,
   });
@@ -84,7 +86,11 @@ export default function EditWidgetPage({
           welcomeMessage:
             widget.welcomeMessage || "Hi! How can I help you today?",
           isActive: widget.isActive,
+          customIcon: widget.customIcon,
         });
+        if (widget.customIcon) {
+          setIconPreview(widget.customIcon);
+        }
       }
     }
   }, [widgets, widgetId, form]);
@@ -93,7 +99,26 @@ export default function EditWidgetPage({
     if (!widgetId) return;
     try {
       setIsSubmitting(true);
-      await updateWidget(widgetId, data);
+      const updatedData = { ...data };
+
+      if (iconPreview && iconPreview.startsWith('data:image')) {
+        const response = await fetch('/api/cloudinary/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ image: iconPreview }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload icon');
+        }
+
+        const { url } = await response.json();
+        updatedData.customIcon = url;
+      }
+
+      await updateWidget(widgetId, updatedData);
       toast.success("Widget updated successfully");
       router.push("/dashboard/widgets");
     } catch (_error) {
@@ -112,12 +137,18 @@ export default function EditWidgetPage({
           className="px-6 py-5 text-white rounded-t-2xl flex items-center gap-3"
           style={{ backgroundColor: formData.primaryColor }}
         >
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
-          >
-            {(formData.productName || "B").charAt(0).toUpperCase()}
-          </div>
+          {
+            iconPreview ? (
+              <img src={iconPreview} alt="Icon" className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+                style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+              >
+                {(formData.productName || "B").charAt(0).toUpperCase()}
+              </div>
+            )
+          }
           <div>
             <h3 className="font-semibold text-lg">
               {formData.productName || "Your Product"}
@@ -184,7 +215,11 @@ export default function EditWidgetPage({
             className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
             style={{ backgroundColor: formData.primaryColor }}
           >
-            <MessageCircle className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
+                        {iconPreview ? (
+              <img src={iconPreview} alt="Icon" className="w-full h-full rounded-full object-cover" />
+            ) : (
+              <MessageCircle className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
+            )}
           </button>
         </div>
 
@@ -229,7 +264,7 @@ export default function EditWidgetPage({
     <div className="max-w-7xl mx-auto py-8 px-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Form Section */}
-        <div>
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle>Edit Widget</CardTitle>
@@ -340,6 +375,31 @@ export default function EditWidgetPage({
                         <p className="text-sm text-red-500">
                           {form.formState.errors.primaryColor.message}
                         </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="customIcon">Custom Icon</Label>
+                      <Input
+                        id="customIcon"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setIconPreview(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                      {iconPreview && (
+                        <div className="mt-2">
+                          <img src={iconPreview} alt="Icon Preview" className="h-16 w-16 rounded-full object-cover" />
+                        </div>
                       )}
                     </div>
                   </div>

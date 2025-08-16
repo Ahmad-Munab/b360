@@ -12,6 +12,7 @@ export interface Widget {
   widgetTitle: string;
   welcomeMessage: string;
   isActive: boolean;
+  customIcon?: string;
   createdAt: Date;
   updatedAt: Date;
 }

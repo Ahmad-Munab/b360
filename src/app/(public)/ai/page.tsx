@@ -120,7 +120,7 @@ export default function AIPage() {
       description="Advanced AI technology that provides instant, accurate, and personalized customer support experiences while seamlessly integrating with human agents."
       heroGradient="from-emerald-50 to-indigo-50"
       ctaTitle="Ready to transform your support with AI?"
-      ctaDescription="Let our AI specialists help you implement intelligent customer support that delights customers and reduces costs."
+      ctaDescription="Let our AI specialists help you implement intelligent customer support that delights customers and reduces costs." ctaButtonText="Get Started with AI"
     >
       <ContentSection
         title="Next-Generation AI Support"
