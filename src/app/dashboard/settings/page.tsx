@@ -1,9 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { SubscriptionStatus } from "@/components/dashboard/subscription/SubscriptionStatus";
 import { UsageTracker } from "@/components/dashboard/subscription/UsageTracker";
+import { SuccessHandler } from "./SuccessHandler";
 
-export default function SettingsPage() {
+function SettingsContent() {
+
   return (
     <div className="space-y-8">
       <header>
@@ -25,5 +28,16 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SuccessHandler />
+      </Suspense>
+      <SettingsContent />
+    </>
   );
 }

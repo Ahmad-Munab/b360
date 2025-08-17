@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/lib/stripe";
 import { plans } from "@/lib/config/plans";
+import { getStripePriceId } from "@/lib/config/stripe";
 
 interface SubscriptionData {
   id: string;
@@ -22,8 +23,8 @@ interface SubscriptionData {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   stripePriceId: string | null;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
 }
 
@@ -66,19 +67,35 @@ export function SubscriptionStatus() {
       const response = await fetch("/api/stripe/portal", {
         method: "POST",
       });
-      const { url } = await response.json();
 
-      if (url) {
-        window.open(url, "_blank");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No portal URL received");
       }
     } catch (error) {
       console.error("Error opening billing portal:", error);
+      alert("Failed to open billing portal. Please try again.");
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleCancelSubscription = async () => {
+    if (!confirm("Are you sure you want to cancel your subscription? You'll continue to have access until the end of your billing period.")) {
+      return;
+    }
+
     setActionLoading("cancel");
     try {
       const response = await fetch("/api/stripe/subscription", {
@@ -89,11 +106,21 @@ export function SubscriptionStatus() {
         body: JSON.stringify({ action: "cancel" }),
       });
 
-      if (response.ok) {
-        await fetchSubscription();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      await fetchSubscription();
+      alert("Subscription cancelled successfully. You'll have access until the end of your billing period.");
     } catch (error) {
       console.error("Error canceling subscription:", error);
+      alert("Failed to cancel subscription. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -110,11 +137,21 @@ export function SubscriptionStatus() {
         body: JSON.stringify({ action: "reactivate" }),
       });
 
-      if (response.ok) {
-        await fetchSubscription();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      await fetchSubscription();
+      alert("Subscription reactivated successfully!");
     } catch (error) {
       console.error("Error reactivating subscription:", error);
+      alert("Failed to reactivate subscription. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -129,17 +166,28 @@ export function SubscriptionStatus() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+          priceId: getStripePriceId(),
         }),
       });
 
-      const { url } = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      if (url) {
-        window.location.href = url;
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
       }
     } catch (error) {
       console.error("Error creating checkout session:", error);
+      alert("Failed to start checkout. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -239,13 +287,21 @@ export function SubscriptionStatus() {
         <p className="text-sm text-gray-600">{status.description}</p>
 
         {/* Billing Period */}
-        {subscription && subscription.currentPeriodEnd && (
+        {subscription && subscription.currentPeriodEnd && subscription.plan !== "free" && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4" />
             <span>
               Next billing:{" "}
               {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
             </span>
+          </div>
+        )}
+        
+        {/* Free Plan Info */}
+        {subscription && subscription.plan === "free" && (
+          <div className="flex items-center gap-2 text-sm text-emerald-600">
+            <CheckCircle className="w-4 h-4" />
+            <span>Free plan - no billing required</span>
           </div>
         )}
 

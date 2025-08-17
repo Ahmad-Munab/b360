@@ -10,6 +10,7 @@ import { Check, Star, Zap, ArrowRight, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { plans } from "@/lib/config/plans";
+import { getStripePriceId } from "@/lib/config/stripe";
 
 export default function AiPricingPage() {
   const { data: session } = useSession();
@@ -31,7 +32,7 @@ export default function AiPricingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+          priceId: getStripePriceId(),
         }),
       });
 

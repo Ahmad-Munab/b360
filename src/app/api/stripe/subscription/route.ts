@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { 
-  getUserSubscription, 
-  cancelUserSubscription, 
+import {
+  getOrCreateUserSubscription,
+  cancelUserSubscription,
   reactivateUserSubscription,
-  getSubscriptionStatus 
+  getSubscriptionStatus
 } from '@/lib/subscription';
 
 export async function GET() {
@@ -19,7 +19,7 @@ export async function GET() {
       );
     }
 
-    const subscription = await getUserSubscription(session.user.id);
+    const subscription = await getOrCreateUserSubscription(session.user.id);
     const status = getSubscriptionStatus(subscription);
 
     return NextResponse.json({

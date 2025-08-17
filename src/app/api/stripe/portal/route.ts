@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createBillingPortalSession } from "@/lib/stripe-server";
-import { getUserSubscription } from "@/lib/subscription";
+import { getOrCreateUserSubscription } from "@/lib/subscription";
+import { STRIPE_CONFIG } from "@/lib/config/stripe";
 
 export async function POST() {
   try {
@@ -13,11 +14,11 @@ export async function POST() {
     }
 
     // Get user's subscription to find Stripe customer ID
-    const userSubscription = await getUserSubscription(session.user.id);
+    const userSubscription = await getOrCreateUserSubscription(session.user.id);
 
     if (!userSubscription?.stripeCustomerId) {
       return NextResponse.json(
-        { error: "No subscription found" },
+        { error: "No paid subscription found" },
         { status: 404 }
       );
     }
@@ -28,7 +29,7 @@ export async function POST() {
     // Create billing portal session
     const portalSession = await createBillingPortalSession(
       userSubscription.stripeCustomerId,
-      `${baseUrl}/dashboard/settings`
+      `${baseUrl}${STRIPE_CONFIG.PORTAL_RETURN_URL}`
     );
 
     return NextResponse.json({

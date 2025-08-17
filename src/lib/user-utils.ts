@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { user } from "@/db/schema";
 import { eq, and, count } from "drizzle-orm";
+import { createFreeSubscription } from "./subscription";
 
 export interface UserData {
   id: string;
@@ -30,6 +31,15 @@ export async function ensureUserExists(userData: UserData): Promise<boolean> {
         image: userData.image || null,
       });
       console.log(`Created user record for ${userData.email}`);
+
+      // Create a default free subscription for the new user
+      try {
+        await createFreeSubscription(userData.id);
+        console.log(`Created free subscription for new user: ${userData.id}`);
+      } catch (subscriptionError) {
+        console.error(`Failed to create subscription for user ${userData.id}:`, subscriptionError);
+        // Don't throw here - user creation should still succeed even if subscription fails
+      }
     }
 
     return true;

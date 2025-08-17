@@ -3,9 +3,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createCheckoutSession } from "@/lib/stripe-server";
 import { getOrCreateStripeCustomer } from "@/lib/subscription";
+import { STRIPE_CONFIG, validateStripeConfig } from "@/lib/config/stripe";
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate Stripe configuration
+    if (!validateStripeConfig()) {
+      return NextResponse.json(
+        { error: "Stripe configuration is incomplete" },
+        { status: 500 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -31,8 +40,8 @@ export async function POST(request: NextRequest) {
     const checkoutSession = await createCheckoutSession({
       customerId,
       priceId,
-      successUrl: `${baseUrl}/dashboard/settings?success=true`,
-      cancelUrl: `${baseUrl}/dashboard/settings?canceled=true`,
+      successUrl: `${baseUrl}${STRIPE_CONFIG.SUCCESS_URL}`,
+      cancelUrl: `${baseUrl}${STRIPE_CONFIG.CANCEL_URL}`,
       metadata: {
         userId: session.user.id,
       },

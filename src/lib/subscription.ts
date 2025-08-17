@@ -12,8 +12,8 @@ export interface SubscriptionData {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   stripePriceId: string | null;
-  currentPeriodStart: Date;
-  currentPeriodEnd: Date;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
 }
 
@@ -59,11 +59,11 @@ export async function getOrCreateUserSubscription(
   userId: string
 ): Promise<SubscriptionData> {
   let userSubscription = await getUserSubscription(userId);
-  
+
   if (!userSubscription) {
     userSubscription = await createFreeSubscription(userId);
   }
-  
+
   return userSubscription;
 }
 
@@ -206,19 +206,28 @@ export async function getOrCreateStripeCustomer(
 
 // Check if user has active subscription
 export async function hasActiveSubscription(userId: string): Promise<boolean> {
-  const userSubscription = await getUserSubscription(userId);
+  const userSubscription = await getOrCreateUserSubscription(userId);
 
   if (!userSubscription) {
     return false;
   }
 
-  // Check if subscription is active and not expired
+  // Free plan is always active
+  if (userSubscription.plan === "free") {
+    return userSubscription.status === "active";
+  }
+
+  // For paid plans, check if subscription is active and not expired
   const now = new Date();
   const isActive = userSubscription.status === "active";
-  const notExpired = userSubscription.currentPeriodEnd > now;
-  const notCanceled =
-    !userSubscription.cancelAtPeriodEnd ||
-    userSubscription.currentPeriodEnd > now;
+
+  // If no period end date, assume it's valid (shouldn't happen for paid plans)
+  const notExpired = userSubscription.currentPeriodEnd
+    ? userSubscription.currentPeriodEnd > now
+    : true;
+
+  const notCanceled = !userSubscription.cancelAtPeriodEnd ||
+    (userSubscription.currentPeriodEnd ? userSubscription.currentPeriodEnd > now : true);
 
   return isActive && notExpired && notCanceled;
 }
@@ -244,13 +253,17 @@ export function getSubscriptionStatus(
       return {
         status: "canceled",
         label: "Canceled",
-        description: `Your subscription will end on ${subscriptionData.currentPeriodEnd.toLocaleDateString()}.`,
+        description: subscriptionData.currentPeriodEnd
+          ? `Your subscription will end on ${subscriptionData.currentPeriodEnd.toLocaleDateString()}.`
+          : "Your subscription has been cancelled.",
       };
     }
     return {
       status: "active",
       label: "Pro Plan",
-      description: `Your subscription renews on ${subscriptionData.currentPeriodEnd.toLocaleDateString()}.`,
+      description: subscriptionData.currentPeriodEnd
+        ? `Your subscription renews on ${subscriptionData.currentPeriodEnd.toLocaleDateString()}.`
+        : "Your subscription is active.",
     };
   }
 
