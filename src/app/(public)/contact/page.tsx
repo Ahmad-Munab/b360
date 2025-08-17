@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 import Link from "next/link";
-import CustomWorldMap from "@/components/public/contact/CustomWorldMap";
+import EnhancedWorldMap from "@/components/public/contact/EnhancedWorldMap";
 
 export default function ContactPage() {
   const contactMethods = [
@@ -87,7 +87,7 @@ export default function ContactPage() {
       </section>
 
       {/* World Map Section */}
-      <CustomWorldMap />
+      <EnhancedWorldMap />
 
       {/* Contact Form */}
       <section className="py-20 bg-gray-50">

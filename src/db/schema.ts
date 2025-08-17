@@ -90,6 +90,8 @@ export const widget = pgTable("widget", {
     .notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   customIcon: text("custom_icon"),
+  iconEmoji: text("icon_emoji"),
+  iconType: text("icon_type").default("default").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -133,8 +135,8 @@ export const subscription = pgTable("subscription", {
   stripeCustomerId: text("stripe_customer_id").unique(),
   stripeSubscriptionId: text("stripe_subscription_id").unique(),
   stripePriceId: text("stripe_price_id"),
-  currentPeriodStart: timestamp("current_period_start").notNull(),
-  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
   billingCycleDay: integer("billing_cycle_day").notNull().default(1), // Day of month for billing (1-31)
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -205,6 +207,6 @@ export const testimonial = pgTable("testimonial", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const testimonialRelations = relations(testimonial, ({}) => ({
+export const testimonialRelations = relations(testimonial, ({ }) => ({
   // No relations for testimonial
 }));

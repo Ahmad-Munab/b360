@@ -69,6 +69,9 @@ export async function POST(request: NextRequest) {
       widgetTitle = "Chat with us",
       welcomeMessage = "Hi! How can I help you today?",
       isActive = true,
+      iconType = "default",
+      iconEmoji,
+      customIcon,
     } = body;
 
     // Validate required fields
@@ -106,6 +109,9 @@ export async function POST(request: NextRequest) {
         widgetTitle,
         welcomeMessage,
         isActive,
+        iconType,
+        iconEmoji,
+        customIcon,
       })
       .returning();
 

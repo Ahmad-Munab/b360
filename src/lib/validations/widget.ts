@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const widgetFormSchema = z.object({
   customIcon: z.string().optional(),
+  iconEmoji: z.string().optional(),
+  iconType: z.enum(["default", "emoji", "image"]).default("default"),
   name: z
     .string()
     .min(1, "Name is required")

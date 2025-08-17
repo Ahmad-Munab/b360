@@ -18,6 +18,8 @@ interface PageLayoutProps {
   ctaDescription?: string;
   ctaButtonText?: string;
   ctaButtonHref?: string;
+  secondaryCtaButtonText?: string;
+  secondaryCtaHref?: string;
 }
 
 export function PageLayout({
@@ -30,6 +32,8 @@ export function PageLayout({
   ctaDescription = "Let's discuss how B360 can help you achieve better outcomes.",
   ctaButtonText = "Book a Demo Now",
   ctaButtonHref = "/contact",
+  secondaryCtaButtonText,
+  secondaryCtaHref,
 }: PageLayoutProps) {
   return (
     <div className="min-h-screen bg-white">
@@ -75,11 +79,23 @@ export function PageLayout({
               {ctaTitle}
             </h2>
             <p className="text-xl text-white/90 mb-8">{ctaDescription}</p>
-            <Link href={ctaButtonHref}>
-              <Button className="bg-white text-blue-600 hover:bg-gray-100 rounded-full px-8 py-3 font-bold text-lg shadow-lg">
-                {ctaButtonText}
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link href={ctaButtonHref}>
+                <Button className="bg-white text-blue-600 hover:bg-gray-100 rounded-full px-8 py-3 font-bold text-lg shadow-lg">
+                  {ctaButtonText}
+                </Button>
+              </Link>
+              {secondaryCtaButtonText && secondaryCtaHref && (
+                <Link href={secondaryCtaHref}>
+                  <Button 
+                    variant="outline" 
+                    className="border-white text-white hover:bg-white hover:text-blue-600 rounded-full px-8 py-3 font-bold text-lg"
+                  >
+                    {secondaryCtaButtonText}
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>

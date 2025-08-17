@@ -8,13 +8,41 @@ cloudinary.config({
 });
 
 export async function POST(request: Request) {
-  const { image } = await request.json();
-
   try {
-    const result = await cloudinary.uploader.upload(image, {
-      folder: "widget-icons",
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "widget-icons",
+          resource_type: "image",
+          transformation: [
+            { width: 64, height: 64, crop: "fill" },
+            { quality: "auto" },
+            { format: "auto" }
+          ]
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(buffer);
     });
-    return NextResponse.json({ url: result.secure_url });
+
+    return NextResponse.json({
+      secure_url: (result as { secure_url: string; public_id: string }).secure_url,
+      public_id: (result as { secure_url: string; public_id: string }).public_id
+    });
   } catch (error) {
     console.error("Error uploading to Cloudinary:", error);
     return NextResponse.json(

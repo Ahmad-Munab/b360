@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { MessageCircle, Send, X } from "lucide-react";
 import { useWidgetsStore } from "@/store/useWidgetsStore";
+import { IconSelector } from "@/components/dashboard/IconSelector";
 
 export default function NewWidgetPage() {
   const router = useRouter();
@@ -39,6 +40,9 @@ export default function NewWidgetPage() {
     widgetTitle: "Chat with us",
     welcomeMessage: "Hi! How can I help you today?",
     isActive: true,
+    iconType: "default" as const,
+    iconEmoji: "",
+    customIcon: "",
   });
 
   const [previewState, setPreviewState] = useState({
@@ -79,6 +83,9 @@ export default function NewWidgetPage() {
         widgetTitle: formData.widgetTitle.trim(),
         welcomeMessage: formData.welcomeMessage.trim(),
         isActive: formData.isActive,
+        iconType: formData.iconType,
+        iconEmoji: formData.iconEmoji,
+        customIcon: formData.customIcon,
       };
 
       const widget = await createWidget(widgetData);
@@ -353,6 +360,21 @@ export default function NewWidgetPage() {
                       />
                       <Label htmlFor="isActive">Widget Active</Label>
                     </div>
+                  </div>
+
+                  {/* Widget Icon */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Widget Icon
+                    </h3>
+                    <IconSelector
+                      iconType={formData.iconType}
+                      iconEmoji={formData.iconEmoji}
+                      customIcon={formData.customIcon}
+                      onIconTypeChange={(type) => updateFormData("iconType", type)}
+                      onEmojiChange={(emoji) => updateFormData("iconEmoji", emoji)}
+                      onCustomIconChange={(url) => updateFormData("customIcon", url)}
+                    />
                   </div>
 
                   {/* Submit Buttons */}

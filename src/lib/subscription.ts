@@ -30,6 +30,43 @@ export async function getUserSubscription(
   return userSubscription || null;
 }
 
+// Create default free subscription for new users
+export async function createFreeSubscription(userId: string): Promise<SubscriptionData> {
+  const subscriptionData = {
+    userId,
+    plan: "free",
+    status: "active",
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+    stripePriceId: null,
+    currentPeriodStart: null,
+    currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const [newSubscription] = await db
+    .insert(subscription)
+    .values(subscriptionData)
+    .returning();
+
+  return newSubscription;
+}
+
+// Get or create user subscription (ensures every user has a subscription)
+export async function getOrCreateUserSubscription(
+  userId: string
+): Promise<SubscriptionData> {
+  let userSubscription = await getUserSubscription(userId);
+  
+  if (!userSubscription) {
+    userSubscription = await createFreeSubscription(userId);
+  }
+  
+  return userSubscription;
+}
+
 // Create or update subscription from Stripe webhook
 export async function upsertSubscription(
   userId: string,

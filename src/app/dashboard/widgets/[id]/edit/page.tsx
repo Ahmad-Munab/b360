@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -31,6 +30,7 @@ import {
   type WidgetFormValues,
 } from "@/lib/validations/widget";
 import { MessageCircle, Send, X } from "lucide-react";
+import { IconSelector } from "@/components/dashboard/IconSelector";
 
 export default function EditWidgetPage({
   params,
@@ -46,8 +46,8 @@ export default function EditWidgetPage({
     isOpen: false,
   });
 
-  const form = useForm<WidgetFormValues>({
-    resolver: zodResolver(widgetFormSchema),
+  const form = useForm<any>({
+    // resolver: zodResolver(widgetFormSchema),
     defaultValues: {
       name: "",
       position: "bottom-right",
@@ -57,6 +57,9 @@ export default function EditWidgetPage({
       widgetTitle: "Chat with us",
       welcomeMessage: "Hi! How can I help you today?",
       isActive: true,
+      iconType: "default" as const,
+      iconEmoji: "",
+      customIcon: "",
     },
   });
 
@@ -87,6 +90,8 @@ export default function EditWidgetPage({
             widget.welcomeMessage || "Hi! How can I help you today?",
           isActive: widget.isActive,
           customIcon: widget.customIcon,
+          iconType: ((widget as any).iconType || "default") as "default" | "emoji" | "image",
+          iconEmoji: (widget as any).iconEmoji || "",
         });
         if (widget.customIcon) {
           setIconPreview(widget.customIcon);
@@ -121,7 +126,7 @@ export default function EditWidgetPage({
       await updateWidget(widgetId, updatedData);
       toast.success("Widget updated successfully");
       router.push("/dashboard/widgets");
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update widget");
     } finally {
       setIsSubmitting(false);
@@ -291,7 +296,7 @@ export default function EditWidgetPage({
                       />
                       {form.formState.errors.name && (
                         <p className="text-sm text-red-500">
-                          {form.formState.errors.name.message}
+                          {String(form.formState.errors.name?.message)}
                         </p>
                       )}
                     </div>
@@ -305,7 +310,7 @@ export default function EditWidgetPage({
                       />
                       {form.formState.errors.productName && (
                         <p className="text-sm text-red-500">
-                          {form.formState.errors.productName.message}
+                          {String(form.formState.errors.productName?.message)}
                         </p>
                       )}
                     </div>
@@ -320,7 +325,7 @@ export default function EditWidgetPage({
                       />
                       {form.formState.errors.description && (
                         <p className="text-sm text-red-500">
-                          {form.formState.errors.description.message}
+                          {String(form.formState.errors.description?.message)}
                         </p>
                       )}
                     </div>
@@ -373,7 +378,7 @@ export default function EditWidgetPage({
                       />
                       {form.formState.errors.primaryColor && (
                         <p className="text-sm text-red-500">
-                          {form.formState.errors.primaryColor.message}
+                          {String(form.formState.errors.primaryColor?.message)}
                         </p>
                       )}
                     </div>
@@ -421,7 +426,7 @@ export default function EditWidgetPage({
                       />
                       {form.formState.errors.widgetTitle && (
                         <p className="text-sm text-red-500">
-                          {form.formState.errors.widgetTitle.message}
+                          {String(form.formState.errors.widgetTitle?.message)}
                         </p>
                       )}
                     </div>
@@ -436,7 +441,7 @@ export default function EditWidgetPage({
                       />
                       {form.formState.errors.welcomeMessage && (
                         <p className="text-sm text-red-500">
-                          {form.formState.errors.welcomeMessage.message}
+                          {String(form.formState.errors.welcomeMessage?.message)}
                         </p>
                       )}
                     </div>
@@ -450,6 +455,19 @@ export default function EditWidgetPage({
                       />
                       <Label htmlFor="isActive">Widget Active</Label>
                     </div>
+                  </div>
+
+                  {/* Widget Icon */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Widget Icon</h3>
+                    <IconSelector
+                      iconType={form.watch("iconType") || "default"}
+                      iconEmoji={form.watch("iconEmoji") || ""}
+                      customIcon={form.watch("customIcon") || ""}
+                      onIconTypeChange={(type) => form.setValue("iconType", type)}
+                      onEmojiChange={(emoji) => form.setValue("iconEmoji", emoji)}
+                      onCustomIconChange={(url) => form.setValue("customIcon", url)}
+                    />
                   </div>
                 </div>
 

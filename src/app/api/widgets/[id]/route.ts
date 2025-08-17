@@ -49,6 +49,9 @@ export async function GET(
       description: widgetData.description,
       widgetTitle: widgetData.widgetTitle,
       welcomeMessage: widgetData.welcomeMessage,
+      iconType: widgetData.iconType,
+      iconEmoji: widgetData.iconEmoji,
+      customIcon: widgetData.customIcon,
     };
 
     return NextResponse.json(
