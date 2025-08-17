@@ -30,13 +30,11 @@ const EnhancedWorldMap = () => {
     {
       name: "Canada",
       coordinates: [56.1304, -106.3468] as [number, number],
-      description: "North American Operations",
       color: "#059669", // emerald-600
     },
     {
       name: "Pakistan",
       coordinates: [30.3753, 69.3451] as [number, number],
-      description: "South Asian Operations",
       color: "#dc2626", // red-600
     },
   ];
@@ -119,9 +117,7 @@ const EnhancedWorldMap = () => {
                             <h3 className="font-bold text-lg text-gray-900 mb-1">
                               {location.name}
                             </h3>
-                            <p className="text-gray-600 text-sm">
-                              {location.description}
-                            </p>
+                          
                           </div>
                         </Popup>
                       </Marker>
@@ -133,25 +129,6 @@ const EnhancedWorldMap = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-8 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {locations.map((location, index) => (
-            <Card
-              key={index}
-              className="border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300"
-            >
-              <CardContent className="p-6 text-center">
-                <div
-                  className="w-6 h-6 rounded-full mx-auto mb-3 border-2 border-white shadow-md"
-                  style={{ backgroundColor: location.color }}
-                ></div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {location.name}
-                </h3>
-                <p className="text-gray-600">{location.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       </div>
 
       <style jsx global>{`

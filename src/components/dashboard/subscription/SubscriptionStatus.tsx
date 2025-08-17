@@ -68,24 +68,26 @@ export function SubscriptionStatus() {
         method: "POST",
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
-      if (data.error) {
-        throw new Error(data.error);
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 404 && data.error === "No paid subscription found") {
+          alert("Billing portal is only available for paid subscriptions. Please upgrade to a paid plan first.");
+        } else {
+          alert(`Failed to open billing portal: ${data.error || 'Unknown error'}`);
+        }
+        return;
       }
 
       if (data.url) {
         window.open(data.url, "_blank");
       } else {
-        throw new Error("No portal URL received");
+        alert("No billing portal URL received. Please try again.");
       }
     } catch (error) {
       console.error("Error opening billing portal:", error);
-      alert("Failed to open billing portal. Please try again.");
+      alert("Failed to open billing portal. Please check your internet connection and try again.");
     } finally {
       setActionLoading(null);
     }
@@ -152,6 +154,33 @@ export function SubscriptionStatus() {
     } catch (error) {
       console.error("Error reactivating subscription:", error);
       alert("Failed to reactivate subscription. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSyncSubscription = async () => {
+    setActionLoading("sync");
+    try {
+      const response = await fetch("/api/stripe/sync", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      await fetchSubscription();
+      alert("Subscription data refreshed successfully!");
+    } catch (error) {
+      console.error("Error syncing subscription:", error);
+      alert("Failed to refresh subscription data. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -337,7 +366,7 @@ export function SubscriptionStatus() {
             </Button>
           )}
 
-          {status.status === "active" && subscription?.stripeCustomerId && (
+          {(status.status === "active" || status.status === "past_due") && subscription?.stripeCustomerId && (
             <>
               <Button
                 onClick={handleBillingPortal}
@@ -398,6 +427,26 @@ export function SubscriptionStatus() {
                 )}
               </Button>
             )}
+
+          {/* Sync button for paid subscriptions */}
+          {subscription?.stripeSubscriptionId && (
+            <Button
+              onClick={handleSyncSubscription}
+              disabled={actionLoading === "sync"}
+              variant="outline"
+              size="sm"
+              className="w-full border-gray-200 text-gray-600 hover:bg-gray-50 text-xs py-2"
+            >
+              {actionLoading === "sync" ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                "Refresh Subscription Data"
+              )}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

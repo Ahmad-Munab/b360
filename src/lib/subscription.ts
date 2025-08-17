@@ -212,24 +212,23 @@ export async function hasActiveSubscription(userId: string): Promise<boolean> {
     return false;
   }
 
-  // Free plan is always active
+  // Free plan is always considered "not active" for upgrade purposes
+  // But should show as active for general status
   if (userSubscription.plan === "free") {
-    return userSubscription.status === "active";
+    return false; // Free plan users don't have "active" paid subscription
   }
 
-  // For paid plans, check if subscription is active and not expired
+  // For paid plans, check if subscription is active and not canceled
   const now = new Date();
-  const isActive = userSubscription.status === "active";
+  const isActive = userSubscription.status === "active" || userSubscription.status === "past_due";
 
-  // If no period end date, assume it's valid (shouldn't happen for paid plans)
-  const notExpired = userSubscription.currentPeriodEnd
-    ? userSubscription.currentPeriodEnd > now
-    : true;
+  // If subscription is cancelled and we're past the end date, it's not active
+  if (userSubscription.cancelAtPeriodEnd && userSubscription.currentPeriodEnd) {
+    return userSubscription.currentPeriodEnd > now && isActive;
+  }
 
-  const notCanceled = !userSubscription.cancelAtPeriodEnd ||
-    (userSubscription.currentPeriodEnd ? userSubscription.currentPeriodEnd > now : true);
-
-  return isActive && notExpired && notCanceled;
+  // For non-cancelled subscriptions, check if they're in active status
+  return isActive;
 }
 
 // Get subscription status for display

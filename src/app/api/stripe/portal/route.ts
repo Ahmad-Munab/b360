@@ -17,6 +17,11 @@ export async function POST() {
     const userSubscription = await getOrCreateUserSubscription(session.user.id);
 
     if (!userSubscription?.stripeCustomerId) {
+      console.log(`User ${session.user.id} attempted to access billing portal but has no Stripe customer ID. Subscription:`, {
+        plan: userSubscription?.plan,
+        status: userSubscription?.status,
+        hasStripeCustomerId: !!userSubscription?.stripeCustomerId
+      });
       return NextResponse.json(
         { error: "No paid subscription found" },
         { status: 404 }

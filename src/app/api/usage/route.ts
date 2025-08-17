@@ -6,6 +6,7 @@ import { user, widget, subscriptionUsage } from "@/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { getCurrentBillingPeriod } from "@/lib/billing";
 import { plans } from "@/lib/config/plans";
+import { getOrCreateUserSubscription, hasActiveSubscription } from "@/lib/subscription";
 
 export async function GET() {
   try {
@@ -48,9 +49,12 @@ export async function GET() {
       .from(widget)
       .where(and(eq(widget.userId, userId), eq(widget.isActive, true)));
 
-    // For now, assume all users are on free plan
-    // This can be enhanced later when subscription management is fully implemented
-    const plan = "free";
+    // Get user's subscription to determine their plan
+    const userSubscription = await getOrCreateUserSubscription(userId);
+    const hasActivePaidSubscription = await hasActiveSubscription(userId);
+
+    // Determine the plan based on subscription status
+    const plan = hasActivePaidSubscription && userSubscription.plan === "pro" ? "pro" : "free";
     const planLimits = plans[plan].limits;
 
     const usage = {
