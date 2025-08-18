@@ -125,7 +125,7 @@ export default function EditWidgetPage({
 
       await updateWidget(widgetId, updatedData);
       toast.success("Widget updated successfully");
-      router.push("/dashboard/widgets");
+      router.push(`/dashboard/widgets/${widgetId}`);
     } catch {
       toast.error("Failed to update widget");
     } finally {
@@ -143,8 +143,12 @@ export default function EditWidgetPage({
           style={{ backgroundColor: formData.primaryColor }}
         >
           {
-            iconPreview ? (
-              <img src={iconPreview} alt="Icon" className="w-10 h-10 rounded-full object-cover" />
+            formData.iconType === "image" && (formData.customIcon || iconPreview) ? (
+              <img src={formData.customIcon || iconPreview} alt="Custom Icon" className="w-10 h-10 rounded-full object-cover" />
+            ) : formData.iconType === "emoji" && formData.iconEmoji ? (
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl">
+                {formData.iconEmoji}
+              </div>
             ) : (
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
@@ -466,7 +470,10 @@ export default function EditWidgetPage({
                       customIcon={form.watch("customIcon") || ""}
                       onIconTypeChange={(type) => form.setValue("iconType", type)}
                       onEmojiChange={(emoji) => form.setValue("iconEmoji", emoji)}
-                      onCustomIconChange={(url) => form.setValue("customIcon", url)}
+                      onCustomIconChange={(url) => {
+                        form.setValue("customIcon", url);
+                        setIconPreview(url);
+                      }}
                     />
                   </div>
                 </div>

@@ -89,7 +89,7 @@ export function PageLayout({
                 <Link href={secondaryCtaHref}>
                   <Button 
                     variant="outline" 
-                    className="border-white text-white hover:bg-white hover:text-blue-600 rounded-full px-8 py-3 font-bold text-lg"
+                    className="border-2 border-white text-white hover:bg-white hover:text-blue-600 rounded-full px-8 py-3 font-bold text-lg bg-transparent"
                   >
                     {secondaryCtaButtonText}
                   </Button>

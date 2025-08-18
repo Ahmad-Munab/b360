@@ -129,11 +129,8 @@ export default function WidgetViewPage({
             Manage your widget configuration and view analytics
           </p>
           <div className="flex items-center space-x-4 mt-3">
-            <span className="text-sm text-gray-500">
-              Widget ID: {widget.id}
-            </span>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                 widget.isActive
                   ? "bg-green-100 text-green-800"
                   : "bg-gray-100 text-gray-800"
@@ -153,113 +150,82 @@ export default function WidgetViewPage({
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Widget Preview */}
-        <div className="lg:col-span-1">
-          {/* Embed Code */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl font-bold flex items-center">
-                🚀 Integrate Your AI Widget
-              </CardTitle>
-              <CardDescription className="text-base">
-                Get your AI-powered customer support widget live in minutes with our simple integration guide.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Step-by-step instructions */}
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold">
-                    1
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Copy the Code</h4>
-                    <p className="text-sm text-gray-600">Copy the integration snippet below.</p>
-                  </div>
+      {/* Main Content */}
+      <div className="space-y-8">
+        {/* Integration Instructions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold flex items-center">
+              🚀 Integrate Your AI Widget
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Get your AI-powered customer support widget live in minutes with our simple integration guide.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            {/* Step-by-step instructions in a row layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold">
+                  1
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold">
-                    2
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Paste in Your Website</h4>
-                    <p className="text-sm text-gray-600">Add the code to your website&apos;s &lt;head&gt; or before closing &lt;/body&gt; tag.</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Go Live!</h4>
-                    <p className="text-sm text-gray-600">Your AI widget will appear automatically and start helping customers.</p>
-                  </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 text-lg">Copy the Code</h4>
+                  <p className="text-gray-600">Copy the integration snippet below.</p>
                 </div>
               </div>
-              
-              {/* Code snippet */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-gray-900">Integration Code:</h4>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono overflow-x-auto">
-                  <code>{code}</code>
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold">
+                  2
                 </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 text-lg">Paste in Your Website</h4>
+                  <p className="text-gray-600">Add the code to your website&apos;s &lt;head&gt; or before closing &lt;/body&gt; tag.</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold">
+                  3
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 text-lg">Go Live!</h4>
+                  <p className="text-gray-600">Your AI widget will appear automatically and start helping customers.</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Code snippet - centered and larger */}
+            <div className="space-y-4 max-w-4xl mx-auto">
+              <h4 className="font-semibold text-gray-900 text-lg text-center">Integration Code:</h4>
+              <div className="bg-gray-900 text-gray-100 p-6 rounded-lg text-base font-mono overflow-x-auto">
+                <code>{code}</code>
+              </div>
+              <div className="flex justify-center">
                 <Button
                   onClick={handleCopyCode}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-lg py-3"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-lg py-3 px-8"
                 >
                   <Copy className="mr-2 h-5 w-5" />
                   Copy Integration Code
                 </Button>
               </div>
+            </div>
 
+            {/* Platform guides and features in a 2-column layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Platform-specific instructions */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 mb-2">📚 Platform-Specific Guides:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  <div className="text-blue-700">• WordPress: Add to footer.php</div>
-                  <div className="text-blue-700">• Shopify: Add to theme.liquid</div>
-                  <div className="text-blue-700">• React: Import in App.js</div>
-                  <div className="text-blue-700">• HTML: Add before &lt;/body&gt;</div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 className="font-semibold text-blue-900 mb-4 text-lg">📚 Platform-Specific Guides:</h4>
+                <div className="space-y-2">
+                  <div className="text-blue-700">• <strong>WordPress:</strong> Add to footer.php</div>
+                  <div className="text-blue-700">• <strong>Shopify:</strong> Add to theme.liquid</div>
+                  <div className="text-blue-700">• <strong>React:</strong> Import in App.js</div>
+                  <div className="text-blue-700">• <strong>HTML:</strong> Add before &lt;/body&gt;</div>
                 </div>
               </div>
-
-              {/* Features highlight */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-semibold text-green-900 mb-2">✨ What You Get:</h4>
-                <div className="grid grid-cols-1 gap-1 text-sm text-green-700">
-                  <div>✓ 24/7 AI-powered customer support</div>
-                  <div>✓ Instant responses to customer queries</div>
-                  <div>✓ Seamless handoff to human agents</div>
-                  <div>✓ Customizable appearance and behavior</div>
-                  <div>✓ Real-time analytics and insights</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Widget Preview and Actions */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Widget Status</CardTitle>
-              <CardDescription>
-                Your widget is {widget.isActive ? "active" : "inactive"} and
-                ready to use.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Widget ID:{" "}
-                <code className="bg-gray-100 px-2 py-1 rounded">
-                  {widget.id}
-                </code>
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

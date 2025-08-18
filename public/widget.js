@@ -761,6 +761,19 @@ class ModernSupportWidget {
 
   }
 
+  createIconElement() {
+    // Check icon type and return appropriate HTML
+    if (this.config.iconType === 'image' && this.config.customIcon) {
+      return `<img src="${this.config.customIcon}" alt="Icon" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 16px;" />`;
+    } else if (this.config.iconType === 'emoji' && this.config.iconEmoji) {
+      return `<div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px;">${this.config.iconEmoji}</div>`;
+    } else {
+      // Default icon - first letter of product name
+      const firstLetter = (this.config.productName || 'B').charAt(0).toUpperCase();
+      return `<div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; margin-right: 16px;">${firstLetter}</div>`;
+    }
+  }
+
   createMainView() {
     this.mainView = document.createElement('div');
     this.mainView.className = 'widget-view widget-main-view active';
@@ -768,7 +781,12 @@ class ModernSupportWidget {
     // Header
     const header = document.createElement('div');
     header.className = 'widget-header';
+
+    // Create icon element
+    const iconElement = this.createIconElement();
+
     header.innerHTML = `
+      ${iconElement}
       <div>
         <h3>${this.config.productName}</h3>
         <p>${this.config.welcomeMessage}</p>
@@ -808,12 +826,16 @@ class ModernSupportWidget {
     // Header with back button
     const header = document.createElement('div');
     header.className = 'widget-header';
+
+    const iconElement = this.createIconElement();
+
     header.innerHTML = `
       <button class="back-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
           <path d="m15 18-6-6 6-6"/>
         </svg>
       </button>
+      ${iconElement}
       <div>
         <h3>Chat with Agent</h3>
         <p>We're here to help you!</p>
@@ -943,7 +965,7 @@ class ModernSupportWidget {
     if (targetView) {
       targetView.classList.add('active');
       this.currentView = viewName;
-      
+
       // Focus input if chat view
       if (viewName === 'chat' && this.chatInput) {
         setTimeout(() => this.chatInput.focus(), 100);
@@ -1085,7 +1107,7 @@ class ModernSupportWidget {
 }
 
 // Auto-initialize widget
-(function() {
+(function () {
   if (typeof window === 'undefined') return;
 
   // Make class available globally

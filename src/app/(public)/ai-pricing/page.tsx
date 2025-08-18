@@ -17,7 +17,7 @@ export default function AiPricingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
-    const handleSubscribe = async (planType: "pro") => {
+    const handleSubscribe = async (planType: "pro" | "free") => {
     if (!session) {
       router.push("/signin");
       return;
@@ -50,6 +50,26 @@ export default function AiPricingPage() {
 
     const pricingPlans = [
     {
+      name: "Free Plan",
+      price: "$0",
+      period: "/month",
+      description:
+        "Get started with basic AI features and explore our platform",
+      icon: <Check className="w-8 h-8" />,
+      features: [
+        "20 AI messages per month",
+        "1 chat widget",
+        "Basic analytics",
+        "Email support",
+        "Standard AI responses"
+      ],
+      popular: false,
+      gradient: "from-gray-500 to-gray-600",
+      planType: "free" as const,
+      ctaText: "Get Started",
+      ctaHref: "/signin",
+    },
+    {
       name: plans.pro.name,
       price: "$9",
       period: "/month",
@@ -60,6 +80,7 @@ export default function AiPricingPage() {
       popular: true,
       gradient: "from-indigo-500 to-purple-500",
       planType: "pro" as const,
+      ctaText: "Subscribe Now",
     },
   ];
 
@@ -104,7 +125,7 @@ export default function AiPricingPage() {
       {/* Pricing Cards */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-                    <div className="flex justify-center gap-8 max-w-7xl mx-auto">
+                    <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
               <motion.div
                 key={index}
@@ -160,27 +181,37 @@ export default function AiPricingPage() {
                       ))}
                     </ul>
 
-                    <Button
-                      onClick={() => handleSubscribe(plan.planType)}
-                      disabled={loading === plan.planType}
-                      className={`w-full py-3 font-bold rounded-full ${
-                        plan.popular
-                          ? "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white"
-                          : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
-                      }`}
-                    >
-                      {loading === plan.planType ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                                                    Subscribe Now
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
+                    {plan.planType === "free" ? (
+                      <Button
+                        onClick={() => router.push(plan.ctaHref!)}
+                        className="w-full py-3 font-bold rounded-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white"
+                      >
+                        {plan.ctaText}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleSubscribe(plan.planType)}
+                        disabled={loading === plan.planType}
+                        className={`w-full py-3 font-bold rounded-full ${
+                          plan.popular
+                            ? "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white"
+                            : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                        }`}
+                      >
+                        {loading === plan.planType ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            {plan.ctaText}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
