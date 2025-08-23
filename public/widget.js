@@ -335,6 +335,7 @@ class ModernSupportWidget {
         flex-direction: column !important;
         height: 420px !important;
         background: #ffffff !important;
+        align-items: stretch !important;
       }
 
       .chat-messages {
@@ -402,7 +403,7 @@ class ModernSupportWidget {
         background: #ffffff !important;
         display: flex !important;
         gap: 16px !important;
-        align-items: end !important;
+        align-items: center !important;
       }
 
       .chat-input {
@@ -739,10 +740,9 @@ class ModernSupportWidget {
     // Create trigger button
     this.button = document.createElement('button');
     this.button.className = 'widget-trigger-btn';
+    const triggerIcon = this.createIconElement();
     this.button.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
+      ${triggerIcon}
       <span>${this.config.widgetTitle}</span>
     `;
 
@@ -801,10 +801,9 @@ class ModernSupportWidget {
     availableOptions.forEach(option => {
       const button = document.createElement('button');
       button.className = 'widget-option';
+      const iconHtml = option.icon ? `<div class="option-icon">${option.icon}</div>` : '';
       button.innerHTML = `
-        <div class="option-icon">
-          ${option.icon}
-        </div>
+        ${iconHtml}
         <div class="option-content">
           <div class="option-title">${option.title}</div>
           <div class="option-desc">${option.desc}</div>
@@ -820,6 +819,7 @@ class ModernSupportWidget {
   }
 
   createChatView() {
+
     this.chatView = document.createElement('div');
     this.chatView.className = 'widget-view widget-chat-view';
 
@@ -870,8 +870,9 @@ class ModernSupportWidget {
     this.sendButton = document.createElement('button');
     this.sendButton.className = 'chat-send-btn';
     this.sendButton.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
-        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 2L11 13"></path>
+        <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
       </svg>
     `;
     this.sendButton.addEventListener('click', () => this.sendMessage());

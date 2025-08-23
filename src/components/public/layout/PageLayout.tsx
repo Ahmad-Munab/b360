@@ -225,16 +225,6 @@ function Footer() {
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col lg:flex-row justify-between items-center text-gray-400 text-sm">
             <p>© 2025 B360. All Rights Reserved</p>
-            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-              <span>Made with ❤️ globally</span>
-              <span>|</span>
-              <Link
-                href="/privacy"
-                className="hover:text-white transition-colors"
-              >
-                Privacy Policy
-              </Link>
-            </div>
           </div>
         </div>
       </div>

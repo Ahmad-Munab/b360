@@ -391,24 +391,33 @@ class ModernSupportWidget {
         background: #ffffff !important;
         color: #1f2937 !important;
         align-self: flex-start !important;
-        border: 2px solid #e5e7eb !important;
-        border-bottom-left-radius: 6px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-      }
 
-      .chat-input-container {
-        padding: 24px !important;
-        border-top: 2px solid #e5e7eb !important;
-        background: #ffffff !important;
-        display: flex !important;
-        gap: 16px !important;
-        align-items: end !important;
-      }
+          .chat-input-container {
+            padding: 24px !important;
+            border-top: 2px solid #e5e7eb !important;
+            background: #ffffff !important;
+            display: flex !important;
+            gap: 16px !important;
+            align-items: center !important;
+          }
 
-      .chat-input {
-        flex: 1 !important;
-        border: 2px solid #d1d5db !important;
-        border-radius: 24px !important;
+          .chat-input {
+            flex: 1 !important;
+            border: 2px solid #d1d5db !important;
+            border-radius: 24px !important;
+            padding: 14px 20px !important;
+            font-size: 15px !important;
+            outline: none !important;
+            resize: none !important;
+            min-height: 24px !important;
+            max-height: 120px !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            font-weight: 500 !important;
+            line-height: 1.5 !important;
+          }
         padding: 14px 20px !important;
         font-size: 15px !important;
         outline: none !important;
@@ -739,10 +748,9 @@ class ModernSupportWidget {
     // Create trigger button
     this.button = document.createElement('button');
     this.button.className = 'widget-trigger-btn';
+    const triggerIcon = this.createIconElement();
     this.button.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
+      ${triggerIcon}
       <span>${this.config.widgetTitle}</span>
     `;
 
@@ -782,6 +790,7 @@ class ModernSupportWidget {
     const header = document.createElement('div');
     header.className = 'widget-header';
 
+    // Create icon element
     const iconElement = this.createIconElement();
 
     header.innerHTML = `
@@ -800,10 +809,9 @@ class ModernSupportWidget {
     availableOptions.forEach(option => {
       const button = document.createElement('button');
       button.className = 'widget-option';
+      const iconHtml = option.icon ? `<div class="option-icon">${option.icon}</div>` : '';
       button.innerHTML = `
-        <div class="option-icon">
-          ${option.icon}
-        </div>
+        ${iconHtml}
         <div class="option-content">
           <div class="option-title">${option.title}</div>
           <div class="option-desc">${option.desc}</div>
@@ -819,6 +827,7 @@ class ModernSupportWidget {
   }
 
   createChatView() {
+
     this.chatView = document.createElement('div');
     this.chatView.className = 'widget-view widget-chat-view';
 
@@ -869,8 +878,9 @@ class ModernSupportWidget {
     this.sendButton = document.createElement('button');
     this.sendButton.className = 'chat-send-btn';
     this.sendButton.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
-        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 2L11 13"></path>
+        <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
       </svg>
     `;
     this.sendButton.addEventListener('click', () => this.sendMessage());

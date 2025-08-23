@@ -306,34 +306,6 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
-          {/* Newsletter Section */}
-          <div className="text-center mb-16">
-            <h3 className="text-2xl font-bold text-white mb-8 font-heading">
-              Sign up to our newsletter and stay hip.
-            </h3>
-            <form
-              onSubmit={handleNewsletterSubmit}
-              className="flex justify-center items-center gap-4 max-w-md mx-auto"
-            >
-              <Input
-                type="email"
-                placeholder="Enter Email"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setEmail(e.target.value)
-                }
-                className="flex-1 bg-white border-gray-300 rounded-full px-6 py-3"
-                required
-              />
-              <Button
-                type="submit"
-                className="bg-gradient-emerald-indigo hover:opacity-90 text-white rounded-full px-8 py-3 font-bold"
-              >
-                Sign Up
-              </Button>
-            </form>
-          </div>
-
           {/* Footer Links */}
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             {/* Solutions */}
@@ -450,16 +422,6 @@ export default function HomePage() {
           <div className="border-t border-gray-800 pt-8">
             <div className="flex flex-col lg:flex-row justify-between items-center text-gray-400 text-sm">
               <p>© 2025 B360. All Rights Reserved</p>
-              <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                <span>Made with ❤️ globally</span>
-                <span>|</span>
-                <Link
-                  href="/privacy"
-                  className="hover:text-white transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </div>
             </div>
           </div>
         </div>

@@ -22,7 +22,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { MessageCircle, Send, X } from "lucide-react";
 import { useWidgetsStore } from "@/store/useWidgetsStore";
 import { IconSelector } from "@/components/dashboard/IconSelector";
 
@@ -43,10 +42,6 @@ export default function NewWidgetPage() {
     iconType: "default" as const,
     iconEmoji: "",
     customIcon: "",
-  });
-
-  const [previewState, setPreviewState] = useState({
-    isOpen: false,
   });
 
   const updateFormData = (field: string, value: string | boolean) => {
@@ -101,108 +96,9 @@ export default function NewWidgetPage() {
     }
   };
 
-  const WidgetPreview = () => {
-    const renderChatView = () => (
-      <>
-        <div
-          className="px-6 py-5 text-white rounded-t-2xl flex items-center gap-3"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
-          >
-            {(formData.productName || "B").charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg">
-              {formData.productName || "Your Product"}
-            </h3>
-            <p className="text-white/90 text-sm">{formData.widgetTitle}</p>
-          </div>
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, isOpen: false }))
-            }
-            className="ml-auto text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="flex-1 p-6 space-y-4 bg-gray-50 min-h-[300px]">
-          <div className="h-full flex items-center justify-center text-center">
-            <div>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
-                <MessageCircle className="w-8 h-8 text-white" />
-              </div>
-              <p className="text-gray-600 text-lg font-medium mb-2">
-                {formData.welcomeMessage || "Hi! How can I help you today?"}
-              </p>
-              <p className="text-gray-500 text-sm">
-                Ask me anything about {formData.productName || "our product"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white border-t border-gray-200">
-          <div className="flex space-x-3">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-              style={{ "--tw-ring-color": formData.primaryColor + "33" } as any}
-            />
-            <button
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg"
-              style={{ backgroundColor: formData.primaryColor }}
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </div>
-      </>
-    );
-
-    return (
-      <div className="relative h-[500px] bg-gray-50 rounded-xl overflow-hidden">
-        {/* Widget Button */}
-        <div
-          className={`absolute ${
-            formData.position.includes("right") ? "right-4" : "left-4"
-          } ${formData.position.includes("bottom") ? "bottom-4" : "top-4"}`}
-        >
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, isOpen: !prev.isOpen }))
-            }
-            className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
-            style={{ backgroundColor: formData.primaryColor }}
-          >
-            <MessageCircle className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
-          </button>
-        </div>
-
-        {/* Widget Popup */}
-        {previewState.isOpen && (
-          <div
-            className={`absolute ${
-              formData.position.includes("right") ? "right-4" : "left-4"
-            } ${
-              formData.position.includes("bottom") ? "bottom-24" : "top-24"
-            } w-96 h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100`}
-          >
-            <div className="flex flex-col h-full">{renderChatView()}</div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {/* Form */}
         <div className="space-y-6">
           <Card>
@@ -396,24 +292,6 @@ export default function NewWidgetPage() {
                   </div>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Preview */}
-        <div className="xl:sticky xl:top-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                Live Preview
-              </CardTitle>
-              <CardDescription>
-                See how your widget will look on your website
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <WidgetPreview />
             </CardContent>
           </Card>
         </div>

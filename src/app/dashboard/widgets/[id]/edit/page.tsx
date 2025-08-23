@@ -29,7 +29,6 @@ import {
   widgetFormSchema,
   type WidgetFormValues,
 } from "@/lib/validations/widget";
-import { MessageCircle, Send, X } from "lucide-react";
 import { IconSelector } from "@/components/dashboard/IconSelector";
 
 export default function EditWidgetPage({
@@ -40,11 +39,8 @@ export default function EditWidgetPage({
   const router = useRouter();
   const { widgets, isLoading, fetchWidgets, updateWidget } = useWidgetsStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-    const [widgetId, setWidgetId] = useState<string>("");
+  const [widgetId, setWidgetId] = useState<string>("");
   const [iconPreview, setIconPreview] = useState<string | null>(null);
-  const [previewState, setPreviewState] = useState({
-    isOpen: false,
-  });
 
   const form = useForm<any>({
     // resolver: zodResolver(widgetFormSchema),
@@ -133,121 +129,6 @@ export default function EditWidgetPage({
     }
   };
 
-  const WidgetPreview = () => {
-    const formData = form.watch();
-
-    const renderChatView = () => (
-      <>
-        <div
-          className="px-6 py-5 text-white rounded-t-2xl flex items-center gap-3"
-          style={{ backgroundColor: formData.primaryColor }}
-        >
-          {
-            formData.iconType === "image" && (formData.customIcon || iconPreview) ? (
-              <img src={formData.customIcon || iconPreview} alt="Custom Icon" className="w-10 h-10 rounded-full object-cover" />
-            ) : formData.iconType === "emoji" && formData.iconEmoji ? (
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl">
-                {formData.iconEmoji}
-              </div>
-            ) : (
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
-                style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
-              >
-                {(formData.productName || "B").charAt(0).toUpperCase()}
-              </div>
-            )
-          }
-          <div>
-            <h3 className="font-semibold text-lg">
-              {formData.productName || "Your Product"}
-            </h3>
-            <p className="text-white/90 text-sm">{formData.widgetTitle}</p>
-          </div>
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, isOpen: false }))
-            }
-            className="ml-auto text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="flex-1 p-6 space-y-4 bg-gray-50 min-h-[300px]">
-          <div className="h-full flex items-center justify-center text-center">
-            <div>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
-                <MessageCircle className="w-8 h-8 text-white" />
-              </div>
-              <p className="text-gray-600 text-lg font-medium mb-2">
-                {formData.welcomeMessage || "Hi! How can I help you today?"}
-              </p>
-              <p className="text-gray-500 text-sm">
-                Ask me anything about {formData.productName || "our product"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white border-t border-gray-200">
-          <div className="flex space-x-3">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-              style={{ "--tw-ring-color": formData.primaryColor + "33" } as any}
-            />
-            <button
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg"
-              style={{ backgroundColor: formData.primaryColor }}
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </div>
-      </>
-    );
-
-    return (
-      <div className="relative h-[500px] bg-gray-50 rounded-xl overflow-hidden">
-        {/* Widget Button */}
-        <div
-          className={`absolute ${
-            formData.position.includes("right") ? "right-4" : "left-4"
-          } ${formData.position.includes("bottom") ? "bottom-4" : "top-4"}`}
-        >
-          <button
-            onClick={() =>
-              setPreviewState((prev) => ({ ...prev, isOpen: !prev.isOpen }))
-            }
-            className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
-            style={{ backgroundColor: formData.primaryColor }}
-          >
-                        {iconPreview ? (
-              <img src={iconPreview} alt="Icon" className="w-full h-full rounded-full object-cover" />
-            ) : (
-              <MessageCircle className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-300" />
-            )}
-          </button>
-        </div>
-
-        {/* Widget Popup */}
-        {previewState.isOpen && (
-          <div
-            className={`absolute ${
-              formData.position.includes("right") ? "right-4" : "left-4"
-            } ${
-              formData.position.includes("bottom") ? "bottom-24" : "top-24"
-            } w-96 h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100`}
-          >
-            <div className="flex flex-col h-full">{renderChatView()}</div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto py-8 px-4">
@@ -271,9 +152,9 @@ export default function EditWidgetPage({
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {/* Form Section */}
-        <div className="lg:col-span-1">
+        <div>
           <Card>
             <CardHeader>
               <CardTitle>Edit Widget</CardTitle>
@@ -492,21 +373,6 @@ export default function EditWidgetPage({
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Preview Section */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Preview</CardTitle>
-              <CardDescription>
-                See how your widget will look to customers
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <WidgetPreview />
             </CardContent>
           </Card>
         </div>
