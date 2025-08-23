@@ -422,7 +422,11 @@ class ModernSupportWidget {
         color: #1f2937 !important;
         font-weight: 500 !important;
         line-height: 1.5 !important;
+        overflow-y: auto !important;
+        scrollbar-width: none !important; /* Firefox */
       }
+
+      .chat-input::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
 
       .chat-input::placeholder {
         color: #9ca3af !important;
@@ -498,6 +502,14 @@ class ModernSupportWidget {
         fill: #ffffff !important;
         width: 20px !important;
         height: 20px !important;
+        stroke-width: 2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+      }
+      .chat-send-btn svg path {
+        stroke-width: 2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
       }
 
       .widget-trigger-btn svg {
@@ -759,23 +771,6 @@ class ModernSupportWidget {
 
     document.body.appendChild(this.container);
 
-  }
-
-  createIconElement() {
-    // Check icon type and return appropriate HTML
-    if (this.config.iconType === 'image' && this.config.customIcon) {
-      return `<img src="${this.config.customIcon}" alt="Icon" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 16px;" />`;
-    } else if (this.config.iconType === 'emoji' && this.config.iconEmoji) {
-      return `<div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px;">${this.config.iconEmoji}</div>`;
-    } else {
-      // Default icon - first letter of product name
-      const firstLetter = (this.config.productName || 'B').charAt(0).toUpperCase();
-      return `<div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; margin-right: 16px;">${firstLetter}</div>`;
-    }
-  }
-
-  createMainView() {
-    this.mainView = document.createElement('div');
     this.mainView.className = 'widget-view widget-main-view active';
 
     // Header

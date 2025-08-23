@@ -391,33 +391,24 @@ class ModernSupportWidget {
         background: #ffffff !important;
         color: #1f2937 !important;
         align-self: flex-start !important;
+        border: 2px solid #e5e7eb !important;
+        border-bottom-left-radius: 6px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+      }
 
-          .chat-input-container {
-            padding: 24px !important;
-            border-top: 2px solid #e5e7eb !important;
-            background: #ffffff !important;
-            display: flex !important;
-            gap: 16px !important;
-            align-items: center !important;
-          }
+      .chat-input-container {
+        padding: 24px !important;
+        border-top: 2px solid #e5e7eb !important;
+        background: #ffffff !important;
+        display: flex !important;
+        gap: 16px !important;
+        align-items: center !important;
+      }
 
-          .chat-input {
-            flex: 1 !important;
-            border: 2px solid #d1d5db !important;
-            border-radius: 24px !important;
-            padding: 14px 20px !important;
-            font-size: 15px !important;
-            outline: none !important;
-            resize: none !important;
-            min-height: 24px !important;
-            max-height: 120px !important;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            background: #ffffff !important;
-            color: #1f2937 !important;
-            font-weight: 500 !important;
-            line-height: 1.5 !important;
-          }
+      .chat-input {
+        flex: 1 !important;
+        border: 2px solid #d1d5db !important;
+        border-radius: 24px !important;
         padding: 14px 20px !important;
         font-size: 15px !important;
         outline: none !important;
@@ -430,7 +421,11 @@ class ModernSupportWidget {
         color: #1f2937 !important;
         font-weight: 500 !important;
         line-height: 1.5 !important;
+        overflow-y: auto !important;
+        scrollbar-width: none !important; /* Firefox */
       }
+
+      .chat-input::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
 
       .chat-input::placeholder {
         color: #9ca3af !important;
@@ -506,6 +501,14 @@ class ModernSupportWidget {
         fill: #ffffff !important;
         width: 20px !important;
         height: 20px !important;
+        stroke-width: 2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+      }
+      .chat-send-btn svg path {
+        stroke-width: 2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
       }
 
       .widget-trigger-btn svg {
@@ -772,13 +775,13 @@ class ModernSupportWidget {
   createIconElement() {
     // Check icon type and return appropriate HTML
     if (this.config.iconType === 'image' && this.config.customIcon) {
-      return `<img src="${this.config.customIcon}" alt="Icon" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 16px;" />`;
+      return `<img src="${this.config.customIcon}" alt="Icon" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />`;
     } else if (this.config.iconType === 'emoji' && this.config.iconEmoji) {
-      return `<div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px;">${this.config.iconEmoji}</div>`;
+      return `<div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">${this.config.iconEmoji}</div>`;
     } else {
       // Default icon - first letter of product name
       const firstLetter = (this.config.productName || 'B').charAt(0).toUpperCase();
-      return `<div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; margin-right: 16px;">${firstLetter}</div>`;
+      return `<div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">${firstLetter}</div>`;
     }
   }
 
