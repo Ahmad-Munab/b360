@@ -4,26 +4,23 @@ const API_BASE = "https://b360-one.vercel.app";
 // Modern Support Widget
 class ModernSupportWidget {
   constructor(config) {
-
     this.config = {
       widgetId: config.widgetId,
-      position: config.position,
-      primaryColor: config.primaryColor,
+      position: config.position || 'bottom-right',
+      primaryColor: config.primaryColor || '#6366f1',
       productType: config.productType,
-      productName: config.productName,
+      productName: config.productName || 'Support',
       features: config.features,
       description: config.description,
       faqs: config.faqs,
-      widgetTitle: config.widgetTitle,
-      welcomeMessage: config.welcomeMessage,
-
+      widgetTitle: config.widgetTitle || 'Chat with us',
+      welcomeMessage: config.welcomeMessage || 'How can I help you today?',
       isActive: config.isActive,
       ...config
     };
 
-
     this.isOpen = false;
-    this.currentView = 'main'; // main, chat
+    this.currentView = 'main';
     this.messages = [];
 
     if (this.config.isActive) {
@@ -34,12 +31,10 @@ class ModernSupportWidget {
         this.createWidget();
         this.attachEventListeners();
       });
-    } else {
     }
   }
 
   async init() {
-
     // Load widget config from server if widgetId is provided
     if (this.config.widgetId) {
       await this.loadWidgetConfig();
@@ -47,14 +42,10 @@ class ModernSupportWidget {
 
     // Create styles after config is loaded so they use the correct values
     this.createStyles();
-
     this.createWidget();
-
     this.attachEventListeners();
-
     // Update widget appearance after everything is created
     this.updateWidgetAppearance();
-
   }
 
   createStyles() {
@@ -201,33 +192,6 @@ class ModernSupportWidget {
         z-index: 1 !important;
       }
 
-      .back-btn {
-        background: none !important;
-        border: none !important;
-        color: #ffffff !important;
-        cursor: pointer !important;
-        padding: 10px !important;
-        border-radius: 12px !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin-right: 8px !important;
-        position: relative !important;
-        z-index: 2 !important;
-        min-width: 40px !important;
-        min-height: 40px !important;
-      }
-
-      .back-btn:hover {
-        background: rgba(255,255,255,0.15) !important;
-        transform: scale(1.05) !important;
-      }
-
-      .back-btn:active {
-        transform: scale(0.95) !important;
-      }
-
       .widget-options {
         padding: 28px !important;
         display: flex !important;
@@ -275,29 +239,6 @@ class ModernSupportWidget {
         opacity: 1 !important;
       }
 
-      .option-icon {
-        padding: 12px !important;
-        border-radius: 14px !important;
-        background: ${this.config.primaryColor} !important;
-        color: #ffffff !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        min-width: 48px !important;
-        height: 48px !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
-        position: relative !important;
-        z-index: 1 !important;
-      }
-
-      .option-icon svg {
-        color: #ffffff !important;
-        stroke: #ffffff !important;
-        fill: #ffffff !important;
-        width: 20px !important;
-        height: 20px !important;
-      }
-
       .option-content {
         flex: 1 !important;
         position: relative !important;
@@ -335,7 +276,6 @@ class ModernSupportWidget {
         flex-direction: column !important;
         height: 420px !important;
         background: #ffffff !important;
-        align-items: stretch !important;
       }
 
       .chat-messages {
@@ -497,163 +437,15 @@ class ModernSupportWidget {
       }
 
       .chat-send-btn svg {
-        color: #ffffff !important;
-        stroke: #ffffff !important;
-        fill: #ffffff !important;
         width: 20px !important;
         height: 20px !important;
-        stroke-width: 2 !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
-      }
-      .chat-send-btn svg path {
-        stroke-width: 2 !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
+        fill: #ffffff !important;
       }
 
       .widget-trigger-btn svg {
-        color: #ffffff !important;
-        stroke: #ffffff !important;
-        fill: #ffffff !important;
         width: 20px !important;
         height: 20px !important;
-      }
-
-      .back-btn svg {
-        color: #ffffff !important;
-        stroke: #ffffff !important;
         fill: #ffffff !important;
-        width: 20px !important;
-        height: 20px !important;
-      }
-
-      .widget-form {
-        padding: 28px !important;
-        background: #ffffff !important;
-      }
-
-      .form-label {
-        display: block !important;
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        color: #1f2937 !important;
-        margin-bottom: 12px !important;
-        line-height: 1.3 !important;
-      }
-
-      .form-textarea {
-        width: 100% !important;
-        border: 2px solid #d1d5db !important;
-        border-radius: 16px !important;
-        padding: 16px 20px !important;
-        font-size: 15px !important;
-        resize: vertical !important;
-        min-height: 120px !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-        box-sizing: border-box !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        background: #ffffff !important;
-        color: #1f2937 !important;
-        font-weight: 500 !important;
-        line-height: 1.5 !important;
-      }
-
-      .form-textarea::placeholder {
-        color: #9ca3af !important;
-        font-weight: 400 !important;
-      }
-
-      .form-textarea:focus {
-        outline: none !important;
-        border-color: ${this.config.primaryColor} !important;
-        box-shadow: 0 0 0 4px ${this.config.primaryColor}20 !important;
-        background: #ffffff !important;
-      }
-
-      .form-submit-btn {
-        background: ${this.config.primaryColor} !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 16px !important;
-        padding: 18px 28px !important;
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        cursor: pointer !important;
-        margin-top: 20px !important;
-        width: 100% !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
-        position: relative !important;
-        overflow: hidden !important;
-        min-height: 56px !important;
-      }
-
-      .form-submit-btn::before {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%) !important;
-        opacity: 0 !important;
-        transition: opacity 0.3s !important;
-      }
-
-      .form-submit-btn:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-        filter: brightness(1.05) !important;
-      }
-
-      .form-submit-btn:hover::before {
-        opacity: 1 !important;
-      }
-
-      .form-submit-btn:active {
-        transform: translateY(0) !important;
-        transition: all 0.1s !important;
-      }
-
-      .form-submit-btn:disabled {
-        background: #9ca3af !important;
-        cursor: not-allowed !important;
-        transform: none !important;
-        filter: none !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-      }
-
-      .form-submit-btn:disabled::before {
-        opacity: 0 !important;
-      }
-
-      .success-message {
-        text-align: center !important;
-        padding: 48px 28px !important;
-        background: #ffffff !important;
-      }
-
-      .success-icon {
-        font-size: 64px !important;
-        margin-bottom: 20px !important;
-        color: #10b981 !important;
-      }
-
-      .success-title {
-        font-size: 20px !important;
-        font-weight: 700 !important;
-        color: #059669 !important;
-        margin: 0 0 12px 0 !important;
-        line-height: 1.3 !important;
-      }
-
-      .success-desc {
-        font-size: 16px !important;
-        color: #6b7280 !important;
-        margin: 0 !important;
-        line-height: 1.4 !important;
-        font-weight: 500 !important;
       }
 
       .typing-indicator {
@@ -725,12 +517,6 @@ class ModernSupportWidget {
           gap: 14px !important;
         }
 
-        .option-icon {
-          min-width: 40px !important;
-          height: 40px !important;
-          padding: 10px !important;
-        }
-
         .option-title {
           font-size: 15px !important;
         }
@@ -744,7 +530,6 @@ class ModernSupportWidget {
   }
 
   createWidget() {
-
     // Create widget container
     this.container = document.createElement('div');
     this.container.className = `modern-support-widget ${this.config.position}`;
@@ -764,13 +549,27 @@ class ModernSupportWidget {
 
     this.createMainView();
     this.createChatView();
-    this.createFormViews();
 
     this.container.appendChild(this.button);
     this.container.appendChild(this.popup);
-
     document.body.appendChild(this.container);
+  }
 
+  createIconElement() {
+    // Check icon type and return appropriate HTML
+    if (this.config.iconType === 'image' && this.config.customIcon) {
+      return `<img src="${this.config.customIcon}" alt="Icon" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />`;
+    } else if (this.config.iconType === 'emoji' && this.config.iconEmoji) {
+      return `<div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">${this.config.iconEmoji}</div>`;
+    } else {
+      // Default icon - first letter of product name
+      const firstLetter = (this.config.productName || 'B').charAt(0).toUpperCase();
+      return `<div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">${firstLetter}</div>`;
+    }
+  }
+
+  createMainView() {
+    this.mainView = document.createElement('div');
     this.mainView.className = 'widget-view widget-main-view active';
 
     // Header
@@ -784,11 +583,10 @@ class ModernSupportWidget {
       ${iconElement}
       <div>
         <h3>${this.config.productName}</h3>
-        <p>${this.config.welcomeMessage}</p>
       </div>
     `;
 
-    // Options
+    // Options - REMOVED the icon from the chat option
     const options = document.createElement('div');
     options.className = 'widget-options';
 
@@ -796,11 +594,11 @@ class ModernSupportWidget {
     availableOptions.forEach(option => {
       const button = document.createElement('button');
       button.className = 'widget-option';
-      const iconHtml = option.icon ? `<div class="option-icon">${option.icon}</div>` : '';
+      // Removed the icon HTML completely
       button.innerHTML = `
-        ${iconHtml}
         <div class="option-content">
           <div class="option-title">${option.title}</div>
+          <br>
           <div class="option-desc">${option.desc}</div>
         </div>
       `;
@@ -814,7 +612,6 @@ class ModernSupportWidget {
   }
 
   createChatView() {
-
     this.chatView = document.createElement('div');
     this.chatView.className = 'widget-view widget-chat-view';
 
@@ -825,18 +622,11 @@ class ModernSupportWidget {
     const iconElement = this.createIconElement();
 
     header.innerHTML = `
-      <button class="back-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
-          <path d="m15 18-6-6 6-6"/>
-        </svg>
-      </button>
       ${iconElement}
       <div>
         <h3>Chat with Agent</h3>
-        <p>We're here to help you!</p>
       </div>
     `;
-    header.querySelector('.back-btn').addEventListener('click', () => this.showView('main'));
 
     // Chat container
     const chat = document.createElement('div');
@@ -865,9 +655,9 @@ class ModernSupportWidget {
     this.sendButton = document.createElement('button');
     this.sendButton.className = 'chat-send-btn';
     this.sendButton.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 2L11 13"></path>
-        <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22,2 15,21 11,13 3,9 22,2" fill="#ffffff"></polygon>
       </svg>
     `;
     this.sendButton.addEventListener('click', () => this.sendMessage());
@@ -886,25 +676,13 @@ class ModernSupportWidget {
     this.addMessage('bot', this.config.welcomeMessage);
   }
 
-  createFormViews() {
-    // Feedback and bug report functionality removed
-    // Only message functionality is supported
-  }
-
   getAvailableOptions() {
-    const options = [];
-
-    // Always show chat option
-    options.push({
-      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
-               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-             </svg>`,
+    // Simplified - only chat option without icon
+    return [{
       title: 'Talk to Agent',
       desc: 'Start a conversation with our AI assistant',
       action: 'chat'
-    });
-
-    return options;
+    }];
   }
 
   attachEventListeners() {
@@ -1026,8 +804,6 @@ class ModernSupportWidget {
     }
   }
 
-
-
   autoResizeTextarea() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
@@ -1035,7 +811,6 @@ class ModernSupportWidget {
 
   async loadWidgetConfig() {
     try {
-      // Use relative URL to work with any domain
       const apiUrl = `${API_BASE}/api/widgets/${this.config.widgetId}`;
       const response = await fetch(apiUrl);
 
@@ -1076,7 +851,6 @@ class ModernSupportWidget {
 
   async sendChatMessage(message) {
     try {
-      // Use relative URL to work with any domain
       const apiUrl = `${API_BASE}/api/widgets/${this.config.widgetId}/chat`;
 
       const response = await fetch(apiUrl, {
@@ -1098,8 +872,6 @@ class ModernSupportWidget {
       throw error; // Re-throw to be handled by the calling function
     }
   }
-
-
 }
 
 // Auto-initialize widget
@@ -1111,7 +883,6 @@ class ModernSupportWidget {
 
   // Auto-initialize from script tag data attributes
   function autoInitialize() {
-
     // Look for script tag with data-widget-id
     const scripts = document.querySelectorAll('script[data-widget-id]');
 
@@ -1130,16 +901,15 @@ class ModernSupportWidget {
             if (data && data.isActive) {
               const config = {
                 widgetId: widgetId,
-                position: script.getAttribute('data-position'),
-                primaryColor: script.getAttribute('data-primary-color'),
+                position: script.getAttribute('data-position') || 'bottom-right',
+                primaryColor: script.getAttribute('data-primary-color') || '#6366f1',
                 productType: script.getAttribute('data-product-type'),
-                productName: script.getAttribute('data-product-name'),
-                widgetTitle: script.getAttribute('data-widget-title'),
-                welcomeMessage: script.getAttribute('data-welcome-message'),
+                productName: script.getAttribute('data-product-name') || 'Support',
+                widgetTitle: script.getAttribute('data-widget-title') || 'Chat with us',
+                welcomeMessage: script.getAttribute('data-welcome-message') || 'How can I help you today?',
                 isActive: data.isActive
               };
               new ModernSupportWidget(config);
-            } else {
             }
           })
           .catch(error => {
@@ -1152,9 +922,6 @@ class ModernSupportWidget {
     // Also check for global config
     if (window.ModernSupportWidgetConfig) {
       new ModernSupportWidget(window.ModernSupportWidgetConfig);
-    }
-
-    if (scripts.length === 0 && !window.ModernSupportWidgetConfig) {
     }
   }
 
