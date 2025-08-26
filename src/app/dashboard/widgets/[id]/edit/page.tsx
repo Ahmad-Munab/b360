@@ -56,6 +56,7 @@ export default function EditWidgetPage({
       iconType: "default" as const,
       iconEmoji: "",
       customIcon: "",
+      adminEmail: "",
     },
   });
 
@@ -88,6 +89,7 @@ export default function EditWidgetPage({
           customIcon: widget.customIcon,
           iconType: ((widget as any).iconType || "default") as "default" | "emoji" | "image",
           iconEmoji: (widget as any).iconEmoji || "",
+          adminEmail: (widget as any).adminEmail || "",
         });
         if (widget.customIcon) {
           setIconPreview(widget.customIcon);
@@ -302,6 +304,20 @@ export default function EditWidgetPage({
                   </h3>
 
                   <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="adminEmail">Admin Notification Email</Label>
+                      <Input
+                        id="adminEmail"
+                        type="email"
+                        {...form.register("adminEmail")}
+                        placeholder="admin@example.com"
+                      />
+                      {form.formState.errors.adminEmail && (
+                        <p className="text-sm text-red-500">
+                          {String(form.formState.errors.adminEmail?.message)}
+                        </p>
+                      )}
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="widgetTitle">Widget Title</Label>
                       <Input

@@ -42,6 +42,7 @@ export default function NewWidgetPage() {
     iconType: "default" as const,
     iconEmoji: "",
     customIcon: "",
+    adminEmail: "",
   });
 
   const updateFormData = (field: string, value: string | boolean) => {
@@ -81,6 +82,7 @@ export default function NewWidgetPage() {
         iconType: formData.iconType,
         iconEmoji: formData.iconEmoji,
         customIcon: formData.customIcon,
+        adminEmail: formData.adminEmail?.trim() || undefined,
       };
 
       const widget = await createWidget(widgetData);
@@ -221,6 +223,18 @@ export default function NewWidgetPage() {
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="adminEmail">Admin Notification Email</Label>
+                        <Input
+                          id="adminEmail"
+                          type="email"
+                          placeholder="admin@example.com"
+                          value={formData.adminEmail}
+                          onChange={(e) =>
+                            updateFormData("adminEmail", e.target.value)
+                          }
+                        />
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="widgetTitle">Widget Title</Label>
                         <Input

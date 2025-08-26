@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { widget } from "@/db/schema";
+import { widget, widgetLead } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { generateAIResponse } from "@/lib/ai";
 import { UsageService } from "@/lib/usage";
+import nodemailer from "nodemailer";
 
 // CORS headers for widget embedding
 const corsHeaders = {
@@ -77,8 +78,99 @@ export async function POST(
       );
     }
 
-    // Generate AI response (replace with your actual AI logic)
-    const aiResponse = await generateAIResponse(message, widgetData);
+    // Check if the user provided an email in this message
+    const emailMatch =
+      typeof message === "string"
+        ? message.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+        : null;
+
+    if (emailMatch && emailMatch[0]) {
+      const userEmail = emailMatch[0];
+
+      try {
+        // Store lead in database
+        try {
+          await db.insert(widgetLead).values({
+            widgetId: widgetData.id,
+            email: userEmail,
+            message: String(message),
+          });
+        } catch (leadErr) {
+          console.error("Error saving widget lead:", leadErr);
+        }
+
+        // Setup Nodemailer transporter (Gmail SMTP by default)
+        const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.EMAIL_SERVER_USER,
+            pass: process.env.EMAIL_SERVER_PASSWORD,
+          },
+        });
+
+        const fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER || "no-reply@example.com";
+        const adminAddress = widgetData.adminEmail || process.env.EMAIL_TO;
+
+        // Send acknowledgement to the user
+        await transporter.sendMail({
+          from: fromAddress,
+          to: userEmail,
+          subject: `We received your request regarding ${widgetData.productName || "our product"}`,
+          html: `
+            <div style="font-family: Arial, sans-serif;">
+              <p>Hi there,</p>
+              <p>Thanks for sharing your email. Our team will review your question and get back to you soon.</p>
+              <p>— ${widgetData.productName || "Support Team"}</p>
+            </div>
+          `,
+        });
+
+        // Notify admin
+        if (adminAddress) {
+          await transporter.sendMail({
+            from: fromAddress,
+            to: adminAddress,
+            subject: `New customer help request for ${widgetData.productName || "your widget"}`,
+            html: `
+              <div style="font-family: Arial, sans-serif;">
+                <p>A user has requested help and provided an email.</p>
+                <p><strong>User Email:</strong> ${userEmail}</p>
+                <p><strong>Latest Message:</strong> ${String(message)}</p>
+                <p><strong>Widget:</strong> ${widgetData.name} (${widgetData.id})</p>
+              </div>
+            `,
+          });
+        }
+      } catch (mailError) {
+        console.error("Error sending emails:", mailError);
+        // Don't fail the request if email sending fails
+      }
+
+      // Generate a session ID for tracking
+      const sessionId = uuidv4();
+
+      // Track usage for the widget owner
+      try {
+        const { trackUsage } = await import("@/lib/middleware/usage");
+        await trackUsage(widgetData.userId, "message", 1, params.id);
+      } catch (usageError) {
+        console.error("Error tracking usage:", usageError);
+      }
+
+      return NextResponse.json(
+        {
+          response:
+            "Thanks! We received your email and our team will follow up shortly. You can continue chatting here in the meantime.",
+          sessionId,
+        },
+        { headers: corsHeaders }
+      );
+    }
+
+    // Generate AI response for non-email messages
+    const aiResponse = await generateAIResponse(message, widgetData as any);
 
     // Generate a session ID for tracking
     const sessionId = uuidv4();

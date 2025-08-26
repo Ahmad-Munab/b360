@@ -43,6 +43,13 @@
       "when": 1755444938618,
       "tag": "0005_chunky_nitro",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756220753068,
+      "tag": "0006_fearless_dust",
+      "breakpoints": true
     }
   ]
 }

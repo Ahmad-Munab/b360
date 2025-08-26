@@ -13,6 +13,7 @@ export interface Widget {
   welcomeMessage: string;
   isActive: boolean;
   customIcon?: string;
+  adminEmail?: string;
   createdAt: Date;
   updatedAt: Date;
 }

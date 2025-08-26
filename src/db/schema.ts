@@ -92,6 +92,7 @@ export const widget = pgTable("widget", {
   customIcon: text("custom_icon"),
   iconEmoji: text("icon_emoji"),
   iconType: text("icon_type").default("default").notNull(),
+  adminEmail: text("admin_email"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -103,6 +104,17 @@ export const widgetRelations = relations(widget, ({ one }) => ({
     references: [widgetAnalytics.widgetId],
   }),
 }));
+
+// Leads captured from widget chats (email collection)
+export const widgetLead = pgTable("widget_lead", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  widgetId: uuid("widget_id")
+    .references(() => widget.id)
+    .notNull(),
+  email: text("email").notNull(),
+  message: text("message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export const widgetAnalytics = pgTable("widget_analytics", {
   id: uuid("id").defaultRandom().primaryKey(),

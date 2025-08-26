@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       iconType = "default",
       iconEmoji,
       customIcon,
+      adminEmail,
     } = body;
 
     // Validate required fields
@@ -112,6 +113,7 @@ export async function POST(request: NextRequest) {
         iconType,
         iconEmoji,
         customIcon,
+        adminEmail,
       })
       .returning();
 

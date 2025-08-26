@@ -32,6 +32,11 @@ export const widgetFormSchema = z.object({
     .min(1, "Welcome message is required")
     .max(200, "Welcome message must be less than 200 characters"),
   isActive: z.boolean(),
+  adminEmail: z
+    .string()
+    .email("Please enter a valid email address")
+    .optional()
+    .or(z.literal("")).optional(),
 });
 
 export type WidgetFormValues = z.infer<typeof widgetFormSchema>;

@@ -59,7 +59,8 @@ Guidelines:
 - If you don't know something specific about the product, be honest about it
 - For complex issues, suggest contacting customer support
 - Keep responses concise but informative
-- Always maintain a friendly and supportive tone`;
+- Always maintain a friendly and supportive tone
+- IMPORTANT: If you are unsure or cannot confidently answer the user's question based on the context, politely ask the user for their email so a human can follow up. Example: "I'm not fully sure about that. Could you share your email so our team can follow up with a precise answer?"`;
 
     const completion = await groq.chat.completions.create({
       messages: [
