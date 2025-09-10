@@ -21,87 +21,205 @@ type AnimatedCirclesProps = {
 const AnimatedVisual = ({ animated }: AnimatedCirclesProps) => {
   const features = [
     {
-      icon: <Users className="w-8 h-8" />,
+      icon: <Users className="w-4 h-4 lg:w-5 lg:h-5" />,
       label: "Expert Teams",
-      color: "bg-blue-500",
+      color: "bg-gradient-to-br from-blue-500 to-blue-700",
+      position: { top: "10%", left: "20%" },
     },
     {
-      icon: <MessageCircle className="w-8 h-8" />,
-      label: "24/7 Support",
-      color: "bg-green-500",
+      icon: <MessageCircle className="w-4 h-4 lg:w-5 lg:h-5" />,
+      label: "24/7 Support", 
+      color: "bg-gradient-to-br from-emerald-500 to-emerald-700",
+      position: { top: "15%", right: "15%" },
     },
     {
-      icon: <Shield className="w-8 h-8" />,
+      icon: <Shield className="w-4 h-4 lg:w-5 lg:h-5" />,
       label: "Secure",
-      color: "bg-purple-500",
+      color: "bg-gradient-to-br from-purple-500 to-purple-700",
+      position: { bottom: "20%", left: "15%" },
     },
     {
-      icon: <BarChart3 className="w-8 h-8" />,
+      icon: <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5" />,
       label: "Analytics",
-      color: "bg-orange-500",
+      color: "bg-gradient-to-br from-orange-500 to-orange-700",
+      position: { bottom: "10%", right: "20%" },
+    },
+    {
+      icon: <Clock className="w-4 h-4 lg:w-5 lg:h-5" />,
+      label: "Real-time",
+      color: "bg-gradient-to-br from-indigo-500 to-indigo-700",
+      position: { top: "45%", left: "5%" },
     },
   ];
 
   return (
-    <div className="relative h-96 lg:h-[500px] flex items-center justify-center">
+    <div className="relative h-96 w-96 lg:h-[500px] lg:w-[500px] mx-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative"
+        className="relative w-full h-full"
       >
-        {/* Central Globe */}
-        <motion.div
-          animate={{ rotate: animated ? 360 : 0 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="w-32 h-32 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl"
-        >
-          <Globe className="w-16 h-16 text-white" />
-        </motion.div>
+        {/* Central Earth/Globe */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+          <motion.div
+            animate={{ rotate: animated ? 360 : 0 }}
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+            className="w-20 h-20 lg:w-28 lg:h-28 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-full flex items-center justify-center shadow-2xl border-4 border-white/20 relative overflow-hidden"
+          >
+            {/* Earth-like texture */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 via-transparent to-blue-900/50 rounded-full"></div>
+            <div className="absolute top-2 left-3 w-2 h-3 bg-green-400/60 rounded-full"></div>
+            <div className="absolute bottom-3 right-2 w-3 h-2 bg-green-400/60 rounded-full"></div>
+            <div className="absolute top-1/2 left-1 w-1 h-4 bg-green-400/40 rounded-full"></div>
+            <Globe className="w-10 h-10 lg:w-14 lg:h-14 text-white relative z-10" />
+          </motion.div>
+        </div>
 
-        {/* Orbiting Feature Cards */}
+        {/* Connection Lines */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none z-10"
+          viewBox="0 0 500 500"
+        >
+          {features.map((feature, i) => {
+            // Calculate connection points
+            const centerX = 250;
+            const centerY = 250;
+            
+            // Calculate feature position based on percentages
+            let featureX, featureY;
+            if (feature.position.top) {
+              featureY = (parseFloat(feature.position.top) / 100) * 500;
+            } else if (feature.position.bottom) {
+              featureY = 500 - (parseFloat(feature.position.bottom) / 100) * 500;
+            } else {
+              featureY = centerY;
+            }
+            
+            if (feature.position.left) {
+              featureX = (parseFloat(feature.position.left) / 100) * 500;
+            } else if (feature.position.right) {
+              featureX = 500 - (parseFloat(feature.position.right) / 100) * 500;
+            } else {
+              featureX = centerX;
+            }
+
+            return (
+              <motion.g key={i}>
+                {/* Curved connection line */}
+                <motion.path
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: animated ? 1 : 0, opacity: animated ? 0.6 : 0 }}
+                  transition={{ duration: 2, delay: i * 0.3, ease: "easeInOut" }}
+                  d={`M ${centerX} ${centerY} Q ${(centerX + featureX) / 2} ${(centerY + featureY) / 2 - 50} ${featureX} ${featureY}`}
+                  stroke="url(#gradient)"
+                  strokeWidth="2"
+                  strokeDasharray="8 4"
+                  fill="none"
+                />
+                {/* Animated dots along the path */}
+                <motion.circle
+                  initial={{ offset: 0, opacity: 0 }}
+                  animate={{ 
+                    offset: animated ? 1 : 0, 
+                    opacity: animated ? [0, 1, 0] : 0 
+                  }}
+                  transition={{ 
+                    duration: 3, 
+                    repeat: Infinity, 
+                    delay: i * 0.5,
+                    ease: "linear"
+                  }}
+                  r="3"
+                  fill="#3B82F6"
+                >
+                  <animateMotion
+                    dur="3s"
+                    repeatCount="indefinite"
+                    begin={`${i * 0.5}s`}
+                  >
+                    <mpath href={`#path-${i}`} />
+                  </animateMotion>
+                </motion.circle>
+                <defs>
+                  <path id={`path-${i}`} d={`M ${centerX} ${centerY} Q ${(centerX + featureX) / 2} ${(centerY + featureY) / 2 - 50} ${featureX} ${featureY}`} />
+                </defs>
+              </motion.g>
+            );
+          })}
+          
+          {/* Gradient definition */}
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Floating Feature Cards */}
         {features.map((feature, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: i * 0.2 }}
-            className="absolute"
+            initial={{ opacity: 0, scale: 0, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: i * 0.2,
+              type: "spring",
+              stiffness: 100 
+            }}
+            className="absolute z-30"
             style={{
-              left: `${Math.cos((i * Math.PI) / 2) * 120 + 50}%`,
-              top: `${Math.sin((i * Math.PI) / 2) * 120 + 50}%`,
-              transform: "translate(-50%, -50%)",
+              top: feature.position.top,
+              bottom: feature.position.bottom,
+              left: feature.position.left,
+              right: feature.position.right,
             }}
           >
             <motion.div
-              whileHover={{ scale: 1.1 }}
-              className={`w-20 h-20 ${feature.color} rounded-2xl flex flex-col items-center justify-center text-white shadow-lg cursor-pointer`}
+              whileHover={{ 
+                scale: 1.1, 
+                y: -5,
+                boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)"
+              }}
+              animate={{
+                y: animated ? [0, -8, 0] : 0,
+              }}
+              transition={{
+                y: {
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.5,
+                  ease: "easeInOut"
+                }
+              }}
+              className={`${feature.color} rounded-2xl p-3 lg:p-4 text-white shadow-xl cursor-pointer backdrop-blur-sm border border-white/20 min-w-[80px] lg:min-w-[100px]`}
             >
-              {feature.icon}
-              <span className="text-xs font-bold mt-1">{feature.label}</span>
+              <div className="flex flex-col items-center text-center space-y-1">
+                <div className="p-1 bg-white/20 rounded-lg">
+                  {feature.icon}
+                </div>
+                <span className="text-xs lg:text-sm font-bold leading-tight">
+                  {feature.label}
+                </span>
+              </div>
             </motion.div>
           </motion.div>
         ))}
 
-        {/* Connecting Lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none">
-          {features.map((_, i) => (
-            <motion.line
-              key={i}
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: animated ? 1 : 0 }}
-              transition={{ duration: 1, delay: i * 0.3 }}
-              x1="50%"
-              y1="50%"
-              x2={`${Math.cos((i * Math.PI) / 2) * 120 + 50}%`}
-              y2={`${Math.sin((i * Math.PI) / 2) * 120 + 50}%`}
-              stroke="#3b82f6"
-              strokeWidth="2"
-              strokeDasharray="5,5"
-              opacity="0.6"
-            />
-          ))}
-        </svg>
+        {/* Orbital Rings */}
+        <motion.div
+          animate={{ rotate: animated ? 360 : 0 }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 lg:w-64 lg:h-64 border border-blue-200/30 rounded-full"
+        />
+        <motion.div
+          animate={{ rotate: animated ? -360 : 0 }}
+          transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 lg:w-80 lg:h-80 border border-purple-200/20 rounded-full border-dashed"
+        />
       </motion.div>
     </div>
   );
@@ -113,7 +231,7 @@ const HeroContent = () => {
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.8 }}
-      className="space-y-8"
+      className="space-y-8 text-center lg:text-left"
       id="hero"
       data-animate
     >
@@ -131,7 +249,7 @@ const HeroContent = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-6xl lg:text-7xl font-black text-gray-900 leading-tight font-heading"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight font-heading"
         >
           Transform Your
           <br />
@@ -144,7 +262,7 @@ const HeroContent = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-2xl text-gray-600 leading-relaxed max-w-2xl font-medium"
+          className="text-lg sm:text-xl lg:text-2xl text-gray-600 leading-relaxed max-w-2xl font-medium mx-auto lg:mx-0"
         >
           We deliver world-class customer support and IT solutions that scale
           with your business. From AI-powered chat support to comprehensive
@@ -156,84 +274,25 @@ const HeroContent = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.8 }}
-        className="flex flex-col sm:flex-row gap-4"
+        className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
       >
         <Link href="/contact">
-          <Button className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-full px-10 py-4 text-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 group">
+          <Button className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-full px-6 sm:px-8 lg:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 group">
             Get Started Today
-            <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
         </Link>
 
         <Link href="/about">
           <Button
             variant="outline"
-            className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full px-10 py-4 text-xl font-bold transition-all duration-300"
+            className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full px-6 sm:px-8 lg:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold transition-all duration-300"
           >
             Learn More
           </Button>
         </Link>
       </motion.div>
 
-      <StatsCard />
-    </motion.div>
-  );
-};
-
-const StatsCard = () => {
-  const stats = [
-    {
-      number: "50M+",
-      label: "Tickets Resolved",
-      icon: <MessageCircle className="w-6 h-6" />,
-    },
-    {
-      number: "98%",
-      label: "Satisfaction Rate",
-      icon: <Shield className="w-6 h-6" />,
-    },
-    {
-      number: "24/7",
-      label: "Global Coverage",
-      icon: <Clock className="w-6 h-6" />,
-    },
-    {
-      number: "500+",
-      label: "Expert Agents",
-      icon: <Users className="w-6 h-6" />,
-    },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 1 }}
-      className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-2xl"
-    >
-      {stats.map((stat, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 1.2 + index * 0.1 }}
-          className="text-center"
-        >
-          <Card className="border-2 border-blue-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="text-blue-600 flex justify-center mb-2">
-                {stat.icon}
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
-                {stat.number}
-              </div>
-              <div className="text-sm text-gray-600 font-medium">
-                {stat.label}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
     </motion.div>
   );
 };
@@ -264,16 +323,23 @@ export const HeroSection = () => {
   const isHeroAnimated = animatedElements.has("hero");
 
   return (
-    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20 lg:py-32 relative overflow-hidden">
+    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20 lg:py-32 relative overflow-hidden min-h-[80vh] lg:min-h-[100vh]">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <HeroContent />
-          <AnimatedVisual animated={isHeroAnimated} />
+      <div className="container mx-auto px-4 relative z-10 h-full">
+        <div className="lg:grid lg:grid-cols-2 gap-12 items-center h-full">
+          {/* Content Section */}
+          <div className="flex items-center h-full">
+            <HeroContent />
+          </div>
+          
+          {/* Visual Section */}
+          <div className="flex items-center justify-center mt-12 lg:mt-0 h-full">
+            <AnimatedVisual animated={isHeroAnimated} />
+          </div>
         </div>
       </div>
     </section>

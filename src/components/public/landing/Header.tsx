@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, MessageSquare, Users } from "lucide-react";
+import { ChevronDown, MessageSquare, Users, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signIn } from "next-auth/react";
 
@@ -12,6 +12,99 @@ type DropdownItem = {
   href: string;
   icon?: React.ReactNode;
 };
+
+const MobileAccordionItem: React.FC<{
+  item: DropdownItem;
+  submenuItems?: DropdownItem[];
+  closeMobileMenu: () => void;
+}> = ({ item, submenuItems, closeMobileMenu }) => {
+  const [isSubmenuOpen, setSubmenuOpen] = useState(false);
+
+  if (submenuItems) {
+    return (
+      <div className="py-2">
+        <button
+          onClick={() => setSubmenuOpen(!isSubmenuOpen)}
+          className="flex justify-between items-center w-full text-left text-gray-700 hover:text-blue-600 transition-colors"
+        >
+          <div className="flex items-center space-x-3">
+            {item.icon}
+            <span>{item.name}</span>
+          </div>
+          <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isSubmenuOpen ? "rotate-180" : ""}`} />
+        </button>
+        <AnimatePresence>
+          {isSubmenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="pl-6 mt-2 border-l-2 border-gray-200 ml-2 overflow-hidden"
+            >
+              {submenuItems.map((subItem, index) => (
+                <Link
+                  key={index}
+                  href={subItem.href}
+                  className="flex items-center space-x-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  onClick={closeMobileMenu}
+                >
+                  <span>{subItem.name}</span>
+                </Link>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className="flex items-center space-x-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+      onClick={closeMobileMenu}
+    >
+      {item.icon}
+      <span>{item.name}</span>
+    </Link>
+  );
+};
+
+const MobileMenuCategory: React.FC<{
+    title: string;
+    items: DropdownItem[];
+    submenu?: Record<string, DropdownItem[]>;
+    closeMobileMenu: () => void;
+}> = ({title, items, submenu, closeMobileMenu}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="py-2 border-b border-gray-100">
+            <button onClick={() => setIsOpen(!isOpen)} className="flex justify-between w-full items-center font-semibold text-lg py-2">
+                <span>{title}</span>
+                <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pt-2 overflow-hidden"
+                    >
+                        {items.map((item, index) => (
+                            <MobileAccordionItem
+                                key={index}
+                                item={item}
+                                submenuItems={submenu?.[item.name]}
+                                closeMobileMenu={closeMobileMenu}
+                            />
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
+}
 
 type DropdownProps = {
   title: string;
@@ -152,6 +245,7 @@ const Dropdown = ({
 
 export const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
 
@@ -260,39 +354,137 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            {/* Authentication Section */}
-            {status === "loading" ? (
-              <div className="w-8 h-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-            ) : session ? (
-              // Authenticated User - Show Dashboard Button
-              <Link href="/dashboard">
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-4">
+              {/* Authentication Section */}
+              {status === "loading" ? (
+                <div className="w-8 h-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+              ) : session ? (
+                // Authenticated User - Show Dashboard Button
+                <Link href="/dashboard">
+                  <Button
+                    variant="outline"
+                    className="rounded-full px-6 py-2 font-medium"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                // Not Authenticated - Show Sign In Button
                 <Button
+                  onClick={() => signIn()}
                   variant="outline"
                   className="rounded-full px-6 py-2 font-medium"
                 >
-                  Dashboard
+                  Sign In
+                </Button>
+              )}
+
+              {/* Book a Demo Button - Always Visible */}
+              <Link href="/contact">
+                <Button className="bg-gradient-navy-blue text-white hover:opacity-90 rounded-full px-8 py-2 font-bold shadow-lg">
+                  Book a Demo Now
                 </Button>
               </Link>
-            ) : (
-              // Not Authenticated - Show Sign In Button
-              <Button
-                onClick={() => signIn()}
-                variant="outline"
-                className="rounded-full px-6 py-2 font-medium"
-              >
-                Sign In
-              </Button>
-            )}
-
-            {/* Book a Demo Button - Always Visible */}
-            <Link href="/contact">
-              <Button className="bg-gradient-navy-blue text-white hover:opacity-90 rounded-full px-8 py-2 font-bold shadow-lg">
-                Book a Demo Now
-              </Button>
-            </Link>
+            </div>
           </div>
         </div>
+
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden fixed top-16 left-0 w-full h-[calc(100vh-4rem)] bg-white z-40"
+          >
+            <div className="h-full overflow-y-auto">
+              <div className="container mx-auto px-4 py-4">
+                <MobileMenuCategory
+                  title="Services"
+                  items={servicesDropdown}
+                  submenu={servicesSubmenus}
+                  closeMobileMenu={() => setMobileMenuOpen(false)}
+                />
+                <MobileMenuCategory
+                  title="Industries"
+                  items={industriesDropdown}
+                  closeMobileMenu={() => setMobileMenuOpen(false)}
+                />
+                <div className="py-2 border-b border-gray-100">
+                  <Link
+                    href="/pricing"
+                    className="block font-semibold text-lg py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Pricing
+                  </Link>
+                </div>
+                <MobileMenuCategory
+                  title="About"
+                  items={aboutDropdown}
+                  closeMobileMenu={() => setMobileMenuOpen(false)}
+                />
+
+                {/* Mobile Authentication */}
+                <div className="pt-6 mt-4 border-t border-gray-200 space-y-3">
+                  {status === "loading" ? (
+                    <div className="w-8 h-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 mx-auto"></div>
+                  ) : session ? (
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-full py-2 font-medium"
+                      >
+                        Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        signIn();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full rounded-full py-2 font-medium"
+                    >
+                      Sign In
+                    </Button>
+                  )}
+
+                  <Link
+                    href="/contact"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Button className="w-full bg-gradient-navy-blue text-white hover:opacity-90 rounded-full py-2 font-bold shadow-lg">
+                      Book a Demo Now
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

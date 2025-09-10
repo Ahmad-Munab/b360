@@ -10,7 +10,7 @@ import Link from "next/link";
 export default function PricingPage() {
   const plan = {
     name: "Support On Demand",
-    price: "$8",
+    price: "$7",
     period: "/hr",
     description:
       "One simple hourly plan. World-class agents ready when you are.",
@@ -64,21 +64,26 @@ export default function PricingPage() {
               One Simple Plan
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Transparent hourly pricing. No contracts. Scale up or down anytime.
+              Transparent hourly pricing. No contracts. Scale up or down
+              anytime.
             </p>
           </div>
           <div className="max-w-3xl mx-auto">
             <Card className="border-2 hover:shadow-xl transition-all duration-300">
               <CardContent className="p-8">
                 <div className="text-center mb-8">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${plan.gradient} rounded-full flex items-center justify-center mx-auto mb-4 text-white`}>
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-r ${plan.gradient} rounded-full flex items-center justify-center mx-auto mb-4 text-white`}
+                  >
                     {plan.icon}
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2 font-heading">
                     {plan.name}
                   </h3>
                   <div className="mb-4">
-                    <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
+                    <span className="text-5xl font-bold text-gray-900">
+                      {plan.price}
+                    </span>
                     <span className="text-xl text-gray-600">{plan.period}</span>
                   </div>
                   <p className="text-gray-600">{plan.description}</p>
@@ -104,8 +109,6 @@ export default function PricingPage() {
               </CardContent>
             </Card>
           </div>
-          
-          
         </div>
       </section>
 
