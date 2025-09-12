@@ -15,22 +15,22 @@ export default function HomePage() {
 
   const testimonials = [
     {
-      name: "SAKARA",
+      name: "JUMBODTG",
       quote:
         "The B360 team is always flexible with process changes and commits 100% to making every interaction the best our clients have ever had on a daily basis.",
-      image: "/placeholder.svg?height=120&width=120",
+      image: "/logos/jumbo_logo.avif",
     },
     {
-      name: "TECHCORP",
+      name: "lockedin ai",
       quote:
         "B360 transformed our customer support operations. Their proactive approach and dedication to excellence is unmatched.",
-      image: "/placeholder.svg?height=120&width=120",
+      image: "/logos/lockedin_ai_logo.png",
     },
     {
-      name: "INNOVATE",
+      name: "elavate",
       quote:
         "Working with B360 has been a game-changer. They understand our business needs and deliver exceptional results consistently.",
-      image: "/placeholder.svg?height=120&width=120",
+      image: "/logos/Elavate_Logo_1.avif",
     },
   ];
 
@@ -206,19 +206,18 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8">
               <div className="relative flex-shrink-0">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-yellow-400 p-2">
+                <div className="w-32 h-20 sm:w-48 sm:h-24 flex items-center justify-center bg-transparent">
                   <Image
                     src={
                       testimonials[currentTestimonial].image ||
                       "/placeholder.svg"
                     }
                     alt={testimonials[currentTestimonial].name}
-                    width={120}
-                    height={120}
-                    className="rounded-full w-full h-full object-cover"
+                    width={180}
+                    height={80}
+                    className="object-contain w-full h-full"
                   />
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 bg-emerald-400 rounded-full border-4 border-white"></div>
               </div>
 
               <div className="flex-1 text-center sm:text-left">
