@@ -38,6 +38,7 @@ export default function ContactPage() {
       ctaTitle="Ready to get started?"
       ctaDescription="Let's discuss how our comprehensive support solutions can transform your customer experience."
       ctaButtonText="Schedule a Demo"
+      ctaButtonHref="https://calendar.google.com/calendar/embed?src=82249b05f8a6091ca94b230ffb55de2e02369c4618ebe19b3b02ddf2ef64a4fa%40group.calendar.google.com"
     >
       {/* Contact Methods */}
       <section className="py-20 bg-white">
