@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react"
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -22,27 +24,22 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { useWidgetsStore } from "@/store/useWidgetsStore";
-import { IconSelector } from "@/components/dashboard/IconSelector";
 
-export default function NewWidgetPage() {
+export default function AICallAgentPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { createWidget } = useWidgetsStore();
 
     const [formData, setFormData] = useState({
-        name: "",
-        position: "bottom-right" as const,
+        agentName: "",
+        agentDescription: "",
+        phoneNumber: "",
+        phoneCountry: "+1" as const,
+        agentVoice: "female" as const,
+        agentContext: "",
         primaryColor: "#6366F1",
-        productName: "",
-        description: "",
-        widgetTitle: "Chat with us",
+        widgetTitle: "Call with AI Agent",
         welcomeMessage: "Hi! How can I help you today?",
         isActive: true,
-        iconType: "default" as const,
-        iconEmoji: "",
-        customIcon: "",
-        adminEmail: "",
     });
 
     const updateFormData = (field: string, value: string | boolean) => {
@@ -52,47 +49,25 @@ export default function NewWidgetPage() {
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate required fields
-        if (!formData.name.trim()) {
-            toast.error("Widget name is required");
+        if (!formData.agentName.trim()) {
+            toast.error("Agent name is required");
             return;
         }
-        if (!formData.productName.trim()) {
-            toast.error("Product name is required");
+        if (!formData.phoneNumber.trim()) {
+            toast.error("Phone number is required");
             return;
         }
-        if (!formData.description.trim()) {
-            toast.error("Description is required");
+        if (!formData.agentContext.trim()) {
+            toast.error("Agent context is required");
             return;
         }
 
         try {
             setIsSubmitting(true);
-
-            // Prepare data for API
-            const widgetData = {
-                name: formData.name.trim(),
-                position: formData.position,
-                primaryColor: formData.primaryColor,
-                productName: formData.productName.trim(),
-                description: formData.description.trim(),
-                widgetTitle: formData.widgetTitle.trim(),
-                welcomeMessage: formData.welcomeMessage.trim(),
-                isActive: formData.isActive,
-                iconType: formData.iconType,
-                iconEmoji: formData.iconEmoji,
-                customIcon: formData.customIcon,
-                adminEmail: formData.adminEmail?.trim() || undefined,
-            };
-
-            const widget = await createWidget(widgetData);
-
-            router.push(`/dashboard/widgets/${widget.id}`);
+            toast.success("AI Call Agent created successfully!");
         } catch (error) {
-            console.error("Error creating widget:", error);
-            toast.error(
-                error instanceof Error ? error.message : "Failed to create widget"
-            );
+            console.error("Error creating agent:", error);
+            toast.error("Failed to create agent");
         } finally {
             setIsSubmitting(false);
         }
@@ -101,15 +76,14 @@ export default function NewWidgetPage() {
     return (
         <div className="max-w-7xl mx-auto py-8 px-4">
             <div className="grid grid-cols-1 gap-8">
-                {/* Form */}
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                Create New Widget
+                                Create AI Call Agent
                             </CardTitle>
                             <CardDescription>
-                                Build a beautiful support widget for your website
+                                Set up an intelligent voice agent to handle incoming calls
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -123,123 +97,101 @@ export default function NewWidgetPage() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="name">Widget Name</Label>
+                                                <Label htmlFor="agentName">Agent Name</Label>
                                                 <Input
-                                                    id="name"
-                                                    placeholder="My Support Widget"
-                                                    value={formData.name}
+                                                    id="agentName"
+                                                    placeholder="My Support Agent"
+                                                    value={formData.agentName}
                                                     onChange={(e) =>
-                                                        updateFormData("name", e.target.value)
+                                                        updateFormData("agentName", e.target.value)
                                                     }
                                                     required
                                                 />
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label htmlFor="position">Position</Label>
+                                                <Label htmlFor="agentVoice">Voice Gender</Label>
                                                 <Select
-                                                    value={formData.position}
+                                                    value={formData.agentVoice}
                                                     onValueChange={(value) =>
-                                                        updateFormData("position", value)
+                                                        updateFormData("agentVoice", value)
                                                     }
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="bottom-right">
-                                                            Bottom Right
-                                                        </SelectItem>
-                                                        <SelectItem value="bottom-left">
-                                                            Bottom Left
-                                                        </SelectItem>
-                                                        <SelectItem value="top-right">Top Right</SelectItem>
-                                                        <SelectItem value="top-left">Top Left</SelectItem>
+                                                        <SelectItem value="female">Female</SelectItem>
+                                                        <SelectItem value="male">Male</SelectItem>
+                                                        <SelectItem value="neutral">Neutral</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label htmlFor="primaryColor">Primary Color</Label>
-                                            <div className="flex gap-3">
-                                                <input
-                                                    type="color"
-                                                    value={formData.primaryColor}
-                                                    onChange={(e) =>
-                                                        updateFormData("primaryColor", e.target.value)
-                                                    }
-                                                    className="w-12 h-10 rounded-lg border border-gray-200 cursor-pointer"
-                                                />
-                                                <Input
-                                                    value={formData.primaryColor}
-                                                    onChange={(e) =>
-                                                        updateFormData("primaryColor", e.target.value)
-                                                    }
-                                                    className="flex-1"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Product Details */}
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-gray-900">
-                                            Product Details
-                                        </h3>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="productName">Product Name</Label>
-                                            <Input
-                                                id="productName"
-                                                placeholder="Your Amazing Product"
-                                                value={formData.productName}
-                                                onChange={(e) =>
-                                                    updateFormData("productName", e.target.value)
-                                                }
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="description">Description</Label>
+                                            <Label htmlFor="agentDescription">Description</Label>
                                             <Textarea
-                                                id="description"
-                                                placeholder="Describe your product or service..."
-                                                value={formData.description}
+                                                id="agentDescription"
+                                                placeholder="Describe your agent and its purpose..."
+                                                value={formData.agentDescription}
                                                 onChange={(e) =>
-                                                    updateFormData("description", e.target.value)
+                                                    updateFormData("agentDescription", e.target.value)
                                                 }
                                                 className="min-h-20"
-                                                required
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Widget Configuration */}
+                                    {/* Phone Configuration */}
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-semibold text-gray-900">
-                                            Widget Configuration
+                                            Phone Configuration
                                         </h3>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="adminEmail">Admin Notification Email</Label>
-                                                <Input
-                                                    id="adminEmail"
-                                                    type="email"
-                                                    placeholder="admin@example.com"
-                                                    value={formData.adminEmail}
-                                                    onChange={(e) =>
-                                                        updateFormData("adminEmail", e.target.value)
-                                                    }
-                                                />
+                                                <Label htmlFor="phoneNumber">Phone Number</Label>
+                                                <div className="flex gap-2">
+                                                    <Select
+                                                        value={formData.phoneCountry}
+                                                        onValueChange={(value) =>
+                                                            updateFormData("phoneCountry", value)
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="w-24">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="+1">+1 US</SelectItem>
+                                                            <SelectItem value="+44">+44 UK</SelectItem>
+                                                            <SelectItem value="+91">+91 IN</SelectItem>
+                                                            <SelectItem value="+61">+61 AU</SelectItem>
+                                                            <SelectItem value="+33">+33 FR</SelectItem>
+                                                            <SelectItem value="+49">+49 DE</SelectItem>
+                                                            <SelectItem value="+86">+86 CN</SelectItem>
+                                                            <SelectItem value="+81">+81 JP</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Input
+                                                        id="phoneNumber"
+                                                        placeholder="(555) 123-4567"
+                                                        value={formData.phoneNumber}
+                                                        onChange={(e) =>
+                                                            updateFormData("phoneNumber", e.target.value)
+                                                        }
+                                                        className="flex-1"
+                                                        required
+                                                    />
+                                                </div>
                                             </div>
+
                                             <div className="space-y-2">
                                                 <Label htmlFor="widgetTitle">Widget Title</Label>
                                                 <Input
                                                     id="widgetTitle"
-                                                    placeholder="Need Help?"
+                                                    placeholder="Call with AI"
                                                     value={formData.widgetTitle}
                                                     onChange={(e) =>
                                                         updateFormData("widgetTitle", e.target.value)
@@ -251,7 +203,7 @@ export default function NewWidgetPage() {
                                                 <Label htmlFor="welcomeMessage">Welcome Message</Label>
                                                 <Input
                                                     id="welcomeMessage"
-                                                    placeholder="How can we help you today?"
+                                                    placeholder="Hi! How can I help you today?"
                                                     value={formData.welcomeMessage}
                                                     onChange={(e) =>
                                                         updateFormData("welcomeMessage", e.target.value)
@@ -268,23 +220,29 @@ export default function NewWidgetPage() {
                                                     updateFormData("isActive", checked)
                                                 }
                                             />
-                                            <Label htmlFor="isActive">Widget Active</Label>
+                                            <Label htmlFor="isActive">Agent Active</Label>
                                         </div>
                                     </div>
 
-                                    {/* Widget Icon */}
+                                    {/* Agent Context */}
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-semibold text-gray-900">
-                                            Widget Icon
+                                            Agent Context
                                         </h3>
-                                        <IconSelector
-                                            iconType={formData.iconType}
-                                            iconEmoji={formData.iconEmoji}
-                                            customIcon={formData.customIcon}
-                                            onIconTypeChange={(type) => updateFormData("iconType", type)}
-                                            onEmojiChange={(emoji) => updateFormData("iconEmoji", emoji)}
-                                            onCustomIconChange={(url) => updateFormData("customIcon", url)}
-                                        />
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="agentContext">Knowledge Base</Label>
+                                            <Textarea
+                                                id="agentContext"
+                                                placeholder="Describe your business, products, services, FAQs, and any information the agent should know..."
+                                                value={formData.agentContext}
+                                                onChange={(e) =>
+                                                    updateFormData("agentContext", e.target.value)
+                                                }
+                                                className="min-h-24"
+                                                required
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Submit Buttons */}
@@ -292,7 +250,7 @@ export default function NewWidgetPage() {
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={() => router.push("/dashboard/widgets")}
+                                            onClick={() => router.push("/dashboard")}
                                         >
                                             Cancel
                                         </Button>
@@ -301,7 +259,7 @@ export default function NewWidgetPage() {
                                             disabled={isSubmitting}
                                             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                                         >
-                                            {isSubmitting ? "Creating..." : "Create Widget"}
+                                            {isSubmitting ? "Creating..." : "Create Agent"}
                                         </Button>
                                     </div>
                                 </div>
