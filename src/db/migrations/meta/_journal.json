@@ -50,6 +50,13 @@
       "when": 1756220753068,
       "tag": "0006_fearless_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1769158595430,
+      "tag": "0007_bizarre_stranger",
+      "breakpoints": true
     }
   ]
 }

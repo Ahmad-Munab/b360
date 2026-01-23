@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, MessageCircle, Settings, LogOut, Menu, X } from "lucide-react";
+import { Home, MessageCircle, Settings, LogOut, Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
@@ -20,7 +20,8 @@ export default function Sidebar() {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "widget", href: "/dashboard/widgets", icon: MessageCircle },
+    { name: "Call Agents", href: "/dashboard/call-agents", icon: Phone },
+    { name: "Widgets", href: "/dashboard/widgets", icon: MessageCircle },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
