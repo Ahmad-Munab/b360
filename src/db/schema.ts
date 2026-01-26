@@ -222,3 +222,23 @@ export const testimonial = pgTable("testimonial", {
 export const testimonialRelations = relations(testimonial, ({ }) => ({
   // No relations for testimonial
 }));
+
+export const agent = pgTable("agent", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .references(() => user.id)
+    .notNull(),
+  name: text("name").notNull(),
+  phoneNumber: text("phone_number").notNull().unique(),
+  phoneSid: text("phone_sid").notNull(), // Twilio SID
+  voice: text("voice").default("female"),
+  context: text("context"),
+  welcomeMessage: text("welcome_message"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const agentRelations = relations(agent, ({ one }) => ({
+  user: one(user, { fields: [agent.userId], references: [user.id] }),
+}));

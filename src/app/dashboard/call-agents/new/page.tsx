@@ -24,16 +24,32 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { Search, Phone, CheckCircle, Loader2 } from "lucide-react";
+
+type PhoneNumber = {
+    phoneNumber: string;
+    friendlyName: string;
+    isoCountry: string;
+    locality: string;
+    region: string;
+};
 
 export default function AICallAgentPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Twilio Search State
+    const [isSearching, setIsSearching] = useState(false);
+    const [availableNumbers, setAvailableNumbers] = useState<PhoneNumber[]>([]);
+    const [searchAreaCode, setSearchAreaCode] = useState("");
+    const [isBuying, setIsBuying] = useState(false);
+
     const [formData, setFormData] = useState({
         agentName: "",
         agentDescription: "",
         phoneNumber: "",
-        phoneCountry: "+1" as const,
+        phoneSid: "", // Hidden field for Twilio SID
+        phoneCountry: "US" as const, // Changed default to US country code
         agentVoice: "female" as const,
         agentContext: "",
         primaryColor: "#6366F1",
@@ -46,6 +62,57 @@ export default function AICallAgentPage() {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
+    const handleSearchNumbers = async () => {
+        setIsSearching(true);
+        try {
+            const res = await fetch("/api/twilio/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    areaCode: searchAreaCode,
+                    countryCode: formData.phoneCountry
+                }),
+            });
+
+            if (!res.ok) throw new Error("Failed to search numbers");
+
+            const numbers = await res.json();
+            setAvailableNumbers(numbers);
+            if (numbers.length === 0) {
+                toast.info("No numbers found for this area code.");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to search numbers");
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleBuyNumber = async (number: PhoneNumber) => {
+        setIsBuying(true);
+        try {
+            const res = await fetch("/api/twilio/buy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phoneNumber: number.phoneNumber }),
+            });
+
+            if (!res.ok) throw new Error("Failed to purchase number");
+
+            const data = await res.json();
+            updateFormData("phoneNumber", data.phoneNumber);
+            updateFormData("phoneSid", data.sid);
+            setAvailableNumbers([]); // Clear search results on success
+            toast.success(`Successfully purchased ${data.phoneNumber}`);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to purchase number");
+        } finally {
+            setIsBuying(false);
+        }
+    };
+
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -54,7 +121,7 @@ export default function AICallAgentPage() {
             return;
         }
         if (!formData.phoneNumber.trim()) {
-            toast.error("Phone number is required");
+            toast.error("Please purchase a phone number first");
             return;
         }
         if (!formData.agentContext.trim()) {
@@ -64,7 +131,10 @@ export default function AICallAgentPage() {
 
         try {
             setIsSubmitting(true);
+            // Here you would typically save the agent to your DB
+            // await saveAgent(formData);
             toast.success("AI Call Agent created successfully!");
+            // router.push("/dashboard/call-agents");
         } catch (error) {
             console.error("Error creating agent:", error);
             toast.error("Failed to create agent");
@@ -150,43 +220,111 @@ export default function AICallAgentPage() {
                                             Phone Configuration
                                         </h3>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="phoneNumber">Phone Number</Label>
-                                                <div className="flex gap-2">
-                                                    <Select
-                                                        value={formData.phoneCountry}
-                                                        onValueChange={(value) =>
-                                                            updateFormData("phoneCountry", value)
-                                                        }
-                                                    >
-                                                        <SelectTrigger className="w-24">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="+1">+1 US</SelectItem>
-                                                            <SelectItem value="+44">+44 UK</SelectItem>
-                                                            <SelectItem value="+91">+91 IN</SelectItem>
-                                                            <SelectItem value="+61">+61 AU</SelectItem>
-                                                            <SelectItem value="+33">+33 FR</SelectItem>
-                                                            <SelectItem value="+49">+49 DE</SelectItem>
-                                                            <SelectItem value="+86">+86 CN</SelectItem>
-                                                            <SelectItem value="+81">+81 JP</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <Input
-                                                        id="phoneNumber"
-                                                        placeholder="(555) 123-4567"
-                                                        value={formData.phoneNumber}
-                                                        onChange={(e) =>
-                                                            updateFormData("phoneNumber", e.target.value)
-                                                        }
-                                                        className="flex-1"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
+                                        <div className="p-4 border rounded-lg bg-gray-50 space-y-4">
+                                            {!formData.phoneNumber ? (
+                                                <div className="space-y-4">
+                                                    <Label>Search and Buy a Number</Label>
+                                                    <div className="flex gap-2">
+                                                        <Select
+                                                            value={formData.phoneCountry}
+                                                            onValueChange={(value) =>
+                                                                updateFormData("phoneCountry", value)
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-24">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="US">US</SelectItem>
+                                                                <SelectItem value="GB">UK</SelectItem>
+                                                                <SelectItem value="AU">AU</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <Input
+                                                            placeholder="Area Code (e.g. 415)"
+                                                            className="w-40"
+                                                            value={searchAreaCode}
+                                                            onChange={(e) => setSearchAreaCode(e.target.value)}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="secondary"
+                                                            onClick={handleSearchNumbers}
+                                                            disabled={isSearching}
+                                                        >
+                                                            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                                                            Search
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const res = await fetch("/api/twilio/existing");
+                                                                    if (!res.ok) throw new Error("No existing number");
+                                                                    const data = await res.json();
+                                                                    updateFormData("phoneNumber", data.phoneNumber);
+                                                                    updateFormData("phoneSid", data.sid);
+                                                                    toast.success(`Using existing number: ${data.phoneNumber}`);
+                                                                } catch {
+                                                                    toast.error("No existing number configured in environment");
+                                                                }
+                                                            }}
+                                                        >
+                                                            Use Existing
+                                                        </Button>
+                                                    </div>
 
+                                                    {availableNumbers.length > 0 && (
+                                                        <div className="mt-4 border rounded-md divide-y bg-white">
+                                                            {availableNumbers.map((num) => (
+                                                                <div key={num.phoneNumber} className="p-3 flex items-center justify-between">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-medium">{num.friendlyName}</span>
+                                                                        <span className="text-xs text-gray-500">{num.locality}, {num.region}</span>
+                                                                    </div>
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="sm"
+                                                                        onClick={() => handleBuyNumber(num)}
+                                                                        disabled={isBuying}
+                                                                    >
+                                                                        {isBuying ? "Buying..." : "Buy $1.00"}
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-between bg-green-50 p-3 rounded-md border border-green-200">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-green-100 p-2 rounded-full">
+                                                            <Phone className="h-5 w-5 text-green-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-green-900">Number Acquired</p>
+                                                            <p className="text-green-700">{formData.phoneNumber}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            updateFormData("phoneNumber", "");
+                                                            updateFormData("phoneSid", "");
+                                                        }}
+                                                        className="text-green-700 hover:text-green-800 hover:bg-green-100"
+                                                    >
+                                                        Change
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="widgetTitle">Widget Title</Label>
                                                 <Input
