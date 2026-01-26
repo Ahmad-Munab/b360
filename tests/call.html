@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Twilio Voice Test</title>
+</head>
+
+<body>
+    <h2>Twilio Voice Web Call</h2>
+    <button id="callBtn">Call</button>
+    <p id="status">Status: idle</p>
+
+    <!-- IMPORTANT: local file -->
+    <script src="/twilio.min.js"></script>
+
+    <script>
+        let device;
+
+        async function startCall() {
+            document.getElementById("status").innerText = "Fetching token...";
+
+            const res = await fetch("/token");
+            const data = await res.json();
+
+            device = new Twilio.Device(data.token, {
+                codecPreferences: ["opus", "pcmu"],
+            });
+
+            device.on("ready", () => {
+                document.getElementById("status").innerText = "Device ready";
+            });
+
+            device.on("error", err => {
+                document.getElementById("status").innerText = err.message;
+                console.error(err);
+            });
+
+            device.on("connect", () => {
+                document.getElementById("status").innerText = "Call connected";
+            });
+
+            device.connect();
+        }
+
+        document.getElementById("callBtn").onclick = startCall;
+    </script>
+</body>
+
+</html>
