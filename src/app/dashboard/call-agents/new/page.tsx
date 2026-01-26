@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Search, Phone, CheckCircle, Loader2 } from "lucide-react";
+import { useAgentsStore } from "@/store/useAgentsStore";
 
 type PhoneNumber = {
     phoneNumber: string;
@@ -37,6 +38,7 @@ type PhoneNumber = {
 export default function AICallAgentPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { createAgent } = useAgentsStore();
 
     // Twilio Search State
     const [isSearching, setIsSearching] = useState(false);
@@ -51,11 +53,14 @@ export default function AICallAgentPage() {
         phoneSid: "", // Hidden field for Twilio SID
         phoneCountry: "US" as const, // Changed default to US country code
         agentVoice: "female" as const,
-        agentContext: "",
         primaryColor: "#6366F1",
         widgetTitle: "Call with AI Agent",
         welcomeMessage: "Hi! How can I help you today?",
         isActive: true,
+        businessContext: "",
+        businessType: "",
+        availabilityContext: "",
+        adminEmail: "",
     });
 
     const updateFormData = (field: string, value: string | boolean) => {
@@ -124,17 +129,34 @@ export default function AICallAgentPage() {
             toast.error("Please purchase a phone number first");
             return;
         }
-        if (!formData.agentContext.trim()) {
-            toast.error("Agent context is required");
+
+        if (!formData.businessContext.trim()) {
+            toast.error("Business context is required");
+            return;
+        }
+        if (!formData.adminEmail.trim()) {
+            toast.error("Admin email is required");
             return;
         }
 
         try {
             setIsSubmitting(true);
-            // Here you would typically save the agent to your DB
-            // await saveAgent(formData);
-            toast.success("AI Call Agent created successfully!");
-            // router.push("/dashboard/call-agents");
+            const created = await createAgent({
+                name: formData.agentName,
+                description: formData.agentDescription,
+                phoneNumber: formData.phoneNumber,
+                phoneSid: formData.phoneSid,
+                voice: formData.agentVoice,
+                welcomeMessage: formData.welcomeMessage,
+                businessContext: formData.businessContext,
+                businessType: formData.businessType,
+                availabilityContext: formData.availabilityContext,
+                adminEmail: formData.adminEmail,
+                isActive: formData.isActive,
+            });
+            if (created) {
+                router.push("/dashboard/call-agents");
+            }
         } catch (error) {
             console.error("Error creating agent:", error);
             toast.error("Failed to create agent");
@@ -197,20 +219,6 @@ export default function AICallAgentPage() {
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                        </div>
-
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="agentDescription">Description</Label>
-                                            <Textarea
-                                                id="agentDescription"
-                                                placeholder="Describe your agent and its purpose..."
-                                                value={formData.agentDescription}
-                                                onChange={(e) =>
-                                                    updateFormData("agentDescription", e.target.value)
-                                                }
-                                                className="min-h-20"
-                                            />
                                         </div>
                                     </div>
 
@@ -323,19 +331,7 @@ export default function AICallAgentPage() {
                                             )}
                                         </div>
 
-
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="widgetTitle">Widget Title</Label>
-                                                <Input
-                                                    id="widgetTitle"
-                                                    placeholder="Call with AI"
-                                                    value={formData.widgetTitle}
-                                                    onChange={(e) =>
-                                                        updateFormData("widgetTitle", e.target.value)
-                                                    }
-                                                />
-                                            </div>
 
                                             <div className="space-y-2">
                                                 <Label htmlFor="welcomeMessage">Welcome Message</Label>
@@ -362,20 +358,48 @@ export default function AICallAgentPage() {
                                         </div>
                                     </div>
 
-                                    {/* Agent Context */}
+                                    {/* Business Context */}
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-semibold text-gray-900">
-                                            Agent Context
+                                            Business Context
                                         </h3>
 
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="businessType">Business Type</Label>
+                                                <Input
+                                                    id="businessType"
+                                                    placeholder="e.g., SaaS, E-commerce, Services"
+                                                    value={formData.businessType}
+                                                    onChange={(e) =>
+                                                        updateFormData("businessType", e.target.value)
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="adminEmail">Admin Email</Label>
+                                                <Input
+                                                    id="adminEmail"
+                                                    type="email"
+                                                    placeholder="admin@example.com"
+                                                    value={formData.adminEmail}
+                                                    onChange={(e) =>
+                                                        updateFormData("adminEmail", e.target.value)
+                                                    }
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-2">
-                                            <Label htmlFor="agentContext">Knowledge Base</Label>
+                                            <Label htmlFor="businessContext">Business Details</Label>
                                             <Textarea
-                                                id="agentContext"
-                                                placeholder="Describe your business, products, services, FAQs, and any information the agent should know..."
-                                                value={formData.agentContext}
+                                                id="businessContext"
+                                                placeholder="Describe your business, products, services, and key information..."
+                                                value={formData.businessContext}
                                                 onChange={(e) =>
-                                                    updateFormData("agentContext", e.target.value)
+                                                    updateFormData("businessContext", e.target.value)
                                                 }
                                                 className="min-h-24"
                                                 required
@@ -383,8 +407,25 @@ export default function AICallAgentPage() {
                                         </div>
                                     </div>
 
+                                    {/* Agent Context */}
+                                    <div className="space-y-4">
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="availabilityContext">Availability & Hours</Label>
+                                            <Textarea
+                                                id="availabilityContext"
+                                                placeholder="Describe your business hours, holidays, support availability, and scheduling information..."
+                                                value={formData.availabilityContext}
+                                                onChange={(e) =>
+                                                    updateFormData("availabilityContext", e.target.value)
+                                                }
+                                                className="min-h-24"
+                                            />
+                                        </div>
+                                    </div>
+
                                     {/* Submit Buttons */}
-                                    <div className="flex justify-end space-x-3 pt-6">
+                                    <div className="flex justify-end gap-3 pt-6 border-t">
                                         <Button
                                             type="button"
                                             variant="outline"
@@ -395,7 +436,6 @@ export default function AICallAgentPage() {
                                         <Button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                                         >
                                             {isSubmitting ? "Creating..." : "Create Agent"}
                                         </Button>

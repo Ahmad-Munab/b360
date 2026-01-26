@@ -229,11 +229,15 @@ export const agent = pgTable("agent", {
     .references(() => user.id)
     .notNull(),
   name: text("name").notNull(),
+  description: text("description"),
   phoneNumber: text("phone_number").notNull().unique(),
   phoneSid: text("phone_sid").notNull(), // Twilio SID
   voice: text("voice").default("female"),
-  context: text("context"),
   welcomeMessage: text("welcome_message"),
+  businessContext: text("business_context"),
+  businessType: text("business_type"),
+  availabilityContext: text("availability_context"),
+  adminEmail: text("admin_email"),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
