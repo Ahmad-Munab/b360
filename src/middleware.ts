@@ -4,6 +4,10 @@ import { getToken } from "next-auth/jwt";
 import { authOptions } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
+  // Skip Twilio API routes entirely
+  if (request.nextUrl.pathname.startsWith("/api/twilio")) {
+    return NextResponse.next();
+  }
   // Handle CORS for widget API routes
   const isWidgetAPIRoute =
     request.nextUrl.pathname.startsWith("/api/widgets/") &&

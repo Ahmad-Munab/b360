@@ -39,9 +39,9 @@
                 document.getElementById("status").innerText = "Call connected";
             });
 
-            device.connect();
+            // ✅ Pass a destination number or client identity
+            device.connect({ To: "client:agent1" });
         }
-
         document.getElementById("callBtn").onclick = startCall;
     </script>
 </body>
