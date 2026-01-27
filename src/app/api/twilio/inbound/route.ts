@@ -14,11 +14,12 @@ export async function POST(req: Request) {
         const formData = await req.text();
         const params = new URLSearchParams(formData);
 
-        console.log("Twilio params:", { from: params.get("From"), to: params.get("To"), toClient: params.get("ToClient") });
+        const allParams = Object.fromEntries(params.entries());
+        console.log("Twilio All Params:", allParams);
 
         const callSid = params.get("CallSid");
         const from = params.get("From"); // caller identity (phone or client)
-        const to = params.get("To"); // Twilio number
+        const to = params.get("To"); // Twilio number or destination
         const toClient = params.get("ToClient"); // Twilio Client target
 
         console.log("Twilio Params:", { callSid, from, to, toClient });
@@ -59,15 +60,32 @@ export async function POST(req: Request) {
         const vapiAssistant = {
             name: currentAgent.name,
             firstMessage: currentAgent.welcomeMessage || "Hello, how can I help you?",
-            model: {
-                provider: "groq",
-                model: "llama-3.1-70b-versatile",
-                apiKey: process.env.GROQ_API_KEY,
-                messages: [
-                    {
-                        role: "system",
-                        content: `You are an AI Voice Assistant for ${currentAgent.name}.
-            
+            voice: {
+                provider: "playht",
+                voiceId: currentAgent.voice === "male" ? "will" : "jennifer",
+            },
+            serverUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.ngrok-free.app"}/api/vapi/webhook`,
+            analysisPlan: {
+                structuredDataSchema: {
+                    type: "object",
+                    properties: {
+                        booking_date: { type: "string", description: "The date and time of the booking in ISO format" },
+                        customer_name: { type: "string" },
+                        customer_email: { type: "string" },
+                        service_details: { type: "string", description: "What the customer wants to book" },
+                    },
+                },
+            },
+        };
+
+        const vapiModel = {
+            provider: "groq",
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are an AI Voice Assistant for ${currentAgent.name}.
+        
 Business Context:
 ${currentAgent.businessContext || "General assistance."}
 
@@ -77,14 +95,17 @@ ${currentAgent.availabilityContext || "Standard business hours."}
 Guidelines:
 - Be helpful, professional, and friendly.
 - Always maintain a supportive tone as a representative of ${currentAgent.name}.`,
-                    },
-                ],
-            },
-            voice: {
-                provider: "playht",
-                voiceId: currentAgent.voice === "male" ? "will" : "jennifer",
-            },
+                },
+            ],
         };
+
+        const finalAssistant = {
+            ...vapiAssistant,
+            model: vapiModel,
+        };
+
+        // Ensure valid customer number for Vapi - must be a real-looking E.164
+        const validCustomerNumber = from && from.startsWith("+") ? from : "+14085551212";
 
         // Trigger Vapi to join this call
         try {
@@ -95,12 +116,17 @@ Guidelines:
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    assistant: vapiAssistant,
-                    type: "phone",
-                    customer: { number: from },
-                    twilioCallSid: callSid,
-                    twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
-                    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+                    assistant: finalAssistant,
+                    type: "inboundPhoneCall",
+                    customer: { number: validCustomerNumber },
+                    phoneNumber: {
+                        twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+                        twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+                        twilioPhoneNumber: currentAgent.phoneNumber,
+                    },
+                    metadata: {
+                        agentId: currentAgent.id,
+                    },
                 }),
             });
 

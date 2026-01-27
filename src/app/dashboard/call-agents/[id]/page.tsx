@@ -14,6 +14,10 @@ import {
 import { Edit, Phone, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { CallAnalytics } from "@/components/dashboard/CallAnalytics";
+import { CallLogsTable } from "@/components/dashboard/CallLogsTable";
+import { BookingRecords } from "@/components/dashboard/BookingRecords";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AgentViewPage({
     params,
@@ -26,6 +30,11 @@ export default function AgentViewPage({
     const [agentId, setAgentId] = useState<string>("");
     const [isDeleting, setIsDeleting] = useState(false);
 
+    const [logs, setLogs] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [stats, setStats] = useState({ totalCalls: 0, avgDuration: 0, totalBookings: 0 });
+    const [isLogsLoading, setIsLogsLoading] = useState(true);
+
     useEffect(() => {
         fetchAgents();
     }, [fetchAgents]);
@@ -35,6 +44,29 @@ export default function AgentViewPage({
             setAgentId(resolvedParams.id);
         });
     }, [params]);
+
+    useEffect(() => {
+        if (agentId) {
+            fetchLogs();
+        }
+    }, [agentId]);
+
+    const fetchLogs = async () => {
+        setIsLogsLoading(true);
+        try {
+            const res = await fetch(`/api/agents/${agentId}/logs`);
+            if (res.ok) {
+                const data = await res.json();
+                setLogs(data.logs);
+                setBookings(data.bookings);
+                setStats(data.stats);
+            }
+        } catch (error) {
+            console.error("Error fetching logs:", error);
+        } finally {
+            setIsLogsLoading(false);
+        }
+    };
 
     const handleDelete = async () => {
         if (!confirm("Are you sure you want to delete this agent?")) return;
@@ -125,67 +157,123 @@ export default function AgentViewPage({
             </div>
 
             {/* Agent Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <Phone className="mr-2 h-5 w-5 text-blue-600" />
-                            Phone Configuration
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-500">Phone Number</p>
-                            <p className="text-lg font-semibold">{agent.phoneNumber}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Voice</p>
-                            <p className="capitalize">{agent.voice || "female"}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Welcome Message</p>
-                            <p className="text-gray-700">{agent.welcomeMessage || "Not set"}</p>
-                        </div>
-                    </CardContent>
-                </Card>
+            <Tabs defaultValue="overview" className="space-y-6">
+                <TabsList className="bg-gray-100 p-1">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="logs">Call Logs</TabsTrigger>
+                    <TabsTrigger value="bookings">Bookings</TabsTrigger>
+                    <TabsTrigger value="settings">Configuration</TabsTrigger>
+                </TabsList>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Business Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-500">Business Type</p>
-                            <p className="text-gray-700">{agent.businessType || "Not set"}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Admin Email</p>
-                            <p className="text-gray-700">{agent.adminEmail || "Not set"}</p>
-                        </div>
-                    </CardContent>
-                </Card>
+                <TabsContent value="overview" className="space-y-6">
+                    <CallAnalytics stats={stats} />
 
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Agent Context</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-500">Business Details</p>
-                            <p className="text-gray-700 whitespace-pre-wrap">
-                                {agent.businessContext || "No business context provided."}
-                            </p>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center">
+                                    <Phone className="mr-2 h-5 w-5 text-blue-600" />
+                                    Phone Configuration
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <p className="text-sm text-gray-500">Phone Number</p>
+                                    <p className="text-lg font-semibold">{agent.phoneNumber}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Voice</p>
+                                    <p className="capitalize">{agent.voice || "female"}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                        <div>
-                            <p className="text-sm text-gray-500">Availability & Hours</p>
-                            <p className="text-gray-700 whitespace-pre-wrap">
-                                {agent.availabilityContext || "No availability information provided."}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Business Identity</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <p className="text-sm text-gray-500">Business Type</p>
+                                    <p className="text-gray-700">{agent.businessType || "Not set"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Admin Email</p>
+                                    <p className="text-gray-700">{agent.adminEmail || "Not set"}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="md:col-span-2">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg">Recent Call Logs</CardTitle>
+                                <Button variant="link" onClick={() => (document.querySelector('[value="logs"]') as any)?.click()}>
+                                    View All
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
+                                <CallLogsTable logs={logs.slice(0, 5)} />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="logs" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Call History</CardTitle>
+                            <CardDescription>
+                                Detailed records of all interactions with this AI agent.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <CallLogsTable logs={logs} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="bookings" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Booking Records</CardTitle>
+                            <CardDescription>
+                                Appointments and leads extracted from calls.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <BookingRecords bookings={bookings} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="settings" className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Agent Context</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <p className="text-sm text-gray-500">Welcome Message</p>
+                                    <p className="text-gray-700">{agent.welcomeMessage || "Not set"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Business Details</p>
+                                    <p className="text-gray-700 whitespace-pre-wrap">
+                                        {agent.businessContext || "No business context provided."}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Availability & Hours</p>
+                                    <p className="text-gray-700 whitespace-pre-wrap">
+                                        {agent.availabilityContext || "No availability information provided."}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

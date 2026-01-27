@@ -244,6 +244,54 @@ export const agent = pgTable("agent", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const agentRelations = relations(agent, ({ one }) => ({
+export const agentRelations = relations(agent, ({ one, many }) => ({
   user: one(user, { fields: [agent.userId], references: [user.id] }),
+  callLogs: many(callLogs),
+}));
+
+export const callLogs = pgTable("call_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  agentId: uuid("agent_id")
+    .references(() => agent.id, { onDelete: "cascade" })
+    .notNull(),
+  callSid: text("call_sid").unique(), // Twilio Call SID
+  vapiCallId: text("vapi_call_id").unique(), // Vapi Call ID
+  callerNumber: text("caller_number"),
+  duration: integer("duration"), // in seconds
+  summary: text("summary"),
+  transcript: text("transcript"),
+  status: text("status"), // 'completed', 'failed', etc.
+  recordingUrl: text("recording_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const callLogsRelations = relations(callLogs, ({ one, many }) => ({
+  agent: one(agent, { fields: [callLogs.agentId], references: [agent.id] }),
+  bookings: many(bookings),
+}));
+
+export const bookings = pgTable("bookings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  agentId: uuid("agent_id")
+    .references(() => agent.id, { onDelete: "cascade" })
+    .notNull(),
+  callLogId: uuid("call_log_id")
+    .references(() => callLogs.id, { onDelete: "cascade" })
+    .notNull(),
+  customerName: text("customer_name"),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone"),
+  bookingDate: timestamp("booking_date"),
+  serviceDetails: text("service_details"),
+  status: text("status").default("confirmed").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  agent: one(agent, { fields: [bookings.agentId], references: [agent.id] }),
+  callLog: one(callLogs, {
+    fields: [bookings.callLogId],
+    references: [callLogs.id],
+  }),
 }));
