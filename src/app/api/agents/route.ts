@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { agent } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureUserExists } from "@/lib/user-utils";
+import { twilioClient } from "@/lib/twilio";
 
 // GET - Fetch user's agents
 export async function GET() {
@@ -57,6 +58,17 @@ export async function POST(request: NextRequest) {
         });
 
         const body = await request.json();
+
+        // Detect App URL for webhooks
+        const host = request.headers.get("host") || "";
+        const protocol = request.headers.get("x-forwarded-proto") || "http";
+        const tunnelUrl = "https://chafflike-weightily-clarita.ngrok-free.dev";
+
+        let appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+        if (appUrl.includes("localhost") || appUrl.includes("127.0.0.1")) {
+            appUrl = tunnelUrl;
+        }
+
         const {
             name,
             description,
@@ -80,11 +92,35 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!phoneNumber || !phoneSid) {
-            return NextResponse.json(
-                { error: "Phone number is required" },
-                { status: 400 }
-            );
+        // If phoneSid is missing, it means we need to purchase the number now
+        let finalPhoneNumber = phoneNumber;
+        let finalPhoneSid = phoneSid;
+
+        if (!finalPhoneSid) {
+            try {
+                // Purchase the number
+                const purchasedNumber = await twilioClient.incomingPhoneNumbers.create({
+                    phoneNumber: finalPhoneNumber,
+                    voiceUrl: `${appUrl}/api/twilio/inbound`,
+                    voiceMethod: 'POST'
+                });
+
+                finalPhoneNumber = purchasedNumber.phoneNumber;
+                finalPhoneSid = purchasedNumber.sid;
+                console.log(`Successfully purchased number ${finalPhoneNumber} (SID: ${finalPhoneSid}) via ${appUrl}`);
+            } catch (error) {
+                console.error("Twilio Purchase Error:", error);
+                return NextResponse.json(
+                    { error: "Failed to purchase the selected phone number. Please try a different one." },
+                    { status: 500 }
+                );
+            }
+        }
+
+        // Generate a clientId if missing (needed for browser calls)
+        let finalClientId = clientId;
+        if (!finalClientId) {
+            finalClientId = `client:${name.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).substring(2, 7)}`;
         }
 
         // Create the agent
@@ -94,9 +130,9 @@ export async function POST(request: NextRequest) {
                 userId,
                 name,
                 description,
-                phoneNumber,
-                phoneSid,
-                clientId,
+                phoneNumber: finalPhoneNumber,
+                phoneSid: finalPhoneSid,
+                clientId: finalClientId,
                 voice,
                 welcomeMessage,
                 businessContext,

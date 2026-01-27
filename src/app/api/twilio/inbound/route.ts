@@ -64,7 +64,7 @@ export async function POST(req: Request) {
                 provider: "playht",
                 voiceId: currentAgent.voice === "male" ? "will" : "jennifer",
             },
-            serverUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.ngrok-free.app"}/api/vapi/webhook`,
+            serverUrl: `https://chafflike-weightily-clarita.ngrok-free.dev/api/vapi/webhook`,
             analysisPlan: {
                 structuredDataSchema: {
                     type: "object",

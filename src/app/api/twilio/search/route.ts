@@ -12,6 +12,7 @@ export async function POST(req: Request) {
 
         const { areaCode, countryCode = "US" } = await req.json();
 
+        // Fetch numbers
         const availableNumbers = await twilioClient.availablePhoneNumbers(countryCode)
             .local
             .list({
@@ -19,14 +20,46 @@ export async function POST(req: Request) {
                 limit: 10,
             });
 
+        // Fetch real pricing for this country
+        let price = "1.15";
+        let currency = "USD";
+        try {
+            const pricing = await twilioClient.pricing.v1.phoneNumbers
+                .countries(countryCode)
+                .fetch();
+
+            // Log for debugging
+            console.log(`[PRICING] Detected for ${countryCode}: unit=${pricing.priceUnit}`);
+
+            // Find best available price category
+            const priceData = pricing.phoneNumberPrices.find(p => p.numberType === 'local') ||
+                pricing.phoneNumberPrices.find(p => p.numberType === 'mobile') ||
+                pricing.phoneNumberPrices.find(p => p.numberType === 'national') ||
+                pricing.phoneNumberPrices[0];
+
+            if (priceData?.currentPrice) {
+                price = priceData.currentPrice.toString();
+                currency = pricing.priceUnit.toUpperCase();
+                console.log(`[PRICING] Using ${price} ${currency} for ${countryCode}`);
+            }
+        } catch (pricingError) {
+            console.error("Error fetching Twilio pricing:", pricingError);
+            // Default fallbacks
+            if (countryCode === 'GB') price = "1.00";
+            else if (countryCode === 'US') price = "1.15";
+        }
+
         const numbers = availableNumbers.map((n) => ({
             phoneNumber: n.phoneNumber,
             friendlyName: n.friendlyName,
             isoCountry: n.isoCountry,
-            locality: n.locality,
-            region: n.region,
+            locality: n.locality || n.region || countryCode,
+            region: n.region || "",
+            price: price,
+            currency: currency
         }));
 
+        console.log(`[TWILIO_SEARCH] Returned ${numbers.length} numbers for ${countryCode} at ${price} ${currency}`);
         return NextResponse.json(numbers);
     } catch (error) {
         console.error("[TWILIO_SEARCH]", error);

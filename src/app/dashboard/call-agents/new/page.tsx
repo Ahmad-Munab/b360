@@ -33,6 +33,20 @@ type PhoneNumber = {
     isoCountry: string;
     locality: string;
     region: string;
+    price?: string;
+    currency?: string;
+};
+
+const getCurrencySymbol = (code?: string) => {
+    if (!code) return '$';
+    switch (code.toUpperCase()) {
+        case 'GBP': return '£';
+        case 'EUR': return '€';
+        case 'AUD': return 'A$';
+        case 'CAD': return 'C$';
+        case 'INR': return '₹';
+        default: return '$';
+    }
 };
 
 export default function AICallAgentPage() {
@@ -94,28 +108,11 @@ export default function AICallAgentPage() {
         }
     };
 
-    const handleBuyNumber = async (number: PhoneNumber) => {
-        setIsBuying(true);
-        try {
-            const res = await fetch("/api/twilio/buy", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ phoneNumber: number.phoneNumber }),
-            });
-
-            if (!res.ok) throw new Error("Failed to purchase number");
-
-            const data = await res.json();
-            updateFormData("phoneNumber", data.phoneNumber);
-            updateFormData("phoneSid", data.sid);
-            setAvailableNumbers([]); // Clear search results on success
-            toast.success(`Successfully purchased ${data.phoneNumber}`);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to purchase number");
-        } finally {
-            setIsBuying(false);
-        }
+    const handleSelectNumber = (number: PhoneNumber) => {
+        updateFormData("phoneNumber", number.phoneNumber);
+        // We don't have SID yet because we haven't bought it
+        setAvailableNumbers([]); // Clear search results on selection
+        toast.info(`Initial selection: ${number.phoneNumber}. Number will be purchased when agent is created.`);
     };
 
     const onSubmit = async (e: React.FormEvent) => {
@@ -126,7 +123,7 @@ export default function AICallAgentPage() {
             return;
         }
         if (!formData.phoneNumber.trim()) {
-            toast.error("Please purchase a phone number first");
+            toast.error("Please select a phone number first");
             return;
         }
 
@@ -145,7 +142,7 @@ export default function AICallAgentPage() {
                 name: formData.agentName,
                 description: formData.agentDescription,
                 phoneNumber: formData.phoneNumber,
-                phoneSid: formData.phoneSid,
+                phoneSid: formData.phoneSid, // Will be empty if new number
                 voice: formData.agentVoice,
                 welcomeMessage: formData.welcomeMessage,
                 businessContext: formData.businessContext,
@@ -159,7 +156,7 @@ export default function AICallAgentPage() {
             }
         } catch (error) {
             console.error("Error creating agent:", error);
-            toast.error("Failed to create agent");
+            // Error handling is inside createAgent store
         } finally {
             setIsSubmitting(false);
         }
@@ -235,17 +232,30 @@ export default function AICallAgentPage() {
                                                     <div className="flex gap-2">
                                                         <Select
                                                             value={formData.phoneCountry}
-                                                            onValueChange={(value) =>
-                                                                updateFormData("phoneCountry", value)
-                                                            }
+                                                            onValueChange={(value) => {
+                                                                updateFormData("phoneCountry", value);
+                                                                setAvailableNumbers([]); // Clear results on country change
+                                                            }}
                                                         >
                                                             <SelectTrigger className="w-24">
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="US">US</SelectItem>
-                                                                <SelectItem value="GB">UK</SelectItem>
-                                                                <SelectItem value="AU">AU</SelectItem>
+                                                                <SelectItem value="US">🇺🇸 United States (+1)</SelectItem>
+                                                                <SelectItem value="CA">🇨🇦 Canada (+1)</SelectItem>
+                                                                <SelectItem value="GB">🇬🇧 United Kingdom (+44)</SelectItem>
+                                                                <SelectItem value="AU">🇦🇺 Australia (+61)</SelectItem>
+                                                                <SelectItem value="NZ">🇳🇿 New Zealand (+64)</SelectItem>
+                                                                <SelectItem value="DE">🇩🇪 Germany (+49)</SelectItem>
+                                                                <SelectItem value="FR">🇫🇷 France (+33)</SelectItem>
+                                                                <SelectItem value="ES">🇪🇸 Spain (+34)</SelectItem>
+                                                                <SelectItem value="IT">🇮🇹 Italy (+39)</SelectItem>
+                                                                <SelectItem value="NL">🇳🇱 Netherlands (+31)</SelectItem>
+                                                                <SelectItem value="IE">🇮🇪 Ireland (+353)</SelectItem>
+                                                                <SelectItem value="IN">🇮🇳 India (+91)</SelectItem>
+                                                                <SelectItem value="SG">🇸🇬 Singapore (+65)</SelectItem>
+                                                                <SelectItem value="HK">🇭🇰 Hong Kong (+852)</SelectItem>
+                                                                <SelectItem value="JP">🇯🇵 Japan (+81)</SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                         <Input
@@ -291,14 +301,22 @@ export default function AICallAgentPage() {
                                                                         <span className="font-medium">{num.friendlyName}</span>
                                                                         <span className="text-xs text-gray-500">{num.locality}, {num.region}</span>
                                                                     </div>
-                                                                    <Button
-                                                                        type="button"
-                                                                        size="sm"
-                                                                        onClick={() => handleBuyNumber(num)}
-                                                                        disabled={isBuying}
-                                                                    >
-                                                                        {isBuying ? "Buying..." : "Buy $1.00"}
-                                                                    </Button>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className="text-right">
+                                                                            <span className="block text-sm font-semibold text-blue-600">
+                                                                                {getCurrencySymbol(num.currency)}
+                                                                                {num.price || "1.15"}/mo
+                                                                            </span>
+                                                                            <span className="block text-[10px] text-gray-400">Monthly price</span>
+                                                                        </div>
+                                                                        <Button
+                                                                            type="button"
+                                                                            size="sm"
+                                                                            onClick={() => handleSelectNumber(num)}
+                                                                        >
+                                                                            Select
+                                                                        </Button>
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
