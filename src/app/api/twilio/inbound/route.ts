@@ -104,7 +104,8 @@ Guidelines:
             model: vapiModel,
         };
 
-        // Ensure valid customer number for Vapi - must be a real-looking E.164
+        // Use the actual caller identity if it looks like a phone number, otherwise use a placeholder
+        // Vapi strictly requires E.164 format for the customer.number field in inboundPhoneCall
         const validCustomerNumber = from && from.startsWith("+") ? from : "+14085551212";
 
         // Trigger Vapi to join this call
@@ -117,7 +118,8 @@ Guidelines:
                 },
                 body: JSON.stringify({
                     assistant: finalAssistant,
-                    type: "inboundPhoneCall",
+                    type: "outboundPhoneCall", // Switch to outbound for takeover
+                    twilioCallSid: callSid, // Top level
                     customer: { number: validCustomerNumber },
                     phoneNumber: {
                         twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
