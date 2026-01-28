@@ -3,6 +3,8 @@
 
 <head>
     <title>Twilio Voice Test</title>
+    <script src="twilio.min.js"></script>
+    <script>console.log("Twilio Script Tag processed");</script>
     <style>
         body {
             font-family: sans-serif;
@@ -121,6 +123,17 @@
                 transform: rotate(360deg);
             }
         }
+
+        .diag-controls {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #4b5563;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+        }
     </style>
 </head>
 
@@ -135,6 +148,15 @@
             <button id="muteBtn" class="secondary">Mute</button>
         </div>
 
+        <div class="diag-controls">
+            <label>
+                <input type="checkbox" id="useFakeAudio" checked> Use Fake Audio (bypass mic issues)
+            </label>
+            <button onclick="checkDevices()"
+                style="background: #3b82f6; color: white; padding: 6px 12px; font-size: 11px; align-self: center; width: auto;">Check
+                Microphones</button>
+        </div>
+
         <div id="activeInfo">
             <div class="volume-bar">
                 <div id="volumeLevel"></div>
@@ -144,9 +166,6 @@
 
         <p id="status">Status: idle</p>
     </div>
-
-    <!-- This assumes twilio.min.js is served from your public folder -->
-    <script src="/twilio.min.js"></script>
 
     <script>
         let device = null;
@@ -162,23 +181,80 @@
         const activeInfo = document.getElementById("activeInfo");
         const timerText = document.getElementById("timer");
         const volumeLevel = document.getElementById("volumeLevel");
+        const useFakeAudio = document.getElementById("useFakeAudio");
+
+        async function checkDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                console.log("--- Media Devices ---");
+                devices.forEach(d => console.log(`${d.kind}: ${d.label} (ID: ${d.deviceId})`));
+                const mics = devices.filter(d => d.kind === 'audioinput');
+                alert(`Found ${mics.length} microphones. Check the console for details.`);
+            } catch (err) {
+                console.error("Device check failed:", err);
+                alert("Could not list devices. Ensure you are on HTTPS or localhost.");
+            }
+        }
 
         async function initDevice() {
-            if (device) return;
+            if (typeof Twilio === 'undefined') {
+                throw new Error("Twilio SDK not loaded. Please wait or check your connection.");
+            }
+
+            // --- MEDIA MOCKER START ---
+            if (useFakeAudio.checked) {
+                console.log("🛠️ Mocking MediaDevices to bypass hardware...");
+                const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+                navigator.mediaDevices.getUserMedia = async (constraints) => {
+                    console.log("🎙️ Intercepted getUserMedia request", constraints);
+                    try {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const oscillator = audioCtx.createOscillator();
+                        const dst = audioCtx.createMediaStreamDestination();
+                        oscillator.connect(dst);
+                        oscillator.start();
+                        console.log("✅ Provided virtual silent stream.");
+                        return dst.stream;
+                    } catch (e) {
+                        console.error("Failed to create mock stream, falling back to original", e);
+                        return originalGetUserMedia(constraints);
+                    }
+                };
+            }
+            // --- MEDIA MOCKER END ---
+
+            // Re-initialize if preference changed
+            if (device) {
+                // Safer check for different SDK versions
+                const isCurrentlyFake = device.options && device.options.fakeLocalAndRemoteAudio === true;
+                if (isCurrentlyFake === useFakeAudio.checked) return;
+
+                console.log("Preference changed or options missing. Rebuilding device...");
+                try { device.destroy(); } catch (e) { }
+                device = null;
+            }
 
             statusText.innerText = "Initializing Device...";
             const res = await fetch("/token");
             const data = await res.json();
 
+            console.log("Initializing device. Fake Audio:", useFakeAudio.checked);
+
             device = new Twilio.Device(data.token, {
                 codecPreferences: ["opus", "pcmu"],
-                fakeLocalAndRemoteAudio: true, // for testing
-                enableIceRestart: true
+                fakeLocalAndRemoteAudio: useFakeAudio.checked,
+                enableIceRestart: true,
+                maxCallSignalingTimeoutMs: 30000
+            });
+
+            device.on("registered", () => {
+                console.log("Twilio Device Registered");
+                statusText.innerText = "Device Ready";
             });
 
             device.on("error", (err) => {
                 console.error("Twilio Device Error:", err);
-                statusText.innerText = "Device Error: " + err.message;
+                statusText.innerText = "Device Error: " + err.description;
             });
         }
 
@@ -189,14 +265,21 @@
 
                 await initDevice();
 
-                statusText.innerText = "Connecting to AI...";
+                if (device.state === 'unregistered') {
+                    console.log("Registering device...");
+                    await device.register();
+                }
 
-                // Initiate call
-                device.connect({ To: "client:test-user" });
+                statusText.innerText = "Connecting...";
 
-                // Set up device-level call listeners (more compatible)
-                device.on("connect", (conn) => {
-                    activeCall = conn;
+                const call = await device.connect({
+                    To: "client:test-user",
+                    AgentId: "test-agent"
+                });
+
+                activeCall = call;
+
+                call.on("accept", () => {
                     console.log("Call Accepted");
                     statusText.innerText = "Connected";
 
@@ -207,16 +290,21 @@
                     loader.style.display = "none";
 
                     startTimer();
-
-                    // Monitor Volume on the connection object
-                    activeCall.on("volume", (v) => {
-                        volumeLevel.style.width = (v * 100) + "%";
-                    });
                 });
 
-                device.on("disconnect", () => {
-                    console.log("Call Disconnected");
+                call.on("disconnect", () => {
+                    console.log("Disconnected");
                     handleEnd();
+                });
+
+                call.on("error", (err) => {
+                    console.error("Call Error:", err);
+                    statusText.innerText = "Error: " + err.message;
+                    handleEnd();
+                });
+
+                call.on("volume", (v) => {
+                    volumeLevel.style.width = (v * 100) + "%";
                 });
 
             } catch (err) {

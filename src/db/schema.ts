@@ -230,7 +230,7 @@ export const agent = pgTable("agent", {
     .notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  phoneNumber: text("phone_number").notNull().unique(),
+  phoneNumber: text("phone_number").notNull(),
   phoneSid: text("phone_sid").notNull(), // Twilio SID
   clientId: text("client_id").unique(), // Twilio Client identity (e.g., client:name)
   voice: text("voice").default("female"),

@@ -19,21 +19,25 @@ export async function POST(req: Request) {
 
         const callSid = params.get("CallSid");
         const from = params.get("From"); // caller identity (phone or client)
-        const to = params.get("To"); // Twilio number or destination
-        const toClient = params.get("ToClient"); // Twilio Client target
+        const to = params.get("To"); // destination (from params.To in browser or Twilio dial)
+        const agentIdParam = params.get("AgentId"); // custom param if passed
 
-        console.log("Twilio Params:", { callSid, from, to, toClient });
+        console.log("Twilio Params:", { callSid, from, to, agentIdParam });
 
         // Determine tenant/agent identifier
+        // 1. Check if To is a client identity
+        // 2. Check if AgentId param is passed
+        // 3. Fallback to To (phone number) or From (fallback)
         let tenantIdentifier: string | null = null;
-
-        if (to) tenantIdentifier = to; // phone call to Twilio number
-        else if (toClient) tenantIdentifier = toClient; // browser client → client call
-        else tenantIdentifier = from; // fallback to caller identity
+        if (to && to.startsWith("client:")) tenantIdentifier = to;
+        else if (to) tenantIdentifier = to;
+        else if (from) tenantIdentifier = from;
 
         if (!tenantIdentifier) {
             return new NextResponse("Missing destination identifier", { status: 400 });
         }
+
+        console.log(`Searching for agent with identifier: ${tenantIdentifier}`);
 
         // Lookup agent/tenant in DB
         const currentAgent = await db.query.agent.findFirst({
@@ -45,18 +49,19 @@ export async function POST(req: Request) {
         const twiml = new VoiceResponse();
 
         if (!currentAgent || !currentAgent.isActive) {
-            console.log(`No active agent found for: ${tenantIdentifier}`);
+            console.log(`❌ No active agent found for identity: ${tenantIdentifier}`);
             twiml.say(
-                "We are sorry, this service is currently unavailable for this number. Goodbye."
+                "We are sorry, this service is currently unavailable. Please verify the destination. Goodbye."
             );
             return new NextResponse(twiml.toString(), {
                 headers: { "Content-Type": "text/xml" },
             });
         }
 
-        console.log(`Agent found: ${currentAgent.name}. Initiating AI session...`);
+        console.log(`✅ Agent found: ${currentAgent.name}. Initiating AI session...`);
 
         // Prepare Vapi assistant configuration
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
         const vapiAssistant = {
             name: currentAgent.name,
             firstMessage: currentAgent.welcomeMessage || "Hello, how can I help you?",
@@ -64,7 +69,7 @@ export async function POST(req: Request) {
                 provider: "playht",
                 voiceId: currentAgent.voice === "male" ? "will" : "jennifer",
             },
-            serverUrl: `https://chafflike-weightily-clarita.ngrok-free.dev/api/vapi/webhook`,
+            serverUrl: `${baseUrl}/api/vapi/webhook`,
             analysisPlan: {
                 structuredDataSchema: {
                     type: "object",
@@ -106,10 +111,11 @@ Guidelines:
 
         // Use the actual caller identity if it looks like a phone number, otherwise use a placeholder
         // Vapi strictly requires E.164 format for the customer.number field in inboundPhoneCall
-        const validCustomerNumber = from && from.startsWith("+") ? from : "+14085551212";
+        const validCustomerNumber = from && from.startsWith("+") ? from : "+15005550006";
 
         // Trigger Vapi to join this call
         try {
+            console.log(`Calling Vapi for agent ${currentAgent.id}...`);
             const vapiResponse = await fetch("https://api.vapi.ai/call", {
                 method: "POST",
                 headers: {
@@ -118,8 +124,8 @@ Guidelines:
                 },
                 body: JSON.stringify({
                     assistant: finalAssistant,
-                    type: "outboundPhoneCall", // Switch to outbound for takeover
-                    twilioCallSid: callSid, // Top level
+                    type: "inboundPhoneCall",
+                    twilioCallSid: callSid,
                     customer: { number: validCustomerNumber },
                     phoneNumber: {
                         twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
@@ -128,25 +134,26 @@ Guidelines:
                     },
                     metadata: {
                         agentId: currentAgent.id,
+                        callSid: callSid
                     },
                 }),
             });
 
             if (!vapiResponse.ok) {
                 const errorData = await vapiResponse.json();
-                console.error("Vapi API Error:", errorData);
-                throw new Error("Failed to start Vapi session");
+                console.error("Vapi API Error Details:", JSON.stringify(errorData, null, 2));
+                throw new Error(`Vapi failed with status ${vapiResponse.status}`);
             }
 
-            console.log(`Vapi session started for ${currentAgent.name}`);
+            console.log(`🎙️ Vapi session successfully triggered for ${currentAgent.name}`);
 
             // Keep call alive while Vapi takes over
             twiml.say({ voice: "alice" }, "Connecting you to the AI assistant...");
-            twiml.pause({ length: 60 }); // enough time for AI session
+            twiml.pause({ length: 60 });
         } catch (vapiError) {
-            console.error("Vapi Initialization Error:", vapiError);
+            console.error("❌ Vapi Initialization Failure:", vapiError);
             twiml.say(
-                "We're currently experiencing a connection issue. Please try again later."
+                "I'm sorry, I'm having trouble connecting to the AI system. Please try again later."
             );
         }
 
@@ -154,7 +161,7 @@ Guidelines:
             headers: { "Content-Type": "text/xml" },
         });
     } catch (error) {
-        console.error("Error in inbound webhook:", error);
+        console.error("🔥 Error in Twilio inbound route:", error);
         return new NextResponse("Internal Server Error", { status: 500 });
     }
 }

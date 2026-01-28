@@ -12,9 +12,16 @@ const PORT = 3002;
 
 const server = http.createServer((req, res) => {
 
-    // ✅ Serve HTML
+    // ✅ Serve Twilio Call Tester
     if (req.method === "GET" && req.url === "/") {
         const html = fs.readFileSync(path.join(__dirname, "call.html"), "utf8");
+        res.writeHead(200, { "Content-Type": "text/html" });
+        return res.end(html);
+    }
+
+    // ✅ Serve Vapi HTML
+    if (req.method === "GET" && req.url === "/vapi") {
+        const html = fs.readFileSync(path.join(__dirname, "vapi.html"), "utf8");
         res.writeHead(200, { "Content-Type": "text/html" });
         return res.end(html);
     }
@@ -26,6 +33,15 @@ const server = http.createServer((req, res) => {
         return res.end(js);
     }
 
+    // ✅ Config endpoint (for Vapi Public Key & Base URL)
+    if (req.method === "GET" && req.url === "/config") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({
+            vapiPublicKey: process.env.VAPI_PUBLIC_API_KEY,
+            baseUrl: process.env.NEXT_PUBLIC_BASE_URL
+        }));
+    }
+
     // ✅ Token endpoint
     if (req.method === "GET" && req.url === "/token") {
         try {
@@ -33,7 +49,7 @@ const server = http.createServer((req, res) => {
                 process.env.TWILIO_ACCOUNT_SID,
                 process.env.TWILIO_API_KEY,
                 process.env.TWILIO_API_SECRET,
-                { identity: "test-user" }
+                { identity: "browser-client" }
             );
 
             const voiceGrant = new VoiceGrant({
