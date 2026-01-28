@@ -58,6 +58,9 @@ export default function AICallAgentPage() {
     const [isSearching, setIsSearching] = useState(false);
     const [availableNumbers, setAvailableNumbers] = useState<PhoneNumber[]>([]);
     const [searchAreaCode, setSearchAreaCode] = useState("");
+    const [searchContains, setSearchContains] = useState(""); // For pattern matching (e.g., digits in number)
+    const [searchLocality, setSearchLocality] = useState(""); // City filter
+    const [searchRegion, setSearchRegion] = useState(""); // State/Province filter
     const [isBuying, setIsBuying] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -88,8 +91,11 @@ export default function AICallAgentPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    areaCode: searchAreaCode,
-                    countryCode: formData.phoneCountry
+                    areaCode: searchAreaCode || undefined,
+                    countryCode: formData.phoneCountry,
+                    contains: searchContains || undefined,
+                    locality: searchLocality || undefined,
+                    region: searchRegion || undefined,
                 }),
             });
 
@@ -98,7 +104,7 @@ export default function AICallAgentPage() {
             const numbers = await res.json();
             setAvailableNumbers(numbers);
             if (numbers.length === 0) {
-                toast.info("No numbers found for this area code.");
+                toast.info("No numbers found for your search criteria.");
             }
         } catch (error) {
             console.error(error);
@@ -229,7 +235,9 @@ export default function AICallAgentPage() {
                                             {!formData.phoneNumber ? (
                                                 <div className="space-y-4">
                                                     <Label>Search and Buy a Number</Label>
-                                                    <div className="flex gap-2">
+
+                                                    {/* Country Selector Row */}
+                                                    <div className="flex flex-wrap gap-2 items-center">
                                                         <Select
                                                             value={formData.phoneCountry}
                                                             onValueChange={(value) => {
@@ -237,7 +245,7 @@ export default function AICallAgentPage() {
                                                                 setAvailableNumbers([]); // Clear results on country change
                                                             }}
                                                         >
-                                                            <SelectTrigger className="w-24">
+                                                            <SelectTrigger className="w-52">
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
@@ -258,21 +266,6 @@ export default function AICallAgentPage() {
                                                                 <SelectItem value="JP">🇯🇵 Japan (+81)</SelectItem>
                                                             </SelectContent>
                                                         </Select>
-                                                        <Input
-                                                            placeholder="Area Code (e.g. 415)"
-                                                            className="w-40"
-                                                            value={searchAreaCode}
-                                                            onChange={(e) => setSearchAreaCode(e.target.value)}
-                                                        />
-                                                        <Button
-                                                            type="button"
-                                                            variant="secondary"
-                                                            onClick={handleSearchNumbers}
-                                                            disabled={isSearching}
-                                                        >
-                                                            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
-                                                            Search
-                                                        </Button>
                                                         <Button
                                                             type="button"
                                                             variant="outline"
@@ -292,6 +285,54 @@ export default function AICallAgentPage() {
                                                             Use Existing
                                                         </Button>
                                                     </div>
+
+                                                    {/* Search Filters Grid */}
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                        <div className="space-y-1">
+                                                            <Label className="text-xs text-gray-500">Area Code</Label>
+                                                            <Input
+                                                                placeholder="e.g. 415"
+                                                                value={searchAreaCode}
+                                                                onChange={(e) => setSearchAreaCode(e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <Label className="text-xs text-gray-500">Number Pattern</Label>
+                                                            <Input
+                                                                placeholder="e.g. 555"
+                                                                value={searchContains}
+                                                                onChange={(e) => setSearchContains(e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <Label className="text-xs text-gray-500">City</Label>
+                                                            <Input
+                                                                placeholder="e.g. San Francisco"
+                                                                value={searchLocality}
+                                                                onChange={(e) => setSearchLocality(e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <Label className="text-xs text-gray-500">State/Region</Label>
+                                                            <Input
+                                                                placeholder="e.g. CA"
+                                                                value={searchRegion}
+                                                                onChange={(e) => setSearchRegion(e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Search Button */}
+                                                    <Button
+                                                        type="button"
+                                                        variant="secondary"
+                                                        onClick={handleSearchNumbers}
+                                                        disabled={isSearching}
+                                                        className="w-full"
+                                                    >
+                                                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+                                                        Search Available Numbers
+                                                    </Button>
 
                                                     {availableNumbers.length > 0 && (
                                                         <div className="mt-4 border rounded-md divide-y bg-white">
@@ -464,6 +505,6 @@ export default function AICallAgentPage() {
                     </Card>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
