@@ -10,7 +10,7 @@ const VoiceGrant = AccessToken.VoiceGrant;
 
 const PORT = 3002;
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
 
     // ✅ Serve Twilio Call Tester
     if (req.method === "GET" && req.url === "/") {
@@ -19,11 +19,18 @@ const server = http.createServer((req, res) => {
         return res.end(html);
     }
 
-    // ✅ Serve Vapi HTML
+    // ✅ Serve Vapi Call Tester
     if (req.method === "GET" && req.url === "/vapi") {
         const html = fs.readFileSync(path.join(__dirname, "vapi.html"), "utf8");
         res.writeHead(200, { "Content-Type": "text/html" });
         return res.end(html);
+    }
+
+    // ✅ Serve Local Vapi Bundle
+    if (req.method === "GET" && req.url === "/vapi-bundle.js") {
+        const js = fs.readFileSync(path.join(__dirname, "vapi-bundle.js"));
+        res.writeHead(200, { "Content-Type": "application/javascript" });
+        return res.end(js);
     }
 
     // ✅ Serve Twilio SDK
@@ -37,9 +44,48 @@ const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/config") {
         res.writeHead(200, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({
-            vapiPublicKey: process.env.VAPI_PUBLIC_API_KEY,
-            baseUrl: process.env.NEXT_PUBLIC_BASE_URL
+            vapiPublicKey: process.env.VAPI_PUBLIC_API_KEY || "your-public-key",
+            baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "https://chafflike-weightily-clarita.ngrok-free.dev"
         }));
+    }
+
+    // ✅ Proxy to get real agents from the main app
+    if (req.method === "GET" && req.url === "/api/agents") {
+        const tunnelUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://chafflike-weightily-clarita.ngrok-free.dev";
+        try {
+            const agentRes = await fetch(`${tunnelUrl}/api/vapi/agents-list`);
+            const agentData = await agentRes.json();
+            res.writeHead(200, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify(agentData));
+        } catch (e) {
+            console.error("Proxy Error:", e);
+            res.writeHead(500);
+            return res.end(JSON.stringify({ error: "Failed to bridge to main app" }));
+        }
+    }
+
+    // ✅ Proxy to get assistant config
+    if (req.method === "POST" && req.url === "/api/assistant") {
+        const tunnelUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://chafflike-weightily-clarita.ngrok-free.dev";
+        let body = "";
+        req.on("data", chunk => { body += chunk; });
+        req.on("end", async () => {
+            try {
+                const assistantRes = await fetch(`${tunnelUrl}/api/vapi/assistant`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body
+                });
+                const assistantData = await assistantRes.json();
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify(assistantData));
+            } catch (e) {
+                console.error("Proxy Error:", e);
+                res.writeHead(500);
+                return res.end(JSON.stringify({ error: "Failed to bridge to main app" }));
+            }
+        });
+        return;
     }
 
     // ✅ Token endpoint
