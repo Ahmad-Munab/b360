@@ -9,6 +9,7 @@ import {
   json,
   decimal,
   uuid,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { AdapterAccount } from "next-auth/adapters";
@@ -230,7 +231,7 @@ export const agent = pgTable("agent", {
     .notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  phoneNumber: text("phone_number"),
+  phoneNumber: text("phone_number").unique(),
   phoneSid: text("phone_sid"), // Twilio SID
   vapiPhoneNumberId: text("vapi_phone_number_id"), // Vapi phone number ID for inbound call routing
   clientId: text("client_id").unique(), // Twilio Client identity (e.g., client:name)
@@ -265,6 +266,12 @@ export const callLogs = pgTable("call_logs", {
   status: text("status"), // 'completed', 'failed', etc.
   recordingUrl: text("recording_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    agentIdIdx: index("call_logs_agent_id_idx").on(table.agentId),
+    vapiCallIdIdx: index("call_logs_vapi_call_id_idx").on(table.vapiCallId),
+    createdAtIdx: index("call_logs_created_at_idx").on(table.createdAt),
+  };
 });
 
 export const callLogsRelations = relations(callLogs, ({ one, many }) => ({
@@ -288,6 +295,11 @@ export const bookings = pgTable("bookings", {
   status: text("status").default("confirmed").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    bookingsAgentIdIdx: index("bookings_agent_id_idx").on(table.agentId),
+    bookingsCallLogIdIdx: index("bookings_call_log_id_idx").on(table.callLogId),
+  };
 });
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({

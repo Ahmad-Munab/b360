@@ -45,13 +45,13 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({
             vapiPublicKey: process.env.VAPI_PUBLIC_API_KEY || "your-public-key",
-            baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "https://chafflike-weightily-clarita.ngrok-free.dev"
+            baseUrl: process.env.NEXT_PUBLIC_APP_URL
         }));
     }
 
     // ✅ Proxy to get real agents from the main app
     if (req.method === "GET" && req.url === "/api/agents") {
-        const tunnelUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://chafflike-weightily-clarita.ngrok-free.dev";
+        const tunnelUrl = process.env.NEXT_PUBLIC_APP_URL;
         try {
             const agentRes = await fetch(`${tunnelUrl}/api/vapi/agents-list`);
             const agentData = await agentRes.json();
@@ -66,7 +66,7 @@ const server = http.createServer(async (req, res) => {
 
     // ✅ Proxy to get assistant config
     if (req.method === "POST" && req.url === "/api/assistant") {
-        const tunnelUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://chafflike-weightily-clarita.ngrok-free.dev";
+        const tunnelUrl = process.env.NEXT_PUBLIC_APP_URL;
         let body = "";
         req.on("data", chunk => { body += chunk; });
         req.on("end", async () => {

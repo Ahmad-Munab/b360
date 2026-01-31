@@ -229,10 +229,12 @@ function CallLogCard({ log }: { log: CallLog }) {
                         {/* Summary preview */}
                         {log.summary && (
                             <div className="mt-4 pt-4 border-t border-gray-100">
-                                <p className="text-sm text-gray-600 line-clamp-2">
-                                    <span className="font-medium text-gray-700">Summary: </span>
-                                    {log.summary}
-                                </p>
+                                <div>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block">AI Summary</span>
+                                    <div className="text-sm text-gray-600 prose prose-sm max-w-none prose-p:my-0 prose-ul:my-0 prose-li:my-0 [&>*]:my-0 line-clamp-3 leading-relaxed">
+                                        <ReactMarkdown>{log.summary}</ReactMarkdown>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </CardContent>

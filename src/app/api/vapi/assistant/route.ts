@@ -1,79 +1,35 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { agent } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getBaseUrl } from "@/lib/utils";
+import { createBookingTool, endCallTool } from "@/lib/vapi-tools";
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
     try {
-        const body = await request.json();
+        const body = await req.json();
         const { agentId } = body;
 
         if (!agentId) {
-            return NextResponse.json({ error: "agentId is required" }, { status: 400 });
+            return NextResponse.json({ error: "Agent ID is required" }, { status: 400 });
         }
 
-        // Fetch agent from DB
+        // Get the agent details
         const currentAgent = await db.query.agent.findFirst({
-            where: eq(agent.id, agentId)
+            where: eq(agent.id, agentId),
+            with: {
+                user: true
+            }
         });
 
         if (!currentAgent) {
             return NextResponse.json({ error: "Agent not found" }, { status: 404 });
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+        const baseUrl = getBaseUrl(req);
 
-        // Define booking tool for real-time appointment scheduling
-        const bookingTool = {
-            type: "function",
-            function: {
-                name: "book_appointment",
-                description: "Book an appointment or schedule a meeting for the customer. Use this when the customer wants to make a reservation or schedule a service.",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        customer_name: {
-                            type: "string",
-                            description: "The customer's full name"
-                        },
-                        customer_email: {
-                            type: "string",
-                            description: "The customer's email address for confirmation"
-                        },
-                        customer_phone: {
-                            type: "string",
-                            description: "The customer's phone number"
-                        },
-                        booking_date: {
-                            type: "string",
-                            description: "The date and time for the appointment (e.g., 'tomorrow at 2pm', 'next Monday at 10am', '2024-01-15 14:00')"
-                        },
-                        service_details: {
-                            type: "string",
-                            description: "Description of the service or reason for the appointment"
-                        }
-                    },
-                    required: ["customer_name", "booking_date"]
-                }
-            },
-            server: {
-                url: `${baseUrl}/api/vapi/tool-calls`,
-                timeoutSeconds: 30,
-                // Include agentId in server metadata so tool-calls endpoint receives it
-                secret: currentAgent.id // Use secret field to pass agentId
-            }
-        };
-
-        // End call tool - allows AI to end the call gracefully
-        const endCallTool = {
-            type: "endCall",
-            messages: [
-                {
-                    type: "request-start",
-                    content: "Thank you for calling! Have a wonderful day. Goodbye!"
-                }
-            ]
-        };
+        // Define booking tool for this tenant
+        const bookingTool = createBookingTool(baseUrl, currentAgent.id);
 
         console.log("🔧 Booking tool URL:", `${baseUrl}/api/vapi/tool-calls`);
 
