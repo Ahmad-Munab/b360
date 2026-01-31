@@ -21,36 +21,140 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Agent not found" }, { status: 404 });
         }
 
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+        // Define booking tool for real-time appointment scheduling
+        const bookingTool = {
+            type: "function",
+            function: {
+                name: "book_appointment",
+                description: "Book an appointment or schedule a meeting for the customer. Use this when the customer wants to make a reservation or schedule a service.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        customer_name: {
+                            type: "string",
+                            description: "The customer's full name"
+                        },
+                        customer_email: {
+                            type: "string",
+                            description: "The customer's email address for confirmation"
+                        },
+                        customer_phone: {
+                            type: "string",
+                            description: "The customer's phone number"
+                        },
+                        booking_date: {
+                            type: "string",
+                            description: "The date and time for the appointment (e.g., 'tomorrow at 2pm', 'next Monday at 10am', '2024-01-15 14:00')"
+                        },
+                        service_details: {
+                            type: "string",
+                            description: "Description of the service or reason for the appointment"
+                        }
+                    },
+                    required: ["customer_name", "booking_date"]
+                }
+            },
+            server: {
+                url: `${baseUrl}/api/vapi/tool-calls`,
+                timeoutSeconds: 30,
+                // Include agentId in server metadata so tool-calls endpoint receives it
+                secret: currentAgent.id // Use secret field to pass agentId
+            }
+        };
+
+        console.log("🔧 Booking tool URL:", `${baseUrl}/api/vapi/tool-calls`);
+
         // Construct Vapi Assistant Config
-        const assistant = {
+        const assistant: Record<string, unknown> = {
             name: currentAgent.name,
-            firstMessage: currentAgent.welcomeMessage || "Hello!",
+            firstMessage: currentAgent.welcomeMessage || "Hello! How can I help you today?",
             transcriber: {
                 provider: "deepgram",
                 model: "nova-2",
                 language: "en-US",
             },
             voice: {
-                provider: "11labs",
-                voiceId: "rachel", // Rachel is a very reliable default voice
+                provider: "vapi",
+                voiceId: currentAgent.voice === "male" ? "Elliot" : "Hailey",
             },
             model: {
-                provider: "openai",
-                model: "gpt-3.5-turbo",
+                provider: "groq",
+                model: "llama-3.3-70b-versatile",
+                temperature: 0.7,
+                tools: [bookingTool],
                 messages: [
                     {
                         role: "system",
-                        content: `You are a helpful AI assistant representing a platform called B360. 
-                        Context about the business: ${currentAgent.businessContext || "No context provided."}
-                        Business Type: ${currentAgent.businessType || "General"}
-                        Availability: ${currentAgent.availabilityContext || "Standard business hours."}
-                        Your goal is to assist callers professionally and save their details as leads if necessary.`
+                        content: `You are a professional and friendly AI Voice Assistant for ${currentAgent.name}. Your primary goal is to assist callers efficiently while providing an excellent customer experience.
+
+## About the Business
+${currentAgent.businessContext || "We provide professional services to our valued customers."}
+
+## Business Type
+${currentAgent.businessType || "General Services"}
+
+## Availability
+${currentAgent.availabilityContext || "Standard business hours."}
+
+## Your Capabilities
+You can help callers with:
+- Answering questions about our services
+- **Booking appointments** - Use the book_appointment tool when customers want to schedule
+- Providing business information
+- Taking messages for follow-up
+
+## Booking Appointments
+When a customer wants to book an appointment:
+1. Ask for their preferred date and time
+2. Confirm what service or purpose they need
+3. Get their full name (required)
+4. Ask for their email or phone number for confirmation
+5. Use the book_appointment tool to save the booking
+6. Confirm the booking details back to them
+
+## Communication Guidelines
+- Speak naturally and conversationally
+- Be warm, professional, and helpful
+- Keep responses concise - this is a phone call
+- Confirm important details by repeating them back`
                     }
                 ],
             },
+            serverUrl: `${baseUrl}/api/vapi/webhook`,
+            silenceTimeoutSeconds: 30,
+            maxDurationSeconds: 600,
+            metadata: {
+                agentId: currentAgent.id,
+            }
         };
 
-        console.log("🚀 Generated Assistant Config:", JSON.stringify(assistant, null, 2));
+        // Add provider credentials from env variables
+        const credentials: Array<{ provider: string; apiKey: string }> = [];
+
+        if (process.env.GROQ_API_KEY) {
+            credentials.push({
+                provider: "groq",
+                apiKey: process.env.GROQ_API_KEY
+            });
+        }
+
+        if (process.env.DEEPGRAM_API_KEY) {
+            credentials.push({
+                provider: "deepgram",
+                apiKey: process.env.DEEPGRAM_API_KEY
+            });
+        }
+
+        if (credentials.length > 0) {
+            assistant.credentials = credentials;
+        }
+
+        console.log("🚀 Generated Assistant Config:", JSON.stringify({
+            ...assistant,
+            credentials: credentials.length > 0 ? `[${credentials.length} credentials]` : undefined
+        }, null, 2));
 
         return NextResponse.json(assistant);
     } catch (error) {

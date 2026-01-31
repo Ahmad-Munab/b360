@@ -1,61 +1,130 @@
 import { db } from "@/lib/db";
-import { callLogs, bookings } from "@/db/schema";
+import { callLogs, bookings, agent } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { sendBookingNotification } from "@/lib/email";
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        console.log("Vapi Webhook Received:", JSON.stringify(body, null, 2));
-
         const { message } = body;
 
-        // We only care about the end-of-call-report
+        // Only handle end-of-call-report
         if (message?.type !== "end-of-call-report") {
             return NextResponse.json({ received: true });
         }
 
         const { call, artifact, analysis, customer } = message;
+
+        // Try to get agentId from multiple possible locations
         const metadata = call?.metadata || {};
-        const agentId = metadata.agentId;
+        const assistantMetadata = call?.assistant?.metadata || {};
+        const agentId = metadata.agentId ||
+            assistantMetadata.agentId ||
+            call?.assistantId ||
+            message?.assistant?.metadata?.agentId;
 
         if (!agentId) {
-            console.warn("Vapi webhook received without agentId in metadata");
-            return NextResponse.json({ error: "Missing agentId" }, { status: 400 });
+            console.warn("Webhook received without agentId");
+            return NextResponse.json({ received: true, warning: "Missing agentId" });
         }
 
-        // 1. Save the Call Log
-        const [savedCallLog] = await db
-            .insert(callLogs)
-            .values({
-                agentId: agentId,
-                callSid: call.twilioCallSid || null,
-                vapiCallId: call.id,
-                callerNumber: customer?.number || null,
-                duration: call.duration ? Math.round(call.duration) : 0,
-                summary: analysis?.summary || null,
-                transcript: artifact?.transcript || null,
-                status: call.status || "completed",
-                recordingUrl: artifact?.recordingUrl || null,
+        // Fetch agent details
+        const currentAgent = await db.query.agent.findFirst({
+            where: eq(agent.id, agentId),
+        });
+
+        if (!currentAgent) {
+            console.error(`Agent not found: ${agentId}`);
+            return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+        }
+
+        // Calculate duration - try multiple sources
+        let duration = call?.duration || call?.durationSeconds || 0;
+        if (!duration && call?.startedAt && call?.endedAt) {
+            duration = Math.round((new Date(call.endedAt).getTime() - new Date(call.startedAt).getTime()) / 1000);
+        }
+        // Fallback: estimate ~3 seconds per message exchange
+        if (!duration && artifact?.messages?.length) {
+            duration = Math.round(artifact.messages.length * 3);
+        }
+
+        // Determine call status - prioritize meaningful values
+        const callStatus = call?.endedReason ||
+            (call?.status === "queued" ? "completed" : call?.status) ||
+            "completed";
+
+        // Check if call log already exists (created during tool-calls)
+        const existingLog = call?.id
+            ? await db.query.callLogs.findFirst({
+                where: eq(callLogs.vapiCallId, call.id),
             })
-            .returning();
+            : null;
 
-        // 2. Extract and Save Booking if present in structuredData
-        // We assume the assistant is configured to extract service details, date, name, etc.
+        let savedCallLog;
+        if (existingLog) {
+            // Update existing log with final details
+            const [updated] = await db
+                .update(callLogs)
+                .set({
+                    callSid: call?.twilioCallSid || existingLog.callSid,
+                    duration: duration || existingLog.duration,
+                    summary: analysis?.summary || existingLog.summary,
+                    transcript: artifact?.transcript || existingLog.transcript,
+                    status: callStatus,
+                    recordingUrl: artifact?.recordingUrl || existingLog.recordingUrl,
+                })
+                .where(eq(callLogs.id, existingLog.id))
+                .returning();
+            savedCallLog = updated;
+        } else {
+            // Create new call log
+            const [created] = await db
+                .insert(callLogs)
+                .values({
+                    agentId: agentId,
+                    callSid: call?.twilioCallSid || null,
+                    vapiCallId: call?.id,
+                    callerNumber: customer?.number || null,
+                    duration: duration,
+                    summary: analysis?.summary || null,
+                    transcript: artifact?.transcript || null,
+                    status: callStatus,
+                    recordingUrl: artifact?.recordingUrl || null,
+                })
+                .returning();
+            savedCallLog = created;
+        }
+
+        // Extract and save booking if present in structuredData (fallback)
         const structuredData = analysis?.structuredData;
-
         if (structuredData && (structuredData.bookingDate || structuredData.booking_date)) {
-            console.log("Booking found in structured data:", structuredData);
+            const bookingDate = structuredData.bookingDate || structuredData.booking_date
+                ? new Date(structuredData.bookingDate || structuredData.booking_date)
+                : null;
+
+            const bookingData = {
+                customerName: structuredData.customerName || structuredData.customer_name || null,
+                customerEmail: structuredData.customerEmail || structuredData.customer_email || null,
+                customerPhone: structuredData.customerPhone || structuredData.customer_phone || customer?.number || null,
+                bookingDate: bookingDate,
+                serviceDetails: structuredData.serviceDetails || structuredData.service_details || null,
+            };
 
             await db.insert(bookings).values({
                 agentId: agentId,
                 callLogId: savedCallLog.id,
-                customerName: structuredData.customerName || structuredData.customer_name || null,
-                customerEmail: structuredData.customerEmail || structuredData.customer_email || null,
-                customerPhone: structuredData.customerPhone || structuredData.customer_phone || customer?.number || null,
-                bookingDate: structuredData.bookingDate || structuredData.booking_date ? new Date(structuredData.bookingDate || structuredData.booking_date) : null,
-                serviceDetails: structuredData.serviceDetails || structuredData.service_details || structuredData.summary || null,
+                ...bookingData,
                 status: "confirmed",
             });
+
+            // Send email notification
+            if (currentAgent.adminEmail) {
+                await sendBookingNotification(currentAgent.adminEmail, {
+                    ...bookingData,
+                    agentName: currentAgent.name,
+                });
+            }
         }
 
         return NextResponse.json({ success: true });

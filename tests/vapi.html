@@ -236,6 +236,12 @@
                 const assistant = await res.json();
                 if (assistant.error) throw new Error(assistant.error);
 
+                // Ensure metadata contains agentId for webhook tracking
+                assistant.metadata = {
+                    ...assistant.metadata,
+                    agentId: agentId
+                };
+
                 addLog("🎨 Config fetched, starting call...");
                 console.log("📤 Sending Assistant Config to Vapi:", assistant);
                 vapiInstance.start(assistant);

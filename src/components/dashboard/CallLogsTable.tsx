@@ -1,25 +1,41 @@
 "use client";
 
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { Eye, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { format, isToday, isThisWeek, isThisMonth, subDays } from "date-fns";
+import {
+    Phone,
+    Clock,
+    FileText,
+    ChevronRight,
+    ChevronLeft,
+    MessageSquare,
+    Mic,
+    Calendar,
+    Search,
+    Filter,
+    Copy,
+    Check,
+    RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CallLog {
     id: string;
@@ -28,80 +44,483 @@ interface CallLog {
     summary: string | null;
     transcript: string | null;
     status: string | null;
+    recordingUrl: string | null;
     createdAt: string;
 }
 
-export function CallLogsTable({ logs }: { logs: CallLog[] }) {
+interface CallLogsTableProps {
+    logs: CallLog[];
+    onRefresh?: () => void;
+}
+
+function formatDuration(seconds: number | null): string {
+    if (!seconds || seconds === 0) return "< 1s";
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+}
+
+function getStatusConfig(status: string | null) {
+    const normalizedStatus = status?.toLowerCase() || "unknown";
+
+    if (normalizedStatus.includes("completed") || normalizedStatus === "assistant-ended" || normalizedStatus === "ended") {
+        return { label: "Completed", className: "bg-green-100 text-green-700 border-green-200", value: "completed" };
+    }
+    if (normalizedStatus.includes("user-ended") || normalizedStatus === "hangup") {
+        return { label: "Ended", className: "bg-blue-100 text-blue-700 border-blue-200", value: "ended" };
+    }
+    if (normalizedStatus.includes("failed") || normalizedStatus.includes("error")) {
+        return { label: "Failed", className: "bg-red-100 text-red-700 border-red-200", value: "failed" };
+    }
+    if (normalizedStatus.includes("in-progress") || normalizedStatus === "queued") {
+        return { label: "In Progress", className: "bg-yellow-100 text-yellow-700 border-yellow-200", value: "in-progress" };
+    }
+    return { label: status || "Unknown", className: "bg-gray-100 text-gray-700 border-gray-200", value: "unknown" };
+}
+
+/**
+ * Parse transcript from various Vapi formats
+ */
+function parseTranscript(transcript: string | null): Array<{ role: "ai" | "user" | "system"; text: string }> {
+    if (!transcript) return [];
+
+    const messages: Array<{ role: "ai" | "user" | "system"; text: string }> = [];
+    const lines = transcript.split('\n').filter(line => line.trim());
+
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+
+        // Format 1: "AI: text" or "User: text"
+        if (/^AI:\s*/i.test(trimmedLine)) {
+            messages.push({ role: "ai", text: trimmedLine.replace(/^AI:\s*/i, '') });
+        } else if (/^User:\s*/i.test(trimmedLine)) {
+            messages.push({ role: "user", text: trimmedLine.replace(/^User:\s*/i, '') });
+        }
+        // Format 2: "assistant: text" or "user: text"
+        else if (/^assistant:\s*/i.test(trimmedLine)) {
+            messages.push({ role: "ai", text: trimmedLine.replace(/^assistant:\s*/i, '') });
+        } else if (/^user:\s*/i.test(trimmedLine)) {
+            messages.push({ role: "user", text: trimmedLine.replace(/^user:\s*/i, '') });
+        }
+        // Format 3: "[AI]" or "[User]" prefixes
+        else if (/^\[AI\]/i.test(trimmedLine)) {
+            messages.push({ role: "ai", text: trimmedLine.replace(/^\[AI\]\s*/i, '') });
+        } else if (/^\[User\]/i.test(trimmedLine)) {
+            messages.push({ role: "user", text: trimmedLine.replace(/^\[User\]\s*/i, '') });
+        }
+        // Format 4: Check for speaker labels with timestamps like "Speaker 1 (00:05):"
+        else if (/^Speaker\s*1/i.test(trimmedLine)) {
+            messages.push({ role: "ai", text: trimmedLine.replace(/^Speaker\s*1[^:]*:\s*/i, '') });
+        } else if (/^Speaker\s*2/i.test(trimmedLine)) {
+            messages.push({ role: "user", text: trimmedLine.replace(/^Speaker\s*2[^:]*:\s*/i, '') });
+        }
+        // Format 5: Plain text - alternate between AI and User
+        else {
+            // Check if last message was AI, then this is User, and vice versa
+            const lastRole = messages.length > 0 ? messages[messages.length - 1].role : "user";
+            messages.push({ role: lastRole === "ai" ? "user" : "ai", text: trimmedLine });
+        }
+    }
+
+    return messages;
+}
+
+function TranscriptDisplay({ transcript }: { transcript: string | null }) {
+    const [copied, setCopied] = useState(false);
+    const messages = parseTranscript(transcript);
+
+    const copyTranscript = () => {
+        if (transcript) {
+            navigator.clipboard.writeText(transcript);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    if (!transcript || messages.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <MessageSquare className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500 italic">No transcript available for this call.</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Caller</TableHead>
-                        <TableHead>Duration</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {logs.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                                No call logs found yet.
-                            </TableCell>
-                        </TableRow>
-                    ) : (
-                        logs.map((log) => (
-                            <TableRow key={log.id}>
-                                <TableCell className="font-medium flex items-center">
-                                    <Phone className="mr-2 h-4 w-4 text-gray-400" />
-                                    {log.callerNumber || "Anonymous"}
-                                </TableCell>
-                                <TableCell>{log.duration ? `${log.duration}s` : "0s"}</TableCell>
-                                <TableCell>
-                                    <Badge variant={log.status === "completed" ? "default" : "secondary"}>
-                                        {log.status || "Unknown"}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>{format(new Date(log.createdAt), "MMM d, h:mm a")}</TableCell>
-                                <TableCell className="text-right">
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button variant="ghost" size="sm">
-                                                <Eye className="h-4 w-4 mr-1" />
-                                                Details
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                                            <DialogHeader>
-                                                <DialogTitle>Call Details - {log.callerNumber}</DialogTitle>
-                                                <DialogDescription>
-                                                    {format(new Date(log.createdAt), "MMMM d, yyyy 'at' h:mm a")}
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="space-y-6 mt-4">
-                                                <div>
-                                                    <h4 className="text-sm font-semibold mb-2">Summary</h4>
-                                                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">
-                                                        {log.summary || "No summary available."}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-sm font-semibold mb-2">Transcript</h4>
-                                                    <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md whitespace-pre-wrap max-h-60 overflow-y-auto italic">
-                                                        {log.transcript || "No transcript available."}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
-                                </TableCell>
-                            </TableRow>
-                        ))
+        <div>
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-gray-500">{messages.length} messages</span>
+                <Button variant="outline" size="sm" onClick={copyTranscript}>
+                    {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
+                    {copied ? "Copied!" : "Copy"}
+                </Button>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 max-h-[50vh] overflow-y-auto space-y-3">
+                {messages.map((msg, index) => (
+                    <div
+                        key={index}
+                        className={cn(
+                            "p-4 rounded-xl text-sm",
+                            msg.role === "ai" && "bg-indigo-50 border-l-4 border-indigo-400 ml-0 mr-12",
+                            msg.role === "user" && "bg-green-50 border-l-4 border-green-400 ml-12 mr-0",
+                            msg.role === "system" && "bg-gray-100 mx-6"
+                        )}
+                    >
+                        <span className={cn(
+                            "font-semibold text-xs uppercase tracking-wide block mb-2",
+                            msg.role === "ai" && "text-indigo-600",
+                            msg.role === "user" && "text-green-600",
+                            msg.role === "system" && "text-gray-600"
+                        )}>
+                            {msg.role === "ai" ? "🤖 AI Assistant" : msg.role === "user" ? "👤 Caller" : "📋 System"}
+                        </span>
+                        <span className="text-gray-700 leading-relaxed">{msg.text}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function CallLogCard({ log }: { log: CallLog }) {
+    const statusConfig = getStatusConfig(log.status);
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all duration-200 group border-2">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            {/* Left side - Caller info */}
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                                    <Phone className="h-6 w-6 text-white" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-lg text-gray-900">
+                                        {log.callerNumber || "Web Call"}
+                                    </p>
+                                    <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                        <Calendar className="h-4 w-4" />
+                                        {format(new Date(log.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right side - Stats */}
+                            <div className="flex items-center gap-6">
+                                <div className="text-right hidden sm:block">
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <Clock className="h-5 w-5 text-indigo-500" />
+                                        <span className="font-bold text-lg">{formatDuration(log.duration)}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">Duration</p>
+                                </div>
+                                <Badge className={cn("font-semibold text-sm px-4 py-1.5", statusConfig.className)}>
+                                    {statusConfig.label}
+                                </Badge>
+                                <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                            </div>
+                        </div>
+
+                        {/* Summary preview */}
+                        {log.summary && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <p className="text-sm text-gray-600 line-clamp-2">
+                                    <span className="font-medium text-gray-700">Summary: </span>
+                                    {log.summary}
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </DialogTrigger>
+
+            {/* Full Details Dialog */}
+            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                            <Phone className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <span className="block">Call Details</span>
+                            <span className="text-sm font-normal text-gray-500">
+                                {log.callerNumber || "Web Call"} • {format(new Date(log.createdAt), "MMMM d, yyyy 'at' h:mm a")}
+                            </span>
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-6 mt-4">
+                    {/* Quick Stats Row */}
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-gray-50 rounded-lg p-4 text-center">
+                            <Clock className="h-5 w-5 mx-auto text-blue-600 mb-1" />
+                            <p className="text-lg font-bold text-gray-900">{formatDuration(log.duration)}</p>
+                            <p className="text-xs text-gray-500">Duration</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4 text-center">
+                            <Badge className={cn("mx-auto", statusConfig.className)}>
+                                {statusConfig.label}
+                            </Badge>
+                            <p className="text-xs text-gray-500 mt-2">Status</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4 text-center">
+                            <Calendar className="h-5 w-5 mx-auto text-purple-600 mb-1" />
+                            <p className="text-sm font-bold text-gray-900">{format(new Date(log.createdAt), "MMM d")}</p>
+                            <p className="text-xs text-gray-500">{format(new Date(log.createdAt), "h:mm a")}</p>
+                        </div>
+                    </div>
+
+                    {/* Recording Player */}
+                    {log.recordingUrl && (
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-100">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <Mic className="h-4 w-4 text-indigo-600" />
+                                </div>
+                                <h4 className="font-semibold text-gray-900">Call Recording</h4>
+                            </div>
+                            <audio
+                                controls
+                                className="w-full rounded-lg"
+                                src={log.recordingUrl}
+                            >
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
                     )}
-                </TableBody>
-            </Table>
+
+                    {/* AI Summary */}
+                    <div className="bg-white rounded-xl border p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <FileText className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900">AI Summary</h4>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {log.summary || "No summary was generated for this call."}
+                        </p>
+                    </div>
+
+                    {/* Full Transcript */}
+                    <div className="bg-white rounded-xl border p-5">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                <MessageSquare className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900">Conversation Transcript</h4>
+                        </div>
+                        <TranscriptDisplay transcript={log.transcript} />
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
+    // Filter state
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [dateFilter, setDateFilter] = useState<string>("all");
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const logsPerPage = 10;
+
+    // Apply filters
+    const filteredLogs = useMemo(() => {
+        return logs.filter(log => {
+            // Search filter
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const matchesCaller = log.callerNumber?.toLowerCase().includes(query);
+                const matchesSummary = log.summary?.toLowerCase().includes(query);
+                if (!matchesCaller && !matchesSummary) return false;
+            }
+
+            // Status filter
+            if (statusFilter !== "all") {
+                const logStatusValue = getStatusConfig(log.status).value;
+                if (logStatusValue !== statusFilter) return false;
+            }
+
+            // Date filter
+            if (dateFilter !== "all") {
+                const logDate = new Date(log.createdAt);
+                if (dateFilter === "today" && !isToday(logDate)) return false;
+                if (dateFilter === "week" && !isThisWeek(logDate)) return false;
+                if (dateFilter === "month" && !isThisMonth(logDate)) return false;
+            }
+
+            return true;
+        });
+    }, [logs, searchQuery, statusFilter, dateFilter]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+    const paginatedLogs = filteredLogs.slice(
+        (currentPage - 1) * logsPerPage,
+        currentPage * logsPerPage
+    );
+
+    // Reset to page 1 when filters change
+    const handleFilterChange = (type: "search" | "status" | "date", value: string) => {
+        setCurrentPage(1);
+        if (type === "search") setSearchQuery(value);
+        else if (type === "status") setStatusFilter(value);
+        else if (type === "date") setDateFilter(value);
+    };
+
+    if (logs.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mb-4">
+                    <Phone className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">No Calls Yet</h3>
+                <p className="text-gray-500 max-w-sm">
+                    When your AI agent handles calls, they will appear here with full details and recordings.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            {/* Filters Bar */}
+            <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-xl border">
+                <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <Input
+                        placeholder="Search caller or summary..."
+                        value={searchQuery}
+                        onChange={(e) => handleFilterChange("search", e.target.value)}
+                        className="border-0 bg-white shadow-sm"
+                    />
+                </div>
+
+                <Select value={statusFilter} onValueChange={(v) => handleFilterChange("status", v)}>
+                    <SelectTrigger className="w-[140px] bg-white">
+                        <Filter className="h-4 w-4 mr-2 text-gray-400" />
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="ended">Ended</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select value={dateFilter} onValueChange={(v) => handleFilterChange("date", v)}>
+                    <SelectTrigger className="w-[140px] bg-white">
+                        <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                        <SelectValue placeholder="Date" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Time</SelectItem>
+                        <SelectItem value="today">Today</SelectItem>
+                        <SelectItem value="week">This Week</SelectItem>
+                        <SelectItem value="month">This Month</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                {onRefresh && (
+                    <Button variant="outline" size="icon" onClick={onRefresh}>
+                        <RefreshCw className="h-4 w-4" />
+                    </Button>
+                )}
+            </div>
+
+            {/* Results Count */}
+            <div className="flex items-center justify-between text-sm text-gray-500 px-1">
+                <span>
+                    Showing {paginatedLogs.length} of {filteredLogs.length} calls
+                    {filteredLogs.length !== logs.length && ` (filtered from ${logs.length})`}
+                </span>
+            </div>
+
+            {/* Call Log Cards */}
+            {paginatedLogs.length === 0 ? (
+                <div className="text-center py-12">
+                    <Search className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                    <p className="text-gray-500">No calls match your filters.</p>
+                    <Button
+                        variant="link"
+                        onClick={() => {
+                            setSearchQuery("");
+                            setStatusFilter("all");
+                            setDateFilter("all");
+                        }}
+                    >
+                        Clear filters
+                    </Button>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {paginatedLogs.map((log) => (
+                        <CallLogCard key={log.id} log={log} />
+                    ))}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 pt-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum: number;
+                            if (totalPages <= 5) {
+                                pageNum = i + 1;
+                            } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                            } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                            } else {
+                                pageNum = currentPage - 2 + i;
+                            }
+                            return (
+                                <Button
+                                    key={pageNum}
+                                    variant={currentPage === pageNum ? "default" : "outline"}
+                                    size="sm"
+                                    className="w-9 h-9"
+                                    onClick={() => setCurrentPage(pageNum)}
+                                >
+                                    {pageNum}
+                                </Button>
+                            );
+                        })}
+                    </div>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

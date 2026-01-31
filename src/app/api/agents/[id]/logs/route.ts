@@ -25,11 +25,10 @@ export async function GET(
             return NextResponse.json({ error: "Agent not found" }, { status: 404 });
         }
 
-        // Fetch logs
+        // Fetch logs - load all for client-side filtering/pagination
         const logs = await db.query.callLogs.findMany({
             where: eq(callLogs.agentId, agentId),
             orderBy: [desc(callLogs.createdAt)],
-            limit: 50,
         });
 
         // Fetch bookings
@@ -47,10 +46,22 @@ export async function GET(
             .from(callLogs)
             .where(eq(callLogs.agentId, agentId));
 
+        // Count completed calls for success rate
+        const completedResult = await db
+            .select({
+                count: sql<number>`count(*)`,
+            })
+            .from(callLogs)
+            .where(and(
+                eq(callLogs.agentId, agentId),
+                sql`LOWER(${callLogs.status}) LIKE '%completed%' OR LOWER(${callLogs.status}) LIKE '%ended%' OR LOWER(${callLogs.status}) = 'assistant-ended'`
+            ));
+
         const stats = {
             totalCalls: Number(statsResult[0]?.totalCalls || 0),
             avgDuration: Math.round(Number(statsResult[0]?.avgDuration || 0)),
             totalBookings: agentBookings.length,
+            completedCalls: Number(completedResult[0]?.count || 0),
         };
 
         return NextResponse.json({

@@ -32,8 +32,9 @@ export default function AgentViewPage({
 
     const [logs, setLogs] = useState<any[]>([]);
     const [bookings, setBookings] = useState<any[]>([]);
-    const [stats, setStats] = useState({ totalCalls: 0, avgDuration: 0, totalBookings: 0 });
+    const [stats, setStats] = useState({ totalCalls: 0, avgDuration: 0, totalBookings: 0, completedCalls: 0 });
     const [isLogsLoading, setIsLogsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState("overview");
 
     useEffect(() => {
         fetchAgents();
@@ -157,7 +158,7 @@ export default function AgentViewPage({
             </div>
 
             {/* Agent Details */}
-            <Tabs defaultValue="overview" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                 <TabsList className="bg-gray-100 p-1">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="logs">Call Logs</TabsTrigger>
@@ -207,8 +208,8 @@ export default function AgentViewPage({
                         <Card className="md:col-span-2">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="text-lg">Recent Call Logs</CardTitle>
-                                <Button variant="link" onClick={() => (document.querySelector('[value="logs"]') as any)?.click()}>
-                                    View All
+                                <Button variant="link" onClick={() => setActiveTab("logs")}>
+                                    View All →
                                 </Button>
                             </CardHeader>
                             <CardContent>
@@ -227,7 +228,7 @@ export default function AgentViewPage({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <CallLogsTable logs={logs} />
+                            <CallLogsTable logs={logs} onRefresh={fetchLogs} />
                         </CardContent>
                     </Card>
                 </TabsContent>
