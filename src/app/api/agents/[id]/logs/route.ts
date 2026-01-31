@@ -47,6 +47,8 @@ export async function GET(
             .where(eq(callLogs.agentId, agentId));
 
         // Count completed calls for success rate
+        // Vapi uses endedReason values like: customer-ended, assistant-ended, user-hangup, etc.
+        // Any call that's not 'failed' or 'error' is considered successful
         const completedResult = await db
             .select({
                 count: sql<number>`count(*)`,
@@ -54,7 +56,10 @@ export async function GET(
             .from(callLogs)
             .where(and(
                 eq(callLogs.agentId, agentId),
-                sql`LOWER(${callLogs.status}) LIKE '%completed%' OR LOWER(${callLogs.status}) LIKE '%ended%' OR LOWER(${callLogs.status}) = 'assistant-ended'`
+                sql`${callLogs.status} IS NOT NULL 
+                    AND LOWER(${callLogs.status}) NOT LIKE '%failed%' 
+                    AND LOWER(${callLogs.status}) NOT LIKE '%error%'
+                    AND LOWER(${callLogs.status}) NOT LIKE '%no-answer%'`
             ));
 
         const stats = {

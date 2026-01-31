@@ -64,6 +64,17 @@ export async function POST(request: NextRequest) {
             }
         };
 
+        // End call tool - allows AI to end the call gracefully
+        const endCallTool = {
+            type: "endCall",
+            messages: [
+                {
+                    type: "request-start",
+                    content: "Thank you for calling! Have a wonderful day. Goodbye!"
+                }
+            ]
+        };
+
         console.log("🔧 Booking tool URL:", `${baseUrl}/api/vapi/tool-calls`);
 
         // Construct Vapi Assistant Config
@@ -83,7 +94,7 @@ export async function POST(request: NextRequest) {
                 provider: "groq",
                 model: "llama-3.3-70b-versatile",
                 temperature: 0.7,
-                tools: [bookingTool],
+                tools: [bookingTool, endCallTool],
                 messages: [
                     {
                         role: "system",
@@ -138,6 +149,10 @@ Example email confirmation:
             serverUrl: `${baseUrl}/api/vapi/webhook`,
             silenceTimeoutSeconds: 30,
             maxDurationSeconds: 600,
+            // Message spoken before ending the call
+            endCallMessage: "Thank you for calling! Have a wonderful day. Goodbye!",
+            // Phrases that trigger call end when spoken by assistant
+            endCallPhrases: ["goodbye", "have a great day", "bye bye", "talk to you later"],
             metadata: {
                 agentId: currentAgent.id,
             }

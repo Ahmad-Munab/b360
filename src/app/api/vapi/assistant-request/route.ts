@@ -129,6 +129,17 @@ export async function POST(req: Request) {
             }
         };
 
+        // End call tool - allows AI to end the call gracefully
+        const endCallTool = {
+            type: "endCall",
+            messages: [
+                {
+                    type: "request-start",
+                    content: "Thank you for calling! Have a wonderful day. Goodbye!"
+                }
+            ]
+        };
+
         // Build the transient assistant configuration for this tenant
         const assistant = {
             name: currentAgent.name,
@@ -146,7 +157,7 @@ export async function POST(req: Request) {
                 provider: "groq",
                 model: "llama-3.3-70b-versatile",
                 temperature: 0.7,
-                tools: [bookingTool],
+                tools: [bookingTool, endCallTool],
                 messages: [{
                     role: "system",
                     content: `You are a professional and friendly AI Voice Assistant for ${currentAgent.name}. Your primary goal is to assist callers efficiently while providing an excellent customer experience.
@@ -188,6 +199,12 @@ Email addresses are difficult to capture accurately over voice. Follow these rul
 Example email confirmation:
 "Let me confirm your email. That's M-A-H-M-U-D dot H-A-S-A-N 8-4-8 at gmail dot com. Is that correct?"
 
+## Ending Calls
+- When the conversation is naturally complete, say goodbye and use the end_call tool
+- If the customer says "bye", "goodbye", "that's all", or similar, end the call
+- After completing a booking, ask if there's anything else, then end if nothing more needed
+- Always be polite: "Thank you for calling! Have a great day. Goodbye."
+
 ## Communication Guidelines
 - Speak naturally and conversationally
 - Be warm, professional, and helpful
@@ -199,6 +216,10 @@ Example email confirmation:
             serverUrl: `${baseUrl}/api/vapi/webhook`,
             silenceTimeoutSeconds: 30,
             maxDurationSeconds: 600,
+            // Message spoken before ending the call
+            endCallMessage: "Thank you for calling! Have a wonderful day. Goodbye!",
+            // Phrases that trigger call end when spoken by assistant
+            endCallPhrases: ["goodbye", "have a great day", "bye bye", "talk to you later"],
             metadata: {
                 agentId: currentAgent.id,
             },

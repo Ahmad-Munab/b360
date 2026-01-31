@@ -42,7 +42,15 @@ export async function POST(req: Request) {
         // Calculate duration - try multiple sources
         let duration = call?.duration || call?.durationSeconds || 0;
         if (!duration && call?.startedAt && call?.endedAt) {
-            duration = Math.round((new Date(call.endedAt).getTime() - new Date(call.startedAt).getTime()) / 1000);
+            try {
+                const startDate = new Date(call.startedAt);
+                const endDate = new Date(call.endedAt);
+                if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                    duration = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
+                }
+            } catch {
+                console.warn("Failed to parse call start/end times");
+            }
         }
         // Fallback: estimate ~3 seconds per message exchange
         if (!duration && artifact?.messages?.length) {
@@ -98,10 +106,19 @@ export async function POST(req: Request) {
 
         // Extract and save booking if present in structuredData (fallback)
         const structuredData = analysis?.structuredData;
-        if (structuredData && (structuredData.bookingDate || structuredData.booking_date)) {
-            const bookingDate = structuredData.bookingDate || structuredData.booking_date
-                ? new Date(structuredData.bookingDate || structuredData.booking_date)
-                : null;
+        if (structuredData && (structuredData.bookingDate || structuredData.booking_date || structuredData.customer_name || structuredData.customerName)) {
+            // Parse booking date safely
+            let bookingDate: Date | null = null;
+            const rawDate = structuredData.bookingDate || structuredData.booking_date;
+            if (rawDate) {
+                const parsed = new Date(rawDate);
+                // Check if the date is valid
+                if (!isNaN(parsed.getTime())) {
+                    bookingDate = parsed;
+                } else {
+                    console.warn(`Invalid booking date received: ${rawDate}`);
+                }
+            }
 
             const bookingData = {
                 customerName: structuredData.customerName || structuredData.customer_name || null,

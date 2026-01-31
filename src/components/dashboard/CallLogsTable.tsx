@@ -36,6 +36,7 @@ import {
     RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface CallLog {
     id: string;
@@ -302,9 +303,13 @@ function CallLogCard({ log }: { log: CallLog }) {
                             </div>
                             <h4 className="font-semibold text-gray-900">AI Summary</h4>
                         </div>
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                            {log.summary || "No summary was generated for this call."}
-                        </p>
+                        <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none prose-strong:text-gray-900 prose-ul:my-2 prose-li:my-0.5">
+                            {log.summary ? (
+                                <ReactMarkdown>{log.summary}</ReactMarkdown>
+                            ) : (
+                                <p>No summary was generated for this call.</p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Full Transcript */}
