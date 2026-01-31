@@ -107,40 +107,50 @@ export async function POST(req: Request) {
         // Extract and save booking if present in structuredData (fallback)
         const structuredData = analysis?.structuredData;
         if (structuredData && (structuredData.bookingDate || structuredData.booking_date || structuredData.customer_name || structuredData.customerName)) {
-            // Parse booking date safely
-            let bookingDate: Date | null = null;
-            const rawDate = structuredData.bookingDate || structuredData.booking_date;
-            if (rawDate) {
-                const parsed = new Date(rawDate);
-                // Check if the date is valid
-                if (!isNaN(parsed.getTime())) {
-                    bookingDate = parsed;
-                } else {
-                    console.warn(`Invalid booking date received: ${rawDate}`);
-                }
-            }
 
-            const bookingData = {
-                customerName: structuredData.customerName || structuredData.customer_name || null,
-                customerEmail: structuredData.customerEmail || structuredData.customer_email || null,
-                customerPhone: structuredData.customerPhone || structuredData.customer_phone || customer?.number || null,
-                bookingDate: bookingDate,
-                serviceDetails: structuredData.serviceDetails || structuredData.service_details || null,
-            };
-
-            await db.insert(bookings).values({
-                agentId: agentId,
-                callLogId: savedCallLog.id,
-                ...bookingData,
-                status: "confirmed",
+            // detailed checking for existing booking - DO THIS FIRST
+            const existingBooking = await db.query.bookings.findFirst({
+                where: eq(bookings.callLogId, savedCallLog.id),
             });
 
-            // Send email notification
-            if (currentAgent.adminEmail) {
-                await sendBookingNotification(currentAgent.adminEmail, {
+            if (existingBooking) {
+                console.log("Booking already exists for call log, skipping structured data fallback.");
+            } else {
+                // Parse booking date safely
+                let bookingDate: Date | null = null;
+                const rawDate = structuredData.bookingDate || structuredData.booking_date;
+                if (rawDate) {
+                    const parsed = new Date(rawDate);
+                    // Check if the date is valid
+                    if (!isNaN(parsed.getTime())) {
+                        bookingDate = parsed;
+                    } else {
+                        console.warn(`Invalid booking date received: ${rawDate}`);
+                    }
+                }
+
+                const bookingData = {
+                    customerName: structuredData.customerName || structuredData.customer_name || null,
+                    customerEmail: structuredData.customerEmail || structuredData.customer_email || null,
+                    customerPhone: structuredData.customerPhone || structuredData.customer_phone || customer?.number || null,
+                    bookingDate: bookingDate,
+                    serviceDetails: structuredData.serviceDetails || structuredData.service_details || null,
+                };
+
+                await db.insert(bookings).values({
+                    agentId: agentId,
+                    callLogId: savedCallLog.id,
                     ...bookingData,
-                    agentName: currentAgent.name,
+                    status: "confirmed",
                 });
+
+                // Send email notification
+                if (currentAgent.adminEmail) {
+                    await sendBookingNotification(currentAgent.adminEmail, {
+                        ...bookingData,
+                        agentName: currentAgent.name,
+                    });
+                }
             }
         }
 

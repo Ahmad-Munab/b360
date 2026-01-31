@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { ensureUserExists } from "@/lib/user-utils";
 import { twilioClient } from "@/lib/twilio";
 import { importPhoneNumberToVapi } from "@/lib/vapi";
+import { getBaseUrl } from "@/lib/utils";
 
 // GET - Fetch user's agents
 export async function GET() {
@@ -60,10 +61,8 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        // Get base URL for webhooks - use env var or ngrok
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-            process.env.NEXT_PUBLIC_APP_URL ||
-            "http://localhost:3000";
+        // Get base URL for webhooks - use env var or auto-detect from request headers
+        const baseUrl = getBaseUrl(request);
 
         const {
             name,
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
                 // Purchase the number from Twilio
                 const purchasedNumber = await twilioClient.incomingPhoneNumbers.create({
                     phoneNumber: finalPhoneNumber,
-                    voiceUrl: `${baseUrl}/api/twilio/inbound`,
+                    voiceUrl: `${baseUrl} /api/twilio / inbound`,
                     voiceMethod: 'POST'
                 });
 
@@ -110,17 +109,17 @@ export async function POST(request: NextRequest) {
                 const vapiResult = await importPhoneNumberToVapi({
                     number: finalPhoneNumber,
                     name: `${name} - Voice Agent`,
-                    serverUrl: `${baseUrl}/api/vapi/assistant-request`,
+                    serverUrl: `${baseUrl} /api/vapi / assistant - request`,
                     twilioAccountSid: process.env.TWILIO_ACCOUNT_SID!,
                     twilioAuthToken: process.env.TWILIO_AUTH_TOKEN!,
                 });
 
                 if (vapiResult.success) {
                     vapiPhoneNumberId = vapiResult.phoneNumberId;
-                    console.log(`Imported to Vapi with ID: ${vapiPhoneNumberId}`);
+                    console.log(`Imported to Vapi with ID: ${vapiPhoneNumberId} `);
                 } else {
                     // Log the error but don't fail - Vapi import can be retried
-                    console.warn(`Vapi import failed: ${vapiResult.error}`);
+                    console.warn(`Vapi import failed: ${vapiResult.error} `);
                 }
             } catch (error: unknown) {
                 console.error("Twilio Purchase Error:", error);
@@ -149,7 +148,7 @@ export async function POST(request: NextRequest) {
         // Generate a clientId if missing (needed for browser calls)
         let finalClientId = clientId;
         if (!finalClientId) {
-            finalClientId = `client:${name.toLowerCase().replace(/\s+/g, '-')}-${Math.random().toString(36).substring(2, 7)}`;
+            finalClientId = `client:${name.toLowerCase().replace(/\s+/g, '-')} -${Math.random().toString(36).substring(2, 7)} `;
         }
 
         // Create the agent

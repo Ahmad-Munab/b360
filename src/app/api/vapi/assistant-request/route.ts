@@ -13,15 +13,22 @@
 
 import { db } from "@/lib/db";
 import { agent as agentTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { getBaseUrl } from "@/lib/utils";
+import { createBookingTool, endCallTool } from "@/lib/vapi-tools";
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json();
+        const text = await req.text();
+        if (!text) {
+            return NextResponse.json({ message: "Empty body" }, { status: 200 });
+        }
+        const body = JSON.parse(text);
 
         // Log the full request for debugging
-        console.log("Assistant request received:", JSON.stringify(body, null, 2));
+        // Log the full request for debugging (disabled for production)
+        // console.log("Assistant request received:", JSON.stringify(body, null, 2));
 
         // Vapi sends the message type at the top level
         const messageType = body.message?.type || body.type;
@@ -59,86 +66,38 @@ export async function POST(req: Request) {
             }, { status: 400 });
         }
 
-        // Find the agent/tenant for this phone number
+        // Find the agent associated with this phone number
+        // We look for agents where:
+        // 1. phoneNumber matches (direct match)
+        // 2. phoneSid matches (Twilio SID match)
+        // 3. vapiPhoneNumberId matches (Vapi imported ID match)
         const currentAgent = await db.query.agent.findFirst({
-            where: eq(agentTable.phoneNumber, phoneNumber),
+            where: (agentTable, { eq, or }) => or(
+                eq(agentTable.phoneNumber, phoneNumber),
+                // Handle cases where number might have formatting differences
+                eq(agentTable.phoneNumber, phoneNumber.replace(/^\+/, "")),
+                eq(agentTable.phoneNumber, `+${phoneNumber.replace(/^\+/, "")}`),
+                agentTable.vapiPhoneNumberId ? eq(agentTable.vapiPhoneNumberId, body.message?.phoneNumber?.id || "unknown") : undefined
+            ),
+            with: {
+                user: true
+            }
         });
 
-        if (!currentAgent || !currentAgent.isActive) {
-            console.log(`No active agent found for number: ${phoneNumber}`);
-            // Return a basic fallback assistant
+        if (!currentAgent) {
+            console.error(`No agent found for phone number: ${phoneNumber}`);
+            // Return a default assistant or error
+            // For now, return error so we know it's missing
             return NextResponse.json({
-                assistant: {
-                    name: "Fallback Assistant",
-                    firstMessage: "We're sorry, this number is currently unavailable. Please try again later. Goodbye.",
-                    model: {
-                        provider: "groq",
-                        model: "llama-3.3-70b-versatile",
-                        messages: [{
-                            role: "system",
-                            content: "You are a fallback assistant. Politely tell the caller the service is unavailable and end the call."
-                        }]
-                    },
-                    voice: {
-                        provider: "vapi",
-                        voiceId: "Lily"
-                    }
-                }
-            });
+                error: "No agent configured for this number"
+            }, { status: 404 });
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+        const baseUrl = getBaseUrl(req);
+        console.log("Using base URL for tools:", baseUrl);
 
         // Define booking tool for this tenant
-        const bookingTool = {
-            type: "function",
-            function: {
-                name: "book_appointment",
-                description: "Book an appointment or schedule a meeting for the customer. Use this when the customer wants to make a reservation or schedule a service.",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        customer_name: {
-                            type: "string",
-                            description: "The customer's full name"
-                        },
-                        customer_email: {
-                            type: "string",
-                            description: "The customer's email address for confirmation"
-                        },
-                        customer_phone: {
-                            type: "string",
-                            description: "The customer's phone number"
-                        },
-                        booking_date: {
-                            type: "string",
-                            description: "The date and time for the appointment (e.g., 'tomorrow at 2pm', 'next Monday at 10am', '2024-01-15 14:00')"
-                        },
-                        service_details: {
-                            type: "string",
-                            description: "Description of the service or reason for the appointment"
-                        }
-                    },
-                    required: ["customer_name", "booking_date"]
-                }
-            },
-            server: {
-                url: `${baseUrl}/api/vapi/tool-calls`,
-                timeoutSeconds: 30,
-                secret: currentAgent.id // Used for agentId extraction
-            }
-        };
-
-        // End call tool - allows AI to end the call gracefully
-        const endCallTool = {
-            type: "endCall",
-            messages: [
-                {
-                    type: "request-start",
-                    content: "Thank you for calling! Have a wonderful day. Goodbye!"
-                }
-            ]
-        };
+        const bookingTool = createBookingTool(baseUrl, currentAgent.id);
 
         // Build the transient assistant configuration for this tenant
         const assistant = {
@@ -191,7 +150,6 @@ When a customer wants to book an appointment:
 ## IMPORTANT: Handling Email Addresses
 Email addresses are difficult to capture accurately over voice. Follow these rules:
 - Ask them to **spell it out letter by letter slowly**
-- Use phonetic clarification: "Is that M as in Mike, or N as in November?"
 - **Always repeat the full email back** character by character before confirming
 - If unsure about any letter, ASK for clarification
 - Common confusions to check: M/N, B/D, E/I, S/F, A/E, T/D
