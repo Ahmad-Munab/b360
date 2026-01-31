@@ -6,6 +6,7 @@ import { agent } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ensureUserExists } from "@/lib/user-utils";
 import { twilioClient } from "@/lib/twilio";
+import { importPhoneNumberToVapi } from "@/lib/vapi";
 
 // GET - Fetch user's agents
 export async function GET() {
@@ -59,15 +60,10 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        // Detect App URL for webhooks
-        const host = request.headers.get("host") || "";
-        const protocol = request.headers.get("x-forwarded-proto") || "http";
-        const tunnelUrl = "https://chafflike-weightily-clarita.ngrok-free.dev";
-
-        let appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
-        if (appUrl.includes("localhost") || appUrl.includes("127.0.0.1")) {
-            appUrl = tunnelUrl;
-        }
+        // Get base URL for webhooks - use env var or ngrok
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+            process.env.NEXT_PUBLIC_APP_URL ||
+            "http://localhost:3000";
 
         const {
             name,
@@ -95,21 +91,54 @@ export async function POST(request: NextRequest) {
         // If phoneSid is missing, it means we need to purchase the number now
         let finalPhoneNumber = phoneNumber;
         let finalPhoneSid = phoneSid;
+        let vapiPhoneNumberId: string | undefined;
 
-        if (!finalPhoneSid) {
+        if (!finalPhoneSid && finalPhoneNumber) {
             try {
-                // Purchase the number
+                // Purchase the number from Twilio
                 const purchasedNumber = await twilioClient.incomingPhoneNumbers.create({
                     phoneNumber: finalPhoneNumber,
-                    voiceUrl: `${appUrl}/api/twilio/inbound`,
+                    voiceUrl: `${baseUrl}/api/twilio/inbound`,
                     voiceMethod: 'POST'
                 });
 
                 finalPhoneNumber = purchasedNumber.phoneNumber;
                 finalPhoneSid = purchasedNumber.sid;
-                console.log(`Successfully purchased number ${finalPhoneNumber} (SID: ${finalPhoneSid}) via ${appUrl}`);
-            } catch (error) {
+                console.log(`Purchased Twilio number ${finalPhoneNumber} (SID: ${finalPhoneSid})`);
+
+                // Import the number to Vapi for AI voice handling
+                const vapiResult = await importPhoneNumberToVapi({
+                    number: finalPhoneNumber,
+                    name: `${name} - Voice Agent`,
+                    serverUrl: `${baseUrl}/api/vapi/assistant-request`,
+                    twilioAccountSid: process.env.TWILIO_ACCOUNT_SID!,
+                    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN!,
+                });
+
+                if (vapiResult.success) {
+                    vapiPhoneNumberId = vapiResult.phoneNumberId;
+                    console.log(`Imported to Vapi with ID: ${vapiPhoneNumberId}`);
+                } else {
+                    // Log the error but don't fail - Vapi import can be retried
+                    console.warn(`Vapi import failed: ${vapiResult.error}`);
+                }
+            } catch (error: unknown) {
                 console.error("Twilio Purchase Error:", error);
+
+                // Check for specific Twilio errors
+                const twilioError = error as { code?: number; message?: string };
+
+                if (twilioError.code === 21631) {
+                    // Address requirement error
+                    return NextResponse.json(
+                        {
+                            error: "This phone number requires a registered business address. Please select a US phone number, or contact support to register an address for international numbers.",
+                            code: "ADDRESS_REQUIRED"
+                        },
+                        { status: 400 }
+                    );
+                }
+
                 return NextResponse.json(
                     { error: "Failed to purchase the selected phone number. Please try a different one." },
                     { status: 500 }
@@ -140,6 +169,8 @@ export async function POST(request: NextRequest) {
                 availabilityContext,
                 adminEmail,
                 isActive,
+                // Store Vapi phone number ID for later management
+                vapiPhoneNumberId: vapiPhoneNumberId || null,
             })
             .returning();
 
@@ -147,6 +178,7 @@ export async function POST(request: NextRequest) {
             {
                 agent: newAgent[0],
                 message: "Agent created successfully",
+                vapiImported: !!vapiPhoneNumberId,
             },
             { status: 201 }
         );

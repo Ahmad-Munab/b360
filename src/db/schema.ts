@@ -230,8 +230,9 @@ export const agent = pgTable("agent", {
     .notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  phoneNumber: text("phone_number").notNull().unique(),
-  phoneSid: text("phone_sid").notNull(), // Twilio SID
+  phoneNumber: text("phone_number"),
+  phoneSid: text("phone_sid"), // Twilio SID
+  vapiPhoneNumberId: text("vapi_phone_number_id"), // Vapi phone number ID for inbound call routing
   clientId: text("client_id").unique(), // Twilio Client identity (e.g., client:name)
   voice: text("voice").default("female"),
   welcomeMessage: text("welcome_message"),
@@ -239,6 +240,7 @@ export const agent = pgTable("agent", {
   businessType: text("business_type"),
   availabilityContext: text("availability_context"),
   adminEmail: text("admin_email"),
+  zapierWebhookUrl: text("zapier_webhook_url"),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
