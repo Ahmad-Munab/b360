@@ -170,9 +170,22 @@ export async function POST(req: Request) {
                         })
                         : "your requested date";
 
+                    // Build confirmation message based on contact info provided
+                    let confirmationMsg = `Great news! I've successfully booked your appointment for ${bookingArgs.customer_name || "you"} on ${dateStr}.`;
+                    if (bookingArgs.service_details) {
+                        confirmationMsg += ` Service: ${bookingArgs.service_details}.`;
+                    }
+                    if (bookingArgs.customer_phone || customerPhone) {
+                        confirmationMsg += ` We'll send you a confirmation text or give you a call to confirm.`;
+                    } else if (bookingArgs.customer_email) {
+                        confirmationMsg += ` We'll send you an email confirmation shortly.`;
+                    } else {
+                        confirmationMsg += ` Your booking is confirmed!`;
+                    }
+
                     results.push({
                         toolCallId: toolCallId,
-                        result: `Great news! I've successfully booked your appointment for ${bookingArgs.customer_name || "you"} on ${dateStr}. ${bookingArgs.service_details ? `Service: ${bookingArgs.service_details}. ` : ""}You'll receive a confirmation shortly.`,
+                        result: confirmationMsg,
                     });
                 } catch (dbError) {
                     console.error("Database error saving booking:", dbError);

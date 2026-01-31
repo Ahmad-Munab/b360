@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
             },
             voice: {
                 provider: "vapi",
-                voiceId: currentAgent.voice === "male" ? "Elliot" : "Hailey",
+                voiceId: currentAgent.voice === "male" ? "Elliot" : "Lily",
             },
             model: {
                 provider: "groq",
@@ -110,15 +110,28 @@ When a customer wants to book an appointment:
 1. Ask for their preferred date and time
 2. Confirm what service or purpose they need
 3. Get their full name (required)
-4. Ask for their email or phone number for confirmation
-5. Use the book_appointment tool to save the booking
-6. Confirm the booking details back to them
+4. Ask for their email address for confirmation (required)
+5. Optionally ask for their phone number
+6. Use the book_appointment tool to save the booking
+7. Confirm the booking details back to them
+
+## IMPORTANT: Handling Email Addresses
+Email addresses are difficult to capture accurately over voice. Follow these rules:
+- Ask them to **spell it out letter by letter slowly**
+- Use phonetic clarification: "Is that M as in Mike, or N as in November?"
+- **Always repeat the full email back** character by character before confirming
+- If unsure about any letter, ASK for clarification
+- Common confusions to check: M/N, B/D, E/I, S/F, A/E, T/D
+
+Example email confirmation:
+"Let me confirm your email. That's M-A-H-M-U-D dot H-A-S-A-N dot A-M-A-A-N 8-4-8 at gmail dot com. Is that correct?"
 
 ## Communication Guidelines
 - Speak naturally and conversationally
 - Be warm, professional, and helpful
 - Keep responses concise - this is a phone call
-- Confirm important details by repeating them back`
+- Confirm important details by repeating them back
+- For emails, ALWAYS spell it back letter by letter before booking`
                     }
                 ],
             },

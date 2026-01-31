@@ -1,25 +1,63 @@
 // app/api/twilio/inbound/route.ts
+//
+// ============================================================================
+// MULTI-TENANT PHONE CALLS - SETUP INSTRUCTIONS
+// ============================================================================
+//
+// For inbound phone calls to work with your AI voice agents, you need to
+// configure your Twilio numbers in Vapi. Here's how:
+//
+// OPTION A: Import Twilio Numbers to Vapi (Recommended for Multi-Tenant)
+// -----------------------------------------------------------------------
+// 1. Go to https://dashboard.vapi.ai/phone-numbers
+// 2. Click "Import" → Select "Twilio"
+// 3. Enter your Twilio Account SID and Auth Token
+// 4. Import your phone number(s)
+// 5. For each number, configure:
+//    - Server URL: https://your-domain.com/api/vapi/assistant-request
+//    - Leave "Assistant" empty (the webhook will provide it dynamically)
+//
+// When a call comes in:
+// 1. Vapi receives the call on the imported Twilio number
+// 2. Vapi calls your /api/vapi/assistant-request endpoint
+// 3. Your endpoint looks up which tenant owns that phone number
+// 4. You return a transient assistant configuration for that tenant
+// 5. The call proceeds with that tenant's AI agent!
+//
+// OPTION B: Direct Twilio Webhook (This file - for fallback/testing)
+// -----------------------------------------------------------------------
+// This route handles direct Twilio webhooks but cannot fully integrate
+// with Vapi for voice AI. It's mainly for:
+// - Browser-based client calls (client:xxx format)
+// - Fallback when Vapi isn't configured
+//
+// ============================================================================
+
 import { NextResponse } from "next/server";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import { db } from "@/lib/db";
 import { agent as agentTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+// Handle GET request (Twilio can send webhooks as GET)
+export async function GET(req: Request) {
+    const url = new URL(req.url);
+    const params = url.searchParams;
+    return handleInboundCall(params);
+}
+
+// Handle POST request
 export async function POST(req: Request) {
+    const formData = await req.text();
+    const params = new URLSearchParams(formData);
+    return handleInboundCall(params);
+}
+
+// Shared handler for both GET and POST
+async function handleInboundCall(params: URLSearchParams) {
     try {
-        console.log("Twilio Inbound POST received");
-
-        const formData = await req.text();
-        const params = new URLSearchParams(formData);
-
-        const allParams = Object.fromEntries(params.entries());
-        console.log("Twilio All Params:", allParams);
-
-        const callSid = params.get("CallSid");
         const from = params.get("From");
         const to = params.get("To");
-
-        console.log("Twilio Params:", { callSid, from, to });
 
         let tenantIdentifier: string | null = null;
         if (to && to.startsWith("client:")) tenantIdentifier = to;
@@ -30,8 +68,6 @@ export async function POST(req: Request) {
             return new NextResponse("Missing destination identifier", { status: 400 });
         }
 
-        console.log(`Searching for agent with identifier: ${tenantIdentifier}`);
-
         const currentAgent = await db.query.agent.findFirst({
             where: tenantIdentifier.startsWith("client:")
                 ? eq(agentTable.clientId, tenantIdentifier)
@@ -41,139 +77,47 @@ export async function POST(req: Request) {
         const twiml = new VoiceResponse();
 
         if (!currentAgent || !currentAgent.isActive) {
-            console.log(`❌ No active agent found for identity: ${tenantIdentifier}`);
-            twiml.say("We are sorry, this service is currently unavailable. Goodbye.");
+            twiml.say({ voice: "alice" }, "We are sorry, this service is currently unavailable. Goodbye.");
             return new NextResponse(twiml.toString(), {
                 headers: { "Content-Type": "text/xml" },
             });
         }
 
-        console.log(`✅ Agent found: ${currentAgent.name}. Initiating AI session...`);
-
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-
-        // Define booking tool
-        const bookingTool = {
-            type: "function",
-            function: {
-                name: "book_appointment",
-                description: "Book an appointment for the customer.",
-                parameters: {
-                    type: "object",
-                    properties: {
-                        customer_name: { type: "string", description: "Customer's full name" },
-                        customer_email: { type: "string", description: "Customer's email" },
-                        customer_phone: { type: "string", description: "Customer's phone" },
-                        booking_date: { type: "string", description: "Appointment date/time" },
-                        service_details: { type: "string", description: "Service description" }
-                    },
-                    required: ["customer_name", "booking_date"]
-                }
-            },
-            server: { url: `${baseUrl}/api/vapi/tool-calls` }
-        };
-
-        const vapiAssistant = {
-            name: currentAgent.name,
-            firstMessage: currentAgent.welcomeMessage || "Hello! How can I help you today?",
-            voice: {
-                provider: "11labs",
-                voiceId: currentAgent.voice === "male" ? "bIHbv24MWmeRgasZH58o" : "EXAVITQu4vr4xnSDxMaL",
-                stability: 0.5,
-                similarityBoost: 0.75,
-            },
-            serverUrl: `${baseUrl}/api/vapi/webhook`,
-            silenceTimeoutSeconds: 30,
-            maxDurationSeconds: 600,
-            model: {
-                provider: "groq",
-                model: "llama-3.3-70b-versatile",
-                temperature: 0.7,
-                tools: [bookingTool],
-                messages: [{
-                    role: "system",
-                    content: `You are a professional AI Voice Assistant for ${currentAgent.name}.
-
-## About the Business
-${currentAgent.businessContext || "We provide professional services."}
-
-## Availability
-${currentAgent.availabilityContext || "Standard business hours."}
-
-## Your Capabilities
-- Answer questions about services
-- Book appointments (use the book_appointment tool)
-- Provide business information
-
-## Communication Guidelines
-- Be warm, professional, and helpful
-- Keep responses concise for voice
-- Confirm important details back to the caller`
-                }],
-            },
-            analysisPlan: {
-                summaryPrompt: "Summarize the call including any bookings made and outcomes.",
-                structuredDataPrompt: "Extract booking information if discussed.",
-                structuredDataSchema: {
-                    type: "object",
-                    properties: {
-                        booking_date: { type: "string" },
-                        customer_name: { type: "string" },
-                        customer_email: { type: "string" },
-                        customer_phone: { type: "string" },
-                        service_details: { type: "string" },
-                    },
-                },
-            },
-        };
-
-        const validCustomerNumber = from && from.startsWith("+") ? from : "+15005550006";
-
-        try {
-            console.log(`Calling Vapi for agent ${currentAgent.id}...`);
-            const vapiResponse = await fetch("https://api.vapi.ai/call", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${process.env.VAPI_PRIVATE_API_KEY}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    assistant: vapiAssistant,
-                    type: "inboundPhoneCall",
-                    twilioCallSid: callSid,
-                    customer: { number: validCustomerNumber },
-                    phoneNumber: {
-                        twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
-                        twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
-                        twilioPhoneNumber: currentAgent.phoneNumber,
-                    },
-                    metadata: {
-                        agentId: currentAgent.id,
-                        callSid: callSid
-                    },
-                }),
+        // For browser client calls (Web SDK handles this via Vapi directly)
+        if (tenantIdentifier.startsWith("client:")) {
+            twiml.say({ voice: "alice" }, "Connecting you now.");
+            twiml.pause({ length: 30 });
+            return new NextResponse(twiml.toString(), {
+                headers: { "Content-Type": "text/xml" },
             });
-
-            if (!vapiResponse.ok) {
-                const errorData = await vapiResponse.json();
-                console.error("Vapi API Error:", JSON.stringify(errorData, null, 2));
-                throw new Error(`Vapi failed with status ${vapiResponse.status}`);
-            }
-
-            console.log(`🎙️ Vapi session successfully triggered for ${currentAgent.name}`);
-
-            twiml.say({ voice: "alice" }, "Connecting you to the AI assistant...");
-            twiml.pause({ length: 60 });
-        } catch (vapiError) {
-            console.error("❌ Vapi Initialization Failure:", vapiError);
-            twiml.say("I'm sorry, I'm having trouble connecting. Please try again later.");
         }
+
+        // For direct phone calls - these should be handled by Vapi
+        // If we're here, it means the number isn't imported to Vapi yet
+        console.log(`Direct Twilio call to ${to} - Number should be imported to Vapi`);
+
+        twiml.say({ voice: "alice" },
+            `Thank you for calling ${currentAgent.name}. ` +
+            `Please hold while we connect you to our assistant.`
+        );
+
+        // Provide helpful message - in production, import to Vapi
+        twiml.say({ voice: "alice" },
+            `We apologize, but our voice assistant is being configured. ` +
+            `Please try again shortly or visit our website. Thank you for your patience.`
+        );
+
+        twiml.hangup();
 
         return new NextResponse(twiml.toString(), {
             headers: { "Content-Type": "text/xml" },
         });
     } catch (error) {
-        console.error("🔥 Error in Twilio inbound route:", error);
-        return new NextResponse("Internal Server Error", { status: 500 });
+        console.error("Error in Twilio inbound route:", error);
+        const twiml = new VoiceResponse();
+        twiml.say({ voice: "alice" }, "We're sorry, an error occurred. Please try again later.");
+        return new NextResponse(twiml.toString(), {
+            headers: { "Content-Type": "text/xml" },
+        });
     }
 }
