@@ -35,8 +35,7 @@ export async function POST(req: Request) {
 
         // This is called by Vapi when looking for an assistant for an inbound call
         if (messageType !== "assistant-request") {
-            console.log(`Received non-assistant-request: ${messageType}`);
-            // Not an assistant request, might be other webhook types
+            console.log(`Received ${messageType} message:`, JSON.stringify(body, null, 2));
             return NextResponse.json({ received: true });
         }
 
@@ -115,8 +114,7 @@ export async function POST(req: Request) {
             model: {
                 provider: "groq",
                 model: "llama-3.3-70b-versatile",
-                temperature: 0.5, // Lower temperature to reduce hallucinations
-                tools: [bookingTool, endCallTool],
+                temperature: 0.5,
                 messages: [{
                     role: "system",
                     content: `You are a professional and friendly AI Voice Assistant for ${currentAgent.name}. Your primary goal is to assist callers efficiently while providing an excellent customer experience.
@@ -132,6 +130,14 @@ ${currentAgent.businessContext || "We provide professional services to our value
 
 ## Business Type
 ${currentAgent.businessType || "General Services"}
+
+## Availability
+${currentAgent.availabilityContext || "Standard business hours."}
+
+## Current Date and Time
+Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. 
+The current local time is ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}. 
+Use this information to accurately handle relative dates like "tomorrow", "next week", or specific times.
 
 ## Your Capabilities
 You can help callers with:
@@ -158,11 +164,13 @@ Email addresses are difficult to capture accurately over voice. Follow these rul
 - **Always repeat the full email back** character by character before confirming
 - If unsure about any letter, ASK for clarification
 - Common confusions to check: M/N, B/D, E/I, S/F, A/E, T/D
+- Example: spell their email like for example mahmud.hasan.amaan848@gmail.com you should spell it like M A H M U D dot H A S A N dot A M A A N 8 4 8 (just spell @gmail.com normally)
 
 ## Ending Calls
-- When the conversation is naturally complete, say goodbye and use the end_call tool
-- If the customer says "bye", "goodbye", "that's all", or similar, end the call
-- After completing a booking, ask if there's anything else, then end if nothing more needed
+- **Wait for the customer to finish.** Do not end the call unless they explicitly say they are done or say "goodbye".
+- If the customer says "bye", "goodbye", "that's all", "I'm done", or similar, then use the end_call tool.
+- After completing a booking, ask: "Is there anything else I can help you with today?"
+- **ONLY** use the end_call tool after the customer confirms they have no more questions.
 - Always be polite: "Thank you for calling! Have a great day. Goodbye."
 
 ## Communication Guidelines
@@ -171,34 +179,17 @@ Email addresses are difficult to capture accurately over voice. Follow these rul
 - Keep responses concise - this is a phone call
 - Confirm important details by repeating them back`
                 }],
+                // Correct location for tools in many Vapi transient contexts
+                tools: [bookingTool, endCallTool],
             },
-            serverUrl: `${baseUrl}/api/vapi/webhook`,
-            interruptionsEnabled: true, // Allow user to interrupt
-            numWordsToInterruptAssistant: 1, // Stop speaking quickly if user talks
-            backgroundSound: "office", // Subtle background noise for realism (and to verify audio is active)
-
-            silenceTimeoutSeconds: 60, // Give user time to think
+            interruptionsEnabled: true,
+            numWordsToInterruptAssistant: 1,
+            backgroundSound: "office",
+            silenceTimeoutSeconds: 60,
             maxDurationSeconds: 600,
-            // Message spoken before ending the call
             endCallMessage: "Thank you for calling! Have a wonderful day. Goodbye!",
-            // Phrases that trigger call end when spoken by assistant
-            endCallPhrases: ["goodbye", "have a great day", "bye bye", "talk to you later"],
             metadata: {
                 agentId: currentAgent.id,
-            },
-            analysisPlan: {
-                summaryPrompt: "Summarize the call including any bookings made and outcomes.",
-                structuredDataPrompt: "Extract booking information if discussed.",
-                structuredDataSchema: {
-                    type: "object",
-                    properties: {
-                        booking_date: { type: "string" },
-                        customer_name: { type: "string" },
-                        customer_email: { type: "string" },
-                        customer_phone: { type: "string" },
-                        service_details: { type: "string" },
-                    },
-                },
             },
         };
 
@@ -211,17 +202,25 @@ Email addresses are difficult to capture accurately over voice. Follow these rul
             credentials.push({ provider: "deepgram", apiKey: process.env.DEEPGRAM_API_KEY });
         }
 
-        console.log(`Returning assistant for agent: ${currentAgent.name} (${currentAgent.id})`);
-
-        return NextResponse.json({
+        // Create the final response payload
+        const assistantResponse = {
             assistant: {
                 ...assistant,
                 ...(credentials.length > 0 ? { credentials } : {}),
+            },
+            server: {
+                url: `${baseUrl}/api/vapi/webhook`,
+                timeoutSeconds: 30,
             }
-        });
+        };
 
+        console.log(`✅ Transient assistant delivered for: ${currentAgent.name}`);
+        // Log the final JSON for debugging - this helps confirm the 'wrapped' structure
+        // console.log("FINAL JSON TO VAPI:", JSON.stringify(assistantResponse, null, 2));
+
+        return NextResponse.json(assistantResponse);
     } catch (error) {
-        console.error("Error in assistant-request webhook:", error);
+        console.error("❌ Error in assistant-request webhook:", error);
         return NextResponse.json(
             { error: "Internal Server Error" },
             { status: 500 }
