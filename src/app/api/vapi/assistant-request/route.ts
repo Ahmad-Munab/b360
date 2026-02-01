@@ -110,7 +110,7 @@ export async function POST(req: Request) {
             },
             voice: {
                 provider: "vapi",
-                voiceId: currentAgent.voice === "male" ? "Elliot" : "Lily",
+                voiceId: (currentAgent.voice?.toLowerCase() === "male") ? "Elliot" : "Lily",
             },
             model: {
                 provider: "groq",
@@ -141,11 +141,12 @@ You can help callers with:
 When a customer wants to book an appointment:
 1. Ask for their preferred date and time
 2. Confirm what service or purpose they need
-3. Get their full name (required)
 4. Ask for their email address for confirmation (required)
-5. Optionally ask for their phone number
-6. Use the book_appointment tool to save the booking
-7. Confirm the booking details back to them
+5. **VERBAL CONFIRMATION (CRITICAL):**
+   - Read back ALL details: "Just to check, I have [Name], email [Email], for [Service] on [Date]. Is that correct?"
+   - **WAIT** for the customer to say "Yes".
+6. ONLY after they confirm, use the 'book_appointment' tool to save it.
+7. Finally, confirm the success message returned by the tool.
 
 ## IMPORTANT: Handling Email Addresses
 Email addresses are difficult to capture accurately over voice. Follow these rules:
