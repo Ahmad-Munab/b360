@@ -93,6 +93,29 @@ export async function POST(req: Request) {
                 };
 
                 try {
+                    // 1. Validate Input Data strictly
+                    const email = bookingArgs.customer_email?.trim();
+                    const name = bookingArgs.customer_name?.trim();
+
+                    // Basic email validation regex
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                    if (!email || !emailRegex.test(email)) {
+                        results.push({
+                            toolCallId: toolCallId,
+                            result: "Error: The email address is invalid or missing. Please ask the customer to spell their email address again, character by character."
+                        });
+                        continue;
+                    }
+
+                    if (!name || name.length < 2) {
+                        results.push({
+                            toolCallId: toolCallId,
+                            result: "Error: A valid customer name is required. Please ask for their full name."
+                        });
+                        continue;
+                    }
+
                     // Find or create a call log entry for this booking
                     let callLogId: string | null = null;
                     const vapiCallId = callData.id || message.call?.id || body.call?.id;
