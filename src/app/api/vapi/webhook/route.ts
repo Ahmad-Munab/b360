@@ -145,12 +145,15 @@ export async function POST(req: Request) {
                 });
 
                 // Send email notification
+                // Send email notification - DISABLED to prevent duplicates (Tool calls already send email)
+                /* 
                 if (currentAgent.adminEmail) {
                     await sendBookingNotification(currentAgent.adminEmail, {
                         ...bookingData,
                         agentName: currentAgent.name,
                     });
                 }
+                */
             }
         }
 
