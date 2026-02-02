@@ -7,7 +7,6 @@ interface Stats {
     totalCalls: number;
     avgDuration: number;
     totalBookings: number;
-    completedCalls?: number;
 }
 
 function formatDuration(seconds: number): string {
@@ -19,11 +18,6 @@ function formatDuration(seconds: number): string {
 }
 
 export function CallAnalytics({ stats }: { stats: Stats }) {
-    // Calculate success rate based on completed calls
-    const successRate = stats.totalCalls > 0
-        ? Math.round((stats.completedCalls ?? stats.totalCalls) / stats.totalCalls * 100)
-        : 0;
-
     const cards = [
         {
             title: "Total Calls",
@@ -45,13 +39,6 @@ export function CallAnalytics({ stats }: { stats: Stats }) {
             icon: CalendarCheck,
             color: "text-purple-600",
             bg: "bg-purple-100",
-        },
-        {
-            title: "Success Rate",
-            value: `${successRate}%`,
-            icon: TrendingUp,
-            color: successRate >= 80 ? "text-green-600" : successRate >= 50 ? "text-orange-600" : "text-red-600",
-            bg: successRate >= 80 ? "bg-green-100" : successRate >= 50 ? "bg-orange-100" : "bg-red-100",
         },
     ];
 

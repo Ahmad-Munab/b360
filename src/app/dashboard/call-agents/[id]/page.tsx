@@ -32,7 +32,7 @@ export default function AgentViewPage({
 
     const [logs, setLogs] = useState<any[]>([]);
     const [bookings, setBookings] = useState<any[]>([]);
-    const [stats, setStats] = useState({ totalCalls: 0, avgDuration: 0, totalBookings: 0, completedCalls: 0 });
+    const [stats, setStats] = useState({ totalCalls: 0, avgDuration: 0, totalBookings: 0 });
     const [isLogsLoading, setIsLogsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
 

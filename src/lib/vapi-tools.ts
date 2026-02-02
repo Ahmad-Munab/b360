@@ -17,10 +17,6 @@ export const createBookingTool = (baseUrl: string, agentId: string) => ({
                     type: "string",
                     description: "The customer's email address for confirmation"
                 },
-                customer_phone: {
-                    type: "string",
-                    description: "The customer's phone number"
-                },
                 booking_date: {
                     type: "string",
                     description: "The date and time for the appointment (e.g., 'tomorrow at 2pm', 'next Monday at 10am', '2024-01-15 14:00')"

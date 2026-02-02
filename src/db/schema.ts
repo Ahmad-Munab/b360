@@ -263,7 +263,6 @@ export const callLogs = pgTable("call_logs", {
   duration: integer("duration"), // in seconds
   summary: text("summary"),
   transcript: text("transcript"),
-  status: text("status"), // 'completed', 'failed', etc.
   recordingUrl: text("recording_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => {
