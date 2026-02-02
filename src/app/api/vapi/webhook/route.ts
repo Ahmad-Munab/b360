@@ -19,13 +19,15 @@ export async function POST(req: Request) {
         // Try to get agentId from multiple possible locations
         const metadata = call?.metadata || {};
         const assistantMetadata = call?.assistant?.metadata || {};
+        const messageAssistantMetadata = message?.assistant?.metadata || {};
+
         const agentId = metadata.agentId ||
             assistantMetadata.agentId ||
-            call?.assistantId ||
-            message?.assistant?.metadata?.agentId;
+            messageAssistantMetadata.agentId ||
+            call?.assistantId;
 
         if (!agentId) {
-            console.warn("Webhook received without agentId");
+            console.warn(`Webhook received for call ${call?.id} without agentId`);
             return NextResponse.json({ received: true, warning: "Missing agentId" });
         }
 
@@ -57,11 +59,6 @@ export async function POST(req: Request) {
             duration = Math.round(artifact.messages.length * 3);
         }
 
-        // Determine call status - prioritize meaningful values
-        const callStatus = call?.endedReason ||
-            (call?.status === "queued" ? "completed" : call?.status) ||
-            "completed";
-
         // Check if call log already exists (created during tool-calls)
         const existingLog = call?.id
             ? await db.query.callLogs.findFirst({
@@ -79,7 +76,6 @@ export async function POST(req: Request) {
                     duration: duration || existingLog.duration,
                     summary: analysis?.summary || existingLog.summary,
                     transcript: artifact?.transcript || existingLog.transcript,
-                    status: callStatus,
                     recordingUrl: artifact?.recordingUrl || existingLog.recordingUrl,
                 })
                 .where(eq(callLogs.id, existingLog.id))
@@ -97,7 +93,6 @@ export async function POST(req: Request) {
                     duration: duration,
                     summary: analysis?.summary || null,
                     transcript: artifact?.transcript || null,
-                    status: callStatus,
                     recordingUrl: artifact?.recordingUrl || null,
                 })
                 .returning();
@@ -132,7 +127,7 @@ export async function POST(req: Request) {
                 const bookingData = {
                     customerName: structuredData.customerName || structuredData.customer_name || null,
                     customerEmail: structuredData.customerEmail || structuredData.customer_email || null,
-                    customerPhone: structuredData.customerPhone || structuredData.customer_phone || customer?.number || null,
+                    customerPhone: customer?.number || structuredData.customerPhone || structuredData.customer_phone || null,
                     bookingDate: bookingDate,
                     serviceDetails: structuredData.serviceDetails || structuredData.service_details || null,
                 };
@@ -145,12 +140,15 @@ export async function POST(req: Request) {
                 });
 
                 // Send email notification
+                // Send email notification - DISABLED to prevent duplicates (Tool calls already send email)
+                /* 
                 if (currentAgent.adminEmail) {
                     await sendBookingNotification(currentAgent.adminEmail, {
                         ...bookingData,
                         agentName: currentAgent.name,
                     });
                 }
+                */
             }
         }
 

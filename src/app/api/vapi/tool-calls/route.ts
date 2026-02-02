@@ -135,7 +135,6 @@ export async function POST(req: Request) {
                                 agentId: agentId,
                                 vapiCallId: vapiCallId || `tool-${Date.now()}`,
                                 callerNumber: customerPhone,
-                                status: "in-progress",
                             })
                             .returning();
                         callLogId = newLog.id;
@@ -159,7 +158,7 @@ export async function POST(req: Request) {
                             callLogId: callLogId,
                             customerName: bookingArgs.customer_name || null,
                             customerEmail: bookingArgs.customer_email || null,
-                            customerPhone: bookingArgs.customer_phone || customerPhone,
+                            customerPhone: customerPhone || bookingArgs.customer_phone,
                             bookingDate: bookingDate,
                             serviceDetails: bookingArgs.service_details || null,
                             status: "confirmed",
@@ -170,17 +169,17 @@ export async function POST(req: Request) {
 
                     // Send email notification to admin if configured
                     if (currentAgent.adminEmail) {
-                        await sendBookingNotification(
+                        sendBookingNotification(
                             currentAgent.adminEmail,
                             {
                                 customerName: bookingArgs.customer_name || null,
                                 customerEmail: bookingArgs.customer_email || null,
-                                customerPhone: bookingArgs.customer_phone || customerPhone,
+                                customerPhone: customerPhone || bookingArgs.customer_phone,
                                 bookingDate: bookingDate,
                                 serviceDetails: bookingArgs.service_details || null,
                                 agentName: currentAgent.name,
                             }
-                        );
+                        ).catch(err => console.error("Email notification error:", err));
                     }
 
                     const dateStr = bookingDate

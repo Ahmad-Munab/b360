@@ -44,7 +44,6 @@ interface CallLog {
     duration: number | null;
     summary: string | null;
     transcript: string | null;
-    status: string | null;
     recordingUrl: string | null;
     createdAt: string;
 }
@@ -60,24 +59,6 @@ function formatDuration(seconds: number | null): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}m ${secs}s`;
-}
-
-function getStatusConfig(status: string | null) {
-    const normalizedStatus = status?.toLowerCase() || "unknown";
-
-    if (normalizedStatus.includes("completed") || normalizedStatus === "assistant-ended" || normalizedStatus === "ended") {
-        return { label: "Completed", className: "bg-green-100 text-green-700 border-green-200", value: "completed" };
-    }
-    if (normalizedStatus.includes("user-ended") || normalizedStatus === "hangup") {
-        return { label: "Ended", className: "bg-blue-100 text-blue-700 border-blue-200", value: "ended" };
-    }
-    if (normalizedStatus.includes("failed") || normalizedStatus.includes("error")) {
-        return { label: "Failed", className: "bg-red-100 text-red-700 border-red-200", value: "failed" };
-    }
-    if (normalizedStatus.includes("in-progress") || normalizedStatus === "queued") {
-        return { label: "In Progress", className: "bg-yellow-100 text-yellow-700 border-yellow-200", value: "in-progress" };
-    }
-    return { label: status || "Unknown", className: "bg-gray-100 text-gray-700 border-gray-200", value: "unknown" };
 }
 
 /**
@@ -186,8 +167,6 @@ function TranscriptDisplay({ transcript }: { transcript: string | null }) {
 }
 
 function CallLogCard({ log }: { log: CallLog }) {
-    const statusConfig = getStatusConfig(log.status);
-
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -219,9 +198,6 @@ function CallLogCard({ log }: { log: CallLog }) {
                                     </div>
                                     <p className="text-xs text-gray-400 mt-1">Duration</p>
                                 </div>
-                                <Badge className={cn("font-semibold text-sm px-4 py-1.5", statusConfig.className)}>
-                                    {statusConfig.label}
-                                </Badge>
                                 <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-indigo-600 transition-colors" />
                             </div>
                         </div>
@@ -259,17 +235,11 @@ function CallLogCard({ log }: { log: CallLog }) {
 
                 <div className="space-y-6 mt-4">
                     {/* Quick Stats Row */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="bg-gray-50 rounded-lg p-4 text-center">
                             <Clock className="h-5 w-5 mx-auto text-blue-600 mb-1" />
                             <p className="text-lg font-bold text-gray-900">{formatDuration(log.duration)}</p>
                             <p className="text-xs text-gray-500">Duration</p>
-                        </div>
-                        <div className="bg-gray-50 rounded-lg p-4 text-center">
-                            <Badge className={cn("mx-auto", statusConfig.className)}>
-                                {statusConfig.label}
-                            </Badge>
-                            <p className="text-xs text-gray-500 mt-2">Status</p>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-4 text-center">
                             <Calendar className="h-5 w-5 mx-auto text-purple-600 mb-1" />
@@ -333,7 +303,6 @@ function CallLogCard({ log }: { log: CallLog }) {
 export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
     // Filter state
     const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
     const [dateFilter, setDateFilter] = useState<string>("all");
 
     // Pagination state
@@ -351,12 +320,6 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
                 if (!matchesCaller && !matchesSummary) return false;
             }
 
-            // Status filter
-            if (statusFilter !== "all") {
-                const logStatusValue = getStatusConfig(log.status).value;
-                if (logStatusValue !== statusFilter) return false;
-            }
-
             // Date filter
             if (dateFilter !== "all") {
                 const logDate = new Date(log.createdAt);
@@ -367,7 +330,7 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
 
             return true;
         });
-    }, [logs, searchQuery, statusFilter, dateFilter]);
+    }, [logs, searchQuery, dateFilter]);
 
     // Pagination
     const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
@@ -380,7 +343,6 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
     const handleFilterChange = (type: "search" | "status" | "date", value: string) => {
         setCurrentPage(1);
         if (type === "search") setSearchQuery(value);
-        else if (type === "status") setStatusFilter(value);
         else if (type === "date") setDateFilter(value);
     };
 
@@ -411,20 +373,6 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
                         className="border-0 bg-white shadow-sm"
                     />
                 </div>
-
-                <Select value={statusFilter} onValueChange={(v) => handleFilterChange("status", v)}>
-                    <SelectTrigger className="w-[140px] bg-white">
-                        <Filter className="h-4 w-4 mr-2 text-gray-400" />
-                        <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="ended">Ended</SelectItem>
-                        <SelectItem value="in-progress">In Progress</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
-                    </SelectContent>
-                </Select>
 
                 <Select value={dateFilter} onValueChange={(v) => handleFilterChange("date", v)}>
                     <SelectTrigger className="w-[140px] bg-white">
@@ -463,7 +411,6 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
                         variant="link"
                         onClick={() => {
                             setSearchQuery("");
-                            setStatusFilter("all");
                             setDateFilter("all");
                         }}
                     >
