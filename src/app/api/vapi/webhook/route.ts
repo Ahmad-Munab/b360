@@ -19,13 +19,15 @@ export async function POST(req: Request) {
         // Try to get agentId from multiple possible locations
         const metadata = call?.metadata || {};
         const assistantMetadata = call?.assistant?.metadata || {};
+        const messageAssistantMetadata = message?.assistant?.metadata || {};
+
         const agentId = metadata.agentId ||
             assistantMetadata.agentId ||
-            call?.assistantId ||
-            message?.assistant?.metadata?.agentId;
+            messageAssistantMetadata.agentId ||
+            call?.assistantId;
 
         if (!agentId) {
-            console.warn("Webhook received without agentId");
+            console.warn(`Webhook received for call ${call?.id} without agentId`);
             return NextResponse.json({ received: true, warning: "Missing agentId" });
         }
 

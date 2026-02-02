@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
                 // Purchase the number from Twilio
                 const purchasedNumber = await twilioClient.incomingPhoneNumbers.create({
                     phoneNumber: finalPhoneNumber,
-                    voiceUrl: `${baseUrl} /api/twilio / inbound`,
+                    voiceUrl: `${baseUrl}/api/twilio/inbound`,
                     voiceMethod: 'POST'
                 });
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
                 const vapiResult = await importPhoneNumberToVapi({
                     number: finalPhoneNumber,
                     name: `${name} - Voice Agent`,
-                    serverUrl: `${baseUrl} /api/vapi / assistant - request`,
+                    serverUrl: `${baseUrl}/api/vapi/assistant-request`,
                     twilioAccountSid: process.env.TWILIO_ACCOUNT_SID!,
                     twilioAuthToken: process.env.TWILIO_AUTH_TOKEN!,
                 });
