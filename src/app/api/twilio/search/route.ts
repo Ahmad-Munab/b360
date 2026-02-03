@@ -10,15 +10,29 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { areaCode, countryCode = "US" } = await req.json();
+        const { areaCode, countryCode = "US", contains, locality, region } = await req.json();
 
-        // Fetch numbers
+        // Build search options for Twilio API
+        const searchOptions: {
+            areaCode?: number;
+            contains?: string;
+            inLocality?: string;
+            inRegion?: string;
+            limit: number;
+        } = {
+            limit: 100,
+        };
+
+        // Add filters only if provided
+        if (areaCode) searchOptions.areaCode = parseInt(areaCode, 10);
+        if (contains) searchOptions.contains = contains;
+        if (locality) searchOptions.inLocality = locality;
+        if (region) searchOptions.inRegion = region;
+
+        // Fetch numbers with filtered options
         const availableNumbers = await twilioClient.availablePhoneNumbers(countryCode)
             .local
-            .list({
-                areaCode: areaCode || undefined,
-                limit: 10,
-            });
+            .list(searchOptions);
 
         // Fetch real pricing for this country
         let price = "1.15";
