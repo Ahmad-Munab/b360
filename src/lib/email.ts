@@ -43,39 +43,59 @@ export async function sendBookingNotification(
       html: `
 <!DOCTYPE html>
 <html>
-<body style="font-family: sans-serif; background: #f4f7fa; padding: 40px;">
-  <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
-    <div style="background: #1e293b; padding: 20px; text-align: center;">
-      <h2 style="color: white; margin: 0; font-size: 20px;">🔔 New Booking Lead</h2>
-    </div>
-    <div style="padding: 24px;">
-      <p style="margin-top: 0; color: #64748b;">You have received a new booking via <strong>${booking.agentName}</strong>.</p>
-      
-      <table style="width: 100%; margin-top: 16px; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; width: 30%;">Customer Name</td>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">${booking.customerName || "Not provided"}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b;">Email</td>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">${booking.customerEmail || "Not provided"}</td>
-        </tr>
-         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b;">Phone</td>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">${booking.customerPhone || "Not provided"}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b;">Appointment Time</td>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500; color: #2563eb;">${bookingDateFormatted}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b;">Service/Notes</td>
-          <td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">${booking.serviceDetails || "None"}</td>
-        </tr>
-      </table>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @media only screen and (max-width: 600px) {
+      .container { padding: 20px !important; }
+      .content { padding: 16px !important; }
+      .row { display: block !important; border-bottom: 1px solid #f1f5f9; padding: 12px 0 !important; }
+      .label { display: block !important; width: 100% !important; margin-bottom: 4px !important; font-weight: 600 !important; color: #64748b !important; }
+      .value { display: block !important; width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="font-family: sans-serif; background: #f4f7fa; padding: 0; margin: 0;">
+  <div class="container" style="padding: 40px; width: 100%; box-sizing: border-box;">
+    <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+      <div style="background: #1e293b; padding: 24px 20px; text-align: center;">
+        <h2 style="color: white; margin: 0; font-size: 20px; font-weight: 600;">🔔 New Booking Lead</h2>
+      </div>
+      <div class="content" style="padding: 32px;">
+        <p style="margin-top: 0; color: #334155; font-size: 15px; line-height: 1.5; margin-bottom: 24px;">
+          You have received a new booking via <strong style="color: #0f172a;">${booking.agentName}</strong>.
+        </p>
+        
+        <div style="border-top: 1px solid #e2e8f0;">
+          <div class="row" style="display: flex; border-bottom: 1px solid #f1f5f9; padding: 12px 0;">
+            <div class="label" style="flex: 0 0 35%; color: #64748b; font-size: 14px;">Customer Name</div>
+            <div class="value" style="color: #0f172a; font-weight: 500; font-size: 14px;">${booking.customerName || "Not provided"}</div>
+          </div>
+          
+          <div class="row" style="display: flex; border-bottom: 1px solid #f1f5f9; padding: 12px 0;">
+            <div class="label" style="flex: 0 0 35%; color: #64748b; font-size: 14px;">Email</div>
+            <div class="value" style="color: #0f172a; font-weight: 500; font-size: 14px; word-break: break-all;">${booking.customerEmail || "Not provided"}</div>
+          </div>
+          
+          <div class="row" style="display: flex; border-bottom: 1px solid #f1f5f9; padding: 12px 0;">
+            <div class="label" style="flex: 0 0 35%; color: #64748b; font-size: 14px;">Phone</div>
+            <div class="value" style="color: #0f172a; font-weight: 500; font-size: 14px;">${booking.customerPhone || "Not provided"}</div>
+          </div>
 
-      <div style="margin-top: 24px; text-align: center;">
-        <a href="#" style="background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px;">View in Dashboard</a>
+          <div class="row" style="display: flex; border-bottom: 1px solid #f1f5f9; padding: 12px 0;">
+            <div class="label" style="flex: 0 0 35%; color: #64748b; font-size: 14px;">Appointment</div>
+            <div class="value" style="color: #2563eb; font-weight: 600; font-size: 14px;">${bookingDateFormatted}</div>
+          </div>
+
+          <div class="row" style="display: flex; border-bottom: 1px solid #f1f5f9; padding: 12px 0;">
+            <div class="label" style="flex: 0 0 35%; color: #64748b; font-size: 14px;">Service/Notes</div>
+            <div class="value" style="color: #0f172a; font-size: 14px; line-height: 1.5;">${booking.serviceDetails || "None"}</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; text-align: center;">
+          <a href="#" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; display: inline-block;">View in Dashboard</a>
+        </div>
       </div>
     </div>
   </div>

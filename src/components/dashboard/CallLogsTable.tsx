@@ -27,7 +27,7 @@ import {
     ChevronRight,
     ChevronLeft,
     MessageSquare,
-    Mic,
+
     Calendar,
     Search,
     Filter,
@@ -44,7 +44,7 @@ interface CallLog {
     duration: number | null;
     summary: string | null;
     transcript: string | null;
-    recordingUrl: string | null;
+
     createdAt: string;
 }
 
@@ -248,24 +248,7 @@ function CallLogCard({ log }: { log: CallLog }) {
                         </div>
                     </div>
 
-                    {/* Recording Player */}
-                    {log.recordingUrl && (
-                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-100">
-                            <div className="flex items-center gap-2 mb-3">
-                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                                    <Mic className="h-4 w-4 text-indigo-600" />
-                                </div>
-                                <h4 className="font-semibold text-gray-900">Call Recording</h4>
-                            </div>
-                            <audio
-                                controls
-                                className="w-full rounded-lg"
-                                src={log.recordingUrl}
-                            >
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    )}
+
 
                     {/* AI Summary */}
                     <div className="bg-white rounded-xl border p-5">
@@ -275,7 +258,7 @@ function CallLogCard({ log }: { log: CallLog }) {
                             </div>
                             <h4 className="font-semibold text-gray-900">AI Summary</h4>
                         </div>
-                        <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none prose-strong:text-gray-900 prose-ul:my-2 prose-li:my-0.5">
+                        <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none prose-headings:font-semibold prose-strong:font-bold prose-strong:text-gray-900 prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2 prose-li:my-1">
                             {log.summary ? (
                                 <ReactMarkdown>{log.summary}</ReactMarkdown>
                             ) : (
@@ -354,7 +337,7 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">No Calls Yet</h3>
                 <p className="text-gray-500 max-w-sm">
-                    When your AI agent handles calls, they will appear here with full details and recordings.
+                    When your AI agent handles calls, they will appear here with full details.
                 </p>
             </div>
         );

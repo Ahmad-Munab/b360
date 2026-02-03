@@ -76,7 +76,7 @@ export async function POST(req: Request) {
                     duration: duration || existingLog.duration,
                     summary: analysis?.summary || existingLog.summary,
                     transcript: artifact?.transcript || existingLog.transcript,
-                    recordingUrl: artifact?.recordingUrl || existingLog.recordingUrl,
+                    recordingUrl: null,
                 })
                 .where(eq(callLogs.id, existingLog.id))
                 .returning();
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
                     duration: duration,
                     summary: analysis?.summary || null,
                     transcript: artifact?.transcript || null,
-                    recordingUrl: artifact?.recordingUrl || null,
+                    recordingUrl: null,
                 })
                 .returning();
             savedCallLog = created;
