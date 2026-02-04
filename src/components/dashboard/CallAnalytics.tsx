@@ -43,7 +43,7 @@ export function CallAnalytics({ stats }: { stats: Stats }) {
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {cards.map((card) => (
                 <Card key={card.title}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
