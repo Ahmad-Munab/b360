@@ -132,11 +132,11 @@ function TranscriptDisplay({ transcript }: { transcript: string | null }) {
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-gray-500">{messages.length} messages</span>
-                <Button variant="outline" size="sm" onClick={copyTranscript}>
-                    {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-                    {copied ? "Copied!" : "Copy"}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sticky top-0 bg-white p-2 z-10 border-b">
+                <span className="text-sm text-gray-500 font-medium">{messages.length} messages</span>
+                <Button variant="outline" size="sm" onClick={copyTranscript} className="h-8">
+                    {copied ? <Check className="h-3.5 w-3.5 mr-1.5" /> : <Copy className="h-3.5 w-3.5 mr-1.5" />}
+                    {copied ? "Copied" : "Copy"}
                 </Button>
             </div>
             <div className="bg-gray-50 rounded-lg p-4 max-h-[50vh] overflow-y-auto space-y-3">
@@ -171,7 +171,7 @@ function CallLogCard({ log }: { log: CallLog }) {
         <Dialog>
             <DialogTrigger asChild>
                 <Card className="cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all duration-200 group border-2">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                         <div className="flex items-center justify-between">
                             {/* Left side - Caller info */}
                             <div className="flex items-center gap-4">
@@ -220,14 +220,18 @@ function CallLogCard({ log }: { log: CallLog }) {
             {/* Full Details Dialog */}
             <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <DialogTitle className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
+                        <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 mx-auto sm:mx-0">
                             <Phone className="h-5 w-5 text-white" />
                         </div>
-                        <div>
-                            <span className="block">Call Details</span>
-                            <span className="text-sm font-normal text-gray-500">
-                                {log.callerNumber || "Web Call"} • {format(new Date(log.createdAt), "MMMM d, yyyy 'at' h:mm a")}
+                        <div className="space-y-1">
+                            <span className="block text-xl sm:text-lg">Call Details</span>
+                            <span className="text-sm font-normal text-gray-500 block leading-tight">
+                                <span className="block sm:inline">{log.callerNumber || "Web Call"}</span>
+                                <span className="hidden sm:inline"> • </span>
+                                <span className="block sm:inline text-xs sm:text-sm mt-1 sm:mt-0">
+                                    {format(new Date(log.createdAt), "MMMM d, yyyy 'at' h:mm a")}
+                                </span>
                             </span>
                         </div>
                     </DialogTitle>
@@ -269,11 +273,13 @@ function CallLogCard({ log }: { log: CallLog }) {
 
                     {/* Full Transcript */}
                     <div className="bg-white rounded-xl border p-5">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                <MessageSquare className="h-4 w-4 text-purple-600" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                    <MessageSquare className="h-4 w-4 text-purple-600" />
+                                </div>
+                                <h4 className="font-semibold text-gray-900">Conversation Transcript</h4>
                             </div>
-                            <h4 className="font-semibold text-gray-900">Conversation Transcript</h4>
                         </div>
                         <TranscriptDisplay transcript={log.transcript} />
                     </div>
@@ -346,35 +352,38 @@ export function CallLogsTable({ logs, onRefresh }: CallLogsTableProps) {
     return (
         <div className="space-y-4">
             {/* Filters Bar */}
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-xl border">
-                <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+            {/* Filters Bar */}
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 p-4 bg-gray-50 rounded-xl border">
+                <div className="flex items-center gap-2 flex-1 w-full sm:w-auto min-w-[200px]">
                     <Search className="h-4 w-4 text-gray-400" />
                     <Input
                         placeholder="Search caller or summary..."
                         value={searchQuery}
                         onChange={(e) => handleFilterChange("search", e.target.value)}
-                        className="border-0 bg-white shadow-sm"
+                        className="border-0 bg-white shadow-sm w-full"
                     />
                 </div>
 
-                <Select value={dateFilter} onValueChange={(v) => handleFilterChange("date", v)}>
-                    <SelectTrigger className="w-[140px] bg-white">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                        <SelectValue placeholder="Date" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Time</SelectItem>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="week">This Week</SelectItem>
-                        <SelectItem value="month">This Month</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex gap-3">
+                    <Select value={dateFilter} onValueChange={(v) => handleFilterChange("date", v)}>
+                        <SelectTrigger className="w-full sm:w-[140px] bg-white flex-1">
+                            <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                            <SelectValue placeholder="Date" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Time</SelectItem>
+                            <SelectItem value="today">Today</SelectItem>
+                            <SelectItem value="week">This Week</SelectItem>
+                            <SelectItem value="month">This Month</SelectItem>
+                        </SelectContent>
+                    </Select>
 
-                {onRefresh && (
-                    <Button variant="outline" size="icon" onClick={onRefresh}>
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
-                )}
+                    {onRefresh && (
+                        <Button variant="outline" size="icon" onClick={onRefresh} className="shrink-0 bg-white shadow-sm">
+                            <RefreshCw className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Results Count */}

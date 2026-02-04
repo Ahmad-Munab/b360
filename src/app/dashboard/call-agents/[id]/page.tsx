@@ -124,7 +124,7 @@ export default function AgentViewPage({
     return (
         <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
             {/* Header */}
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">{agent.name}</h1>
                     <p className="text-gray-600 mt-1">
@@ -139,32 +139,36 @@ export default function AgentViewPage({
                         </Badge>
                     </div>
                 </div>
-                <div className="flex space-x-3">
-                    <Link href={`/dashboard/call-agents/${agent.id}/edit`}>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700">
+                <div className="flex w-full lg:w-auto gap-3 mt-4 lg:mt-0">
+                    <Link href={`/dashboard/call-agents/${agent.id}/edit`} className="flex-1 lg:flex-none">
+                        <Button className="bg-indigo-600 hover:bg-indigo-700 w-full" size="sm">
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit Agent
+                            Edit
                         </Button>
                     </Link>
                     <Button
                         variant="destructive"
                         onClick={handleDelete}
                         disabled={isDeleting}
+                        className="flex-1 lg:flex-none"
+                        size="sm"
                     >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        {isDeleting ? "Deleting..." : "Delete"}
+                        {isDeleting ? "..." : "Delete"}
                     </Button>
                 </div>
             </div>
 
             {/* Agent Details */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="bg-gray-100 p-1">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="logs">Call Logs</TabsTrigger>
-                    <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                    <TabsTrigger value="settings">Configuration</TabsTrigger>
-                </TabsList>
+                <div className="w-full overflow-x-auto pb-2 -mb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <TabsList className="bg-gray-100 p-1 w-full sm:w-auto inline-flex justify-start">
+                        <TabsTrigger value="overview" className="flex-1 sm:flex-none min-w-[100px]">Overview</TabsTrigger>
+                        <TabsTrigger value="logs" className="flex-1 sm:flex-none min-w-[100px]">Call Logs</TabsTrigger>
+                        <TabsTrigger value="bookings" className="flex-1 sm:flex-none min-w-[100px]">Bookings</TabsTrigger>
+                        <TabsTrigger value="settings" className="flex-1 sm:flex-none min-w-[120px]">Configuration</TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <TabsContent value="overview" className="space-y-6">
                     <CallAnalytics stats={stats} />
