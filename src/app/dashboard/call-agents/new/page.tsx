@@ -237,7 +237,7 @@ export default function AICallAgentPage() {
                                                     <Label>Search and Buy a Number</Label>
 
                                                     {/* Country Selector Row */}
-                                                    <div className="flex flex-wrap gap-2 items-center">
+                                                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                                                         <Select
                                                             value={formData.phoneCountry}
                                                             onValueChange={(value) => {
@@ -245,7 +245,7 @@ export default function AICallAgentPage() {
                                                                 setAvailableNumbers([]); // Clear results on country change
                                                             }}
                                                         >
-                                                            <SelectTrigger className="w-52">
+                                                            <SelectTrigger className="w-full sm:w-52">
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
@@ -269,6 +269,7 @@ export default function AICallAgentPage() {
                                                         <Button
                                                             type="button"
                                                             variant="outline"
+                                                            className="w-full sm:w-auto"
                                                             onClick={async () => {
                                                                 try {
                                                                     const res = await fetch("/api/twilio/existing");
@@ -335,14 +336,14 @@ export default function AICallAgentPage() {
                                                     </Button>
 
                                                     {availableNumbers.length > 0 && (
-                                                        <div className="mt-4 border rounded-md divide-y bg-white">
+                                                        <div className="mt-4 border rounded-md divide-y bg-white max-h-60 overflow-y-auto">
                                                             {availableNumbers.map((num) => (
-                                                                <div key={num.phoneNumber} className="p-3 flex items-center justify-between">
+                                                                <div key={num.phoneNumber} className="p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                                                                     <div className="flex flex-col">
                                                                         <span className="font-medium">{num.friendlyName}</span>
                                                                         <span className="text-xs text-gray-500">{num.locality}, {num.region}</span>
                                                                     </div>
-                                                                    <div className="flex items-center gap-4">
+                                                                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                                                                         <div className="text-right">
                                                                             <span className="block text-sm font-semibold text-blue-600">
                                                                                 {getCurrencySymbol(num.currency)}
