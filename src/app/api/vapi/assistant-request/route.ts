@@ -79,13 +79,12 @@ export async function POST(req: Request) {
         if (!currentAgent) {
             return NextResponse.json({
                 assistant: {
-                    name: "System Error",
+                    firstMessage: "I apologize, but I couldn't find a configuration for this phone number. Please check your dashboard.",
                     model: {
-                        provider: "groq",
-                        model: "llama-3.3-70b-versatile",
-                        messages: [{ role: "system", content: "You are a fallback assistant. Explain that the system is misconfigured and no agents were found in the database." }]
-                    },
-                    firstMessage: "I apologize, but I couldn't find a configuration for this phone number in our database. Please check your dashboard."
+                        provider: "openai",
+                        model: "gpt-4o",
+                        messages: [{ role: "system", content: "You are a fallback assistant. Explain that no agents were found in the database." }]
+                    }
                 }
             });
         }
@@ -102,20 +101,17 @@ export async function POST(req: Request) {
             agentId: currentAgent.id
         });
 
-        // The response MUST follow the Vapi AssistantRequestMessageResponse schema
-        // It should contain ONLY the 'assistant' object as the top-level property
+        const responsePayload = { assistant: assistant };
         console.log(`✅ Delivering transient assistant for: ${currentAgent.name}`);
+        console.log("Response JSON:", JSON.stringify(responsePayload, null, 2));
 
-        return NextResponse.json({
-            assistant: assistant
-        });
+        return NextResponse.json(responsePayload);
     } catch (error) {
         console.error("❌ CRITICAL ERROR in assistant-request:", error);
         return NextResponse.json({
             assistant: {
-                name: "Error Assistant",
-                model: { provider: "groq", model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: "Explain that a server error occurred." }] },
-                firstMessage: "I'm sorry, I'm having trouble connecting to my brain right now. Please try again later."
+                firstMessage: "I'm sorry, a server error occurred. Please try again later.",
+                model: { provider: "openai", model: "gpt-4o", messages: [{ role: "system", content: "Explain that a server error occurred." }] }
             }
         });
     }

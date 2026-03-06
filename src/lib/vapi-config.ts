@@ -11,110 +11,24 @@ export interface AssistantConfigOptions {
     agentId: string;
 }
 
+/**
+ * DIAGNOSTIC: Ultra-minimal config matching the official Vapi docs exactly.
+ * See: https://docs.vapi.ai/server-url/events#retrieving-assistants
+ * 
+ * Once this works, we will add features (voice, tools, etc.) back one by one.
+ */
 export function generateVapiAssistantConfig(options: AssistantConfigOptions) {
-    const {
-        name,
-        welcomeMessage,
-        voice,
-        baseUrl,
-        agentId
-    } = options;
-
-    // Lily and Elliot are Vapi's own TTS voices (provider: "vapi")
-    const selectedVoice = (voice?.toLowerCase() === "male") ? "Elliot" : "Lily";
-
-    const bookingTool = createBookingTool(baseUrl, agentId);
-
-    // Return a minimal, Vapi-compliant transient assistant
-    // Only include fields that are in the official Vapi Assistant schema
-    const assistant: Record<string, any> = {
-        name: name,
-        firstMessage: welcomeMessage || "Hello! How can I help you today?",
+    return {
+        firstMessage: options.welcomeMessage || "Hello! How can I help you today?",
         model: {
-            provider: "groq",
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.5,
+            provider: "openai",
+            model: "gpt-4o",
             messages: [
                 {
                     role: "system",
-                    content: generateSystemPrompt(options)
+                    content: `You are a helpful AI assistant for ${options.name}. ${options.businessContext || "Help callers with their questions."}`
                 }
-            ],
-        },
-        voice: {
-            provider: "vapi",
-            voiceId: selectedVoice,
-        },
-        transcriber: {
-            provider: "deepgram",
-            model: "nova-2",
-            language: "en-US",
-        },
-        endCallFunctionEnabled: true,
-        endCallMessage: "Thank you for calling! Have a wonderful day. Goodbye!",
-        silenceTimeoutSeconds: 60,
-        maxDurationSeconds: 600,
-        backgroundSound: "office",
-        serverUrl: `${baseUrl}/api/vapi/webhook`,
-        metadata: {
-            agentId: agentId,
-        },
+            ]
+        }
     };
-
-    // Add tools as a top-level array on the assistant (NOT inside model)
-    assistant.tools = [bookingTool];
-
-    return assistant;
-}
-
-function generateSystemPrompt(options: AssistantConfigOptions) {
-    return `You are a professional and friendly AI Voice Assistant for ${options.name}. Your primary goal is to assist callers efficiently while strictly adhering to the provided business information.
-
-## CRITICAL KNOWLEDGE ENFORCEMENT
-1. **ABSOLUTE SOURCE OF TRUTH**: usage of external knowledge or "common sense" assumptions about the business type or name is STRICTLY FORBIDDEN. You effectively know NOTHING about the business other than what is explicitly written in the "About the Business" section below.
-2. **NO HALLUCINATIONS**: If the "About the Business" section does not mention a specific service, price, person, location, or policy, IT DOES NOT EXIST. Do not invent it.
-3. **HANDLING UNKNOWN INFO**: If a user asks for information not present in the context below, you MUST say: "I don't have that specific information right now, but I can note down your question and have a team member contact you." Do NOT try to answer based on what typical businesses of this type do.
-
-## About the Business
-${options.businessContext || "No specific business details provided. Please treat this as a general answering service and offer to take messages."}
-
-## Business Type
-${options.businessType || "General Inquiry"}
-
-## Availability
-${options.availabilityContext || "Standard business hours."}
-
-## Current Date and Time
-Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. 
-The current local time is ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}. 
-Use this ONLY for understanding relative dates (e.g., "tomorrow"). DO NOT use this to assume the user wants to book "right now".
-
-## Booking Process (STRICT FLOW)
-You MUST follow these steps in order:
-1. **Ask for Date and Time**: "When would you like to come in?" or "What date and time works best for you?"
-2. **Confirm Service/Reason**: "What is this appointment for?" (Only if not already clear)
-3. **Ask for Name**: "May I have your full name?"
-4. **Ask for Email**: "What is the best email address to send the confirmation to?"
-   - **Capture E-mail Carefully**: Ask them to spell it out if unclear.
-   - **Example**: spell this mahmud.hasan.amaan848@gmail.com to this instead M A H M U D dot H A S A N dot A M A A N 8 4 8 (just spell @gmail.com normally)
-5. **VERBAL CONFIRMATION (REQUIRED)**:
-   - YOU MUST READ BACK THE DETAILS: "Let me double check that. I have a booking for [Name] at [Email] on [Date] at [Time] for [Service]. Is that correct?"
-   - **WAIT** for the user to say "Yes" or similar.
-   - If they say "No", ask which part needs correction.
-    - But Remember Don't Repeat Yourself Too Much, Don't annoy the user.
-6. **Execute Booking**: ONLY after a clear "Yes", call the 'book_appointment' tool.
-7. **Important**: If the tool returns an error saying the email is invalid, you MUST ask the user to spell it again carefully.
-
-## Ending Calls
-- **Wait for the customer to finish.** Do not end the call unless they explicitly say they are done or say "goodbye".
-- If the customer says "bye", "goodbye", "that's all", "I'm done", or similar, then end the call politely.
-- After completing a booking, ask: "Is there anything else I can help you with today?"
-- **ONLY** end the call after the customer confirms they have no more questions.
-- Always be polite: "Thank you for calling! Have a great day. Goodbye."
-
-## Communication Guidelines
-- Speak naturally and conversationally
-- Be warm, professional, and helpful
-- Keep responses concise - this is a phone call
-- Confirm important details by repeating them back`;
 }
