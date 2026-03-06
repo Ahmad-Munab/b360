@@ -102,24 +102,20 @@ export async function POST(req: Request) {
             agentId: currentAgent.id
         });
 
-        const responsePayload = {
-            assistant: assistant,
-            server: {
-                url: `${baseUrl}/api/vapi/webhook`,
-                timeoutSeconds: 30,
-            }
-        };
+        // The response MUST follow the Vapi AssistantRequestMessageResponse schema
+        // It should contain ONLY the 'assistant' object as the top-level property
+        console.log(`✅ Delivering transient assistant for: ${currentAgent.name}`);
 
-        console.log(`✅ Assistant config delivered for agent: ${currentAgent.name}`);
-        return NextResponse.json(responsePayload);
+        return NextResponse.json({
+            assistant: assistant
+        });
     } catch (error) {
         console.error("❌ CRITICAL ERROR in assistant-request:", error);
-        // Even on 500, return a valid JSON assistant so the user hears a human-like error
         return NextResponse.json({
             assistant: {
                 name: "Error Assistant",
-                model: { provider: "groq", model: "llama-3.3-70b-versatile", messages: [] },
-                firstMessage: "I'm sorry, my connection to the server is experiencing a technical issue. Please try again later."
+                model: { provider: "groq", model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: "Explain that a server error occurred." }] },
+                firstMessage: "I'm sorry, I'm having trouble connecting to my brain right now. Please try again later."
             }
         });
     }

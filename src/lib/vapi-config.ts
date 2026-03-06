@@ -69,9 +69,12 @@ export function generateVapiAssistantConfig(options: AssistantConfigOptions) {
             **Outcome:** [Brief detailed explanation of what happened, if booking was successful, and how the call ended.]
             `
         },
-        serverUrl: `${baseUrl}/api/vapi/webhook`,
+        server: {
+            url: `${baseUrl}/api/vapi/webhook`,
+            timeoutSeconds: 30,
+        },
         interruptionsEnabled: true,
-        numWordsToInterruptAssistant: 1,
+        numWordsToInterrupt: 1,
         silenceTimeoutSeconds: 60,
         maxDurationSeconds: 600,
         backgroundSound: "office",
