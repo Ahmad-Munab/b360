@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         // This is called by Vapi when looking for an assistant for an inbound call
         if (messageType !== "assistant-request") {
             const phoneNumber = body.message?.phoneNumber?.number || body.phoneNumber?.number;
-            console.log(`Received ${messageType} message for ${phoneNumber}`);
+            console.log(`Received ${messageType} message for ${phoneNumber}:`, JSON.stringify(body, null, 2));
             return NextResponse.json({ received: true });
         }
 

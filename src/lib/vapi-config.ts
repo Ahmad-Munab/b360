@@ -23,9 +23,9 @@ export function generateVapiAssistantConfig(options: AssistantConfigOptions) {
         agentId
     } = options;
 
-    const selectedVoice = (voice?.toLowerCase() === "male") ? "Elliot" : "Lily";
+    const selectedVoice = (voice?.toLowerCase() === "male") ? "elliot" : "lily";
+    const voiceProvider = "playht"; // Lily and Elliot are PlayHT voices
     const bookingTool = createBookingTool(baseUrl, agentId);
-
 
     const assistant: Record<string, any> = {
         name: name,
@@ -37,7 +37,7 @@ export function generateVapiAssistantConfig(options: AssistantConfigOptions) {
             smartFormat: true,
         },
         voice: {
-            provider: "vapi",
+            provider: voiceProvider,
             voiceId: selectedVoice,
         },
         backchannelingEnabled: false,
@@ -83,19 +83,6 @@ export function generateVapiAssistantConfig(options: AssistantConfigOptions) {
             agentId: agentId,
         }
     };
-
-    // Add provider credentials from env variables
-    const credentials: Array<{ provider: string; apiKey: string }> = [];
-    if (process.env.GROQ_API_KEY) {
-        credentials.push({ provider: "groq", apiKey: process.env.GROQ_API_KEY });
-    }
-    if (process.env.DEEPGRAM_API_KEY) {
-        credentials.push({ provider: "deepgram", apiKey: process.env.DEEPGRAM_API_KEY });
-    }
-
-    if (credentials.length > 0) {
-        assistant.credentials = credentials;
-    }
 
     return assistant;
 }
