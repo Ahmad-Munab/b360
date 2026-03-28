@@ -13,11 +13,11 @@ export interface UserPlan {
 
 export interface UsageStats {
     messageCount: number;
-    widgetCount: number;
+    chatbotCount: number;
     period: string; // Billing period key format
     limits: {
         messages: number;
-        widgets: number;
+        chatbots: number;
     };
     resetDate: Date;
     billingPeriodStart?: Date;
@@ -34,13 +34,13 @@ export interface UserSettings {
 interface UseUserSettingsReturn extends UserSettings {
     fetchUserSettings: () => Promise<void>;
     refreshUsage: () => Promise<void>;
-    canCreateWidget: boolean;
+    canCreateChatbot: boolean;
     canSendMessage: boolean;
     remainingMessages: number;
-    remainingWidgets: number;
+    remainingChatbots: number;
     usagePercentage: {
         messages: number;
-        widgets: number;
+        chatbots: number;
     };
 }
 
@@ -101,15 +101,15 @@ export const useUserSettings = (): UseUserSettingsReturn => {
     }, [session?.user, fetchUserSettings]);
 
     // Calculate derived values
-    const canCreateWidget = usage ? usage.widgetCount < usage.limits.widgets : false;
+    const canCreateChatbot = usage ? usage.chatbotCount < usage.limits.chatbots : false;
     const canSendMessage = usage ? usage.messageCount < usage.limits.messages : false;
     const remainingMessages = usage ? Math.max(0, usage.limits.messages - usage.messageCount) : 0;
-    const remainingWidgets = usage ? Math.max(0, usage.limits.widgets - usage.widgetCount) : 0;
+    const remainingChatbots = usage ? Math.max(0, usage.limits.chatbots - usage.chatbotCount) : 0;
 
     const usagePercentage = usage ? {
         messages: Math.min(100, (usage.messageCount / usage.limits.messages) * 100),
-        widgets: Math.min(100, (usage.widgetCount / usage.limits.widgets) * 100),
-    } : { messages: 0, widgets: 0 };
+        chatbots: Math.min(100, (usage.chatbotCount / usage.limits.chatbots) * 100),
+    } : { messages: 0, chatbots: 0 };
 
     return {
         plan,
@@ -118,10 +118,10 @@ export const useUserSettings = (): UseUserSettingsReturn => {
         error,
         fetchUserSettings,
         refreshUsage,
-        canCreateWidget,
+        canCreateChatbot,
         canSendMessage,
         remainingMessages,
-        remainingWidgets,
+        remainingChatbots,
         usagePercentage,
     };
 }; 
