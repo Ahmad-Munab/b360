@@ -8,7 +8,7 @@ export const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-export const AI_MODEL = "llama3-70b-8192";
+export const AI_MODEL = "llama-3.3-70b-versatile";
 
 // Define the chatbot type based on your database schema
 // Note: Nullable fields in the database return null, not undefined
